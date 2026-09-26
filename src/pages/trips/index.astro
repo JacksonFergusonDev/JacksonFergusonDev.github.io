@@ -1,0 +1,67 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageIntro from '../../components/PageIntro.astro';
+import SubpageNav from '../../components/SubpageNav.astro';
+import Icon from '../../components/Icon.astro';
+import { getCollection, getEntry, type CollectionEntry } from 'astro:content';
+import { Image, getImage } from 'astro:assets';
+import { routes } from '../../lib/site';
+
+type TripEntry = CollectionEntry<'trips'> & {
+  data: Extract<CollectionEntry<'trips'>['data'], { type: 'trip' }>;
+};
+
+const indexEntry = await getEntry('trips', 'index');
+if (!indexEntry || indexEntry.data.type !== 'index') {
+  throw new Error('Missing or invalid trips index entry in src/content/trips/index.md');
+}
+
+const { intro } = indexEntry.data;
+
+const trips = (
+  (await getCollection('trips', ({ data }) => data.type === 'trip' && !data.draft)) as TripEntry[]
+).sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+const featuredCover = trips[0]?.data.images[0];
+const coverImage = featuredCover
+  ? await getImage({ src: featuredCover.src, width: 1200, format: 'jpg', quality: 85 })
+  : undefined;
+---
+
+<BaseLayout
+  title={routes.trips.title}
+  description={routes.trips.description}
+  image={coverImage?.src}
+  imageAlt={featuredCover?.alt ?? routes.trips.title}
+>
+  <PageIntro
+    eyebrow={intro.eyebrow}
+    titleLine1={intro.titleLine1}
+    titleLine2={intro.titleLine2}
+    description={intro.description}
+  />
+  <div class="trips-grid container">
+    {trips.map((trip) => (
+      <a href={`/trips/${trip.id}/`} class="trip-card">
+        <Image
+          src={trip.data.images[0].src}
+          alt={trip.data.images[0].alt}
+          widths={[480, 800, 1200]}
+          sizes="(max-width: 560px) 100vw, 50vw"
+          width={800}
+          format="webp"
+        />
+        <h2>
+          {trip.data.title}{' '}
+          <span class="accent">
+            <Icon name="arrow-right" size={20} />
+          </span>
+        </h2>
+        <p>
+          {trip.data.location} · {trip.data.dateLabel ?? trip.data.date.getUTCFullYear()}
+        </p>
+      </a>
+    ))}
+  </div>
+  <SubpageNav next={{ href: routes.creative.path, label: routes.creative.exploreLabel }} />
+</BaseLayout>

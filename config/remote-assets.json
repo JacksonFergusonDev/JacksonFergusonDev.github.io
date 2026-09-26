@@ -1,0 +1,37 @@
+{
+  "$schema": "./remote-assets.schema.json",
+  "assets": [
+    {
+      "id": "protostar-demo",
+      "description": "Protostar Asciinema headless demo used on the flagship project card.",
+      "source": "https://raw.githubusercontent.com/JacksonFergusonDev/protostar/refs/heads/main/docs/assets/demo_headless.cast",
+      "target": "public/protostar-demo.cast",
+      "type": "asciinema-cast",
+      "minBytes": 10000
+    },
+    {
+      "id": "protostar-icon",
+      "description": "Protostar project icon used next to the flagship project title.",
+      "source": "https://raw.githubusercontent.com/JacksonFergusonDev/protostar/refs/heads/main/docs/assets/favicon.svg",
+      "target": "public/images/protostar.svg",
+      "type": "svg",
+      "minBytes": 500
+    },
+    {
+      "id": "systems-audio-analysis",
+      "description": "Systems Audio Lab measured analysis topology figure.",
+      "source": "https://raw.githubusercontent.com/JacksonFergusonDev/systems-audio-lab/refs/heads/main/docs/figures/fig_analysis_topology.svg",
+      "target": "public/images/audio-analysis.svg",
+      "type": "svg",
+      "minBytes": 10000
+    },
+    {
+      "id": "data-science-redshift-distribution",
+      "description": "Data Science Portfolio GMM redshift distribution figure for galaxy cluster ACO 2670.",
+      "source": "https://raw.githubusercontent.com/JacksonFergusonDev/data-science-portfolio/refs/heads/main/astrophysics/figures/gmm_redshift_distribution.svg",
+      "target": "public/images/gmm-redshift-distribution.svg",
+      "type": "svg",
+      "minBytes": 10000
+    }
+  ]
+}

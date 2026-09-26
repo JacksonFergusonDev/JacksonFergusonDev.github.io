@@ -1,0 +1,300 @@
+---
+import { getEntry, render } from 'astro:content';
+import { Code } from 'astro:components';
+import { Image, getImage } from 'astro:assets';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import GalleryViewer from '../../components/GalleryViewer.astro';
+import ArticleHeader from '../../components/ArticleHeader.astro';
+import SubpageNav from '../../components/SubpageNav.astro';
+import { routes } from '../../lib/site';
+
+const entry = await getEntry('creative', 'python');
+if (!entry || entry.data.type !== 'python') {
+  throw new Error('Missing or invalid creative/python content entry');
+}
+
+const { Content } = await render(entry);
+const { data } = entry;
+
+const pythonScripts = import.meta.glob<string>('../../assets/python/*.py', {
+  query: '?raw',
+  import: 'default',
+  eager: true,
+});
+
+const enlargedPieces = await Promise.all(
+  data.pieces.map((piece) =>
+    getImage({
+      src: piece.image,
+      width: Math.min(2400, piece.image.width),
+      format: 'webp',
+      quality: 85,
+    }),
+  ),
+);
+
+const ogImage = data.pieces[0]
+  ? await getImage({ src: data.pieces[0].image, width: 1200, format: 'jpg', quality: 85 })
+  : undefined;
+
+const pieces = data.pieces.map((piece, i) => {
+  const scriptKey = `../../assets/python/${piece.filename}`;
+  const code = pythonScripts[scriptKey] ?? '';
+  return {
+    ...piece,
+    code,
+    enlargedSrc: enlargedPieces[i].src,
+  };
+});
+---
+
+<BaseLayout
+  title={data.title}
+  description={data.description}
+  image={ogImage?.src}
+  imageAlt={pieces[0]?.alt ?? 'Python generative art'}
+>
+  <ArticleHeader
+    breadcrumbHref={routes.creative.path}
+    breadcrumbLabel={routes.creative.breadcrumb}
+    eyebrow={data.eyebrow}
+    title={data.title}
+    description={data.description}
+  />
+
+  {entry.body?.trim() && (
+    <div class="container">
+      <div class="prose trip-body">
+        <Content />
+      </div>
+    </div>
+  )}
+
+  <div class="python-gallery container">
+    {pieces.map((piece, i) => (
+      <article class="art-card">
+        <div class="art-header">
+          <div>
+            <p class="eyebrow">{piece.category}</p>
+            <h2>{piece.title}</h2>
+            {piece.subtitle && <p class="art-subtitle">{piece.subtitle}</p>}
+          </div>
+          <div class="tags">
+            {piece.tags.map((t) => (
+              <span>{t}</span>
+            ))}
+          </div>
+        </div>
+
+        <div class="art-body">
+          <figure class="art-figure">
+            <a
+              class="gallery-image-link"
+              href={piece.enlargedSrc}
+              data-gallery-image
+              aria-label={`Enlarge artwork: ${piece.title}`}
+            >
+              <Image
+                src={piece.image}
+                alt={piece.alt}
+                widths={[480, 800, 1400, 2000]}
+                sizes="(max-width: 900px) 100vw, 55vw"
+                width={1400}
+                format="webp"
+                loading={i === 0 ? 'eager' : 'lazy'}
+              />
+            </a>
+            <figcaption>{piece.description}</figcaption>
+          </figure>
+
+          <div class="code-column">
+            <div class="code-bar">
+              <span class="file-name">
+                <code class="py-icon">.py</code> {piece.filename}
+              </span>
+              <button
+                class="copy-btn"
+                data-code={piece.code}
+                aria-label={`Copy code for ${piece.filename}`}
+              >
+                Copy code
+              </button>
+            </div>
+            <div class="code-viewport">
+              <Code code={piece.code} lang="python" theme="github-dark" />
+            </div>
+          </div>
+        </div>
+      </article>
+    ))}
+  </div>
+
+  <SubpageNav
+    prev={{ href: routes.creative.path, label: routes.creative.hubLabel }}
+    next={{ href: routes.trips.path, label: routes.trips.title }}
+  />
+
+  <GalleryViewer />
+</BaseLayout>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>('.copy-btn').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const code = btn.dataset.code;
+      if (!code) return;
+      try {
+        await navigator.clipboard.writeText(code);
+        const originalText = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(() => {
+          btn.textContent = originalText;
+        }, 2000);
+      } catch (err) {
+        console.error('Failed to copy code: ', err);
+      }
+    });
+  });
+</script>
+
+<style>
+  .python-gallery {
+    display: flex;
+    flex-direction: column;
+    gap: 80px;
+    margin-block: 40px 70px;
+  }
+  .art-card {
+    background: rgba(14, 17, 20, 0.7);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .art-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 20px;
+  }
+  .art-header h2 {
+    font-size: 28px;
+    letter-spacing: -0.6px;
+    margin: 4px 0 8px;
+  }
+  .art-subtitle {
+    font-size: 15px;
+    color: var(--muted);
+    margin: 0;
+  }
+  .art-body {
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
+    gap: 32px;
+    align-items: stretch;
+  }
+  .art-figure {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .art-figure img {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    transition: transform 0.25s ease;
+  }
+  .art-figure:hover img {
+    transform: scale(1.01);
+  }
+  .art-figure figcaption {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--muted);
+  }
+  .code-column {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+    background: #0d1117;
+    height: 100%;
+    min-height: 0;
+  }
+  .code-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 14px;
+    background: rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid var(--line);
+    font-size: 12px;
+  }
+  .file-name {
+    font-family: var(--font-mono);
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .py-icon {
+    color: var(--accent);
+    background: rgba(34, 211, 238, 0.1);
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-size: 11px;
+  }
+  .copy-btn {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--text);
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    font-family: var(--font-mono);
+    transition: all 0.15s ease;
+  }
+  .copy-btn:hover {
+    background: rgba(34, 211, 238, 0.1);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .code-viewport {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow-y: auto;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .code-viewport :global(pre) {
+    margin: 0 !important;
+    padding: 16px !important;
+    background: transparent !important;
+  }
+  .code-viewport :global(code) {
+    font-family: var(--font-mono);
+  }
+  @media (max-width: 1024px) {
+    .art-body {
+      grid-template-columns: 1fr;
+    }
+    .art-card {
+      padding: 20px;
+    }
+    .code-column {
+      height: auto;
+    }
+    .code-viewport {
+      flex: initial;
+      max-height: 520px;
+    }
+  }
+</style>

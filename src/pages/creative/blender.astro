@@ -1,0 +1,196 @@
+---
+import { getEntry, render } from 'astro:content';
+import GalleryViewer from '../../components/GalleryViewer.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ArticleHeader from '../../components/ArticleHeader.astro';
+import SubpageNav from '../../components/SubpageNav.astro';
+import Icon from '../../components/Icon.astro';
+import { Image, getImage } from 'astro:assets';
+import { routes } from '../../lib/site';
+
+const entry = await getEntry('creative', 'blender');
+if (!entry || entry.data.type !== 'blender') {
+  throw new Error('Missing or invalid creative/blender content entry');
+}
+
+const { Content } = await render(entry);
+const { data } = entry;
+
+const enlargedProjects = await Promise.all(
+  data.projects.map((proj) =>
+    getImage({
+      src: proj.image,
+      width: Math.min(2400, proj.image.width),
+      format: 'webp',
+      quality: 85,
+    }),
+  ),
+);
+
+const ogImage = data.projects[0]
+  ? await getImage({ src: data.projects[0].image, width: 1200, format: 'jpg', quality: 85 })
+  : undefined;
+---
+
+<BaseLayout
+  title={data.title}
+  description={data.description}
+  image={ogImage?.src}
+  imageAlt={data.projects[0]?.alt ?? 'Blender 3D project'}
+>
+  <ArticleHeader
+    breadcrumbHref={routes.creative.path}
+    breadcrumbLabel={routes.creative.breadcrumb}
+    eyebrow={data.eyebrow}
+    title={data.title}
+    description={data.description}
+  />
+
+  {entry.body?.trim() && (
+    <div class="container">
+      <div class="prose trip-body">
+        <Content />
+      </div>
+    </div>
+  )}
+
+  <div class="blender-grid container">
+    {data.projects.map((proj, i) => (
+      <article class="blender-card">
+        <figure class="blender-figure">
+          <a
+            class="gallery-image-link"
+            href={enlargedProjects[i].src}
+            data-gallery-image
+            aria-label={`Enlarge render: ${proj.title}`}
+          >
+            <Image
+              src={proj.image}
+              alt={proj.alt}
+              widths={[480, 800, 1400, 2000]}
+              sizes="(max-width: 800px) 100vw, 50vw"
+              width={1200}
+              format="webp"
+              loading={i < 2 ? 'eager' : 'lazy'}
+            />
+          </a>
+        </figure>
+        <div class="blender-details">
+          <p class="eyebrow">{proj.category}</p>
+          <h2>{proj.title}</h2>
+          <p class="project-desc">{proj.description}</p>
+          <div class="tags">
+            {proj.tools.map((tool) => (
+              <span>{tool}</span>
+            ))}
+          </div>
+          <div class="blender-actions">
+            <a
+              class="button secondary download-btn"
+              href={proj.downloadUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Download .blend <span class="file-size">({proj.size})</span>
+              <Icon size={14} />
+            </a>
+            <span class="file-label">{proj.blendFile}</span>
+          </div>
+        </div>
+      </article>
+    ))}
+  </div>
+
+  <SubpageNav
+    prev={{ href: routes.creative.path, label: routes.creative.hubLabel }}
+    next={{ href: routes.trips.path, label: routes.trips.title }}
+  />
+
+  <GalleryViewer />
+</BaseLayout>
+
+<style>
+  .blender-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 60px;
+    margin-block: 40px 70px;
+  }
+  .blender-card {
+    display: grid;
+    grid-template-columns: 1.25fr 1fr;
+    gap: 36px;
+    align-items: center;
+    padding: 24px;
+    background: rgba(14, 17, 20, 0.7);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+  }
+  .blender-figure {
+    margin: 0;
+    overflow: hidden;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+  }
+  .blender-figure img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+  .blender-figure:hover img {
+    transform: scale(1.02);
+  }
+  .blender-details {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .blender-details h2 {
+    font-size: 26px;
+    letter-spacing: -0.5px;
+    margin: 0;
+  }
+  .project-desc {
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.6;
+    margin: 0;
+  }
+  .blender-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+  .download-btn {
+    font-size: 13px;
+    padding: 8px 16px;
+  }
+  .file-size {
+    opacity: 0.7;
+    font-size: 11px;
+    font-family: var(--font-mono);
+  }
+  .file-label {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .lang-tag {
+    color: var(--accent);
+    background: rgba(34, 211, 238, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.9em;
+  }
+  @media (max-width: 900px) {
+    .blender-card {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+  }
+</style>

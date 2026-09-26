@@ -1,0 +1,28 @@
+---
+import Icon from './Icon.astro';
+
+interface NavLink {
+  href: string;
+  label: string;
+}
+
+interface Props {
+  prev?: NavLink;
+  next?: NavLink;
+}
+
+const { prev, next } = Astro.props;
+---
+
+<div class="container article-end" style="margin-bottom:70px">
+  {prev && (
+    <a class="text-link" href={prev.href}>
+      <Icon name="arrow-left" size={16} /> {prev.label}
+    </a>
+  )}
+  {next && (
+    <a class="text-link" href={next.href} style={!prev ? 'margin-left: auto' : undefined}>
+      {next.label} <Icon name="arrow-right" size={16} />
+    </a>
+  )}
+</div>

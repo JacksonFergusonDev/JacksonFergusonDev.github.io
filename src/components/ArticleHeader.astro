@@ -1,0 +1,28 @@
+---
+import Icon from './Icon.astro';
+
+interface Props {
+  breadcrumbHref: string;
+  breadcrumbLabel: string;
+  eyebrow: string;
+  title: string;
+  description?: string;
+}
+
+const { breadcrumbHref, breadcrumbLabel, eyebrow, title, description } = Astro.props;
+---
+
+<header class="article-header container">
+  <a href={breadcrumbHref} class="breadcrumb">
+    <Icon name="arrow-left" size={13} /> {breadcrumbLabel}
+  </a>
+  <p class="eyebrow">{eyebrow}</p>
+  <h1>{title}</h1>
+  {description ? (
+    <p class="description">{description}</p>
+  ) : (
+    <p class="description">
+      <slot />
+    </p>
+  )}
+</header>

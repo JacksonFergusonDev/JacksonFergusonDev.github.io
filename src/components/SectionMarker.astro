@@ -1,0 +1,13 @@
+---
+interface Props {
+  title: string;
+  star?: boolean;
+}
+
+const { title, star = false } = Astro.props;
+---
+
+<div class="section-marker">
+  <span>{title}</span>
+  {star && <span class="tiny-star">✳</span>}
+</div>

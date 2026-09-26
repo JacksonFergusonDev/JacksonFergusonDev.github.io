@@ -1,0 +1,27 @@
+---
+import Icon from './Icon.astro';
+
+interface Props {
+  number: string;
+  name: string;
+  repoUrl: string;
+  description: string;
+  kind: string;
+}
+
+const { number, name, repoUrl, description, kind } = Astro.props;
+---
+
+<article class="project-row">
+  <span class="project-number">{number}</span>
+  <div>
+    <h3>
+      <a href={repoUrl} target="_blank" rel="noopener noreferrer">
+        {name}
+        <Icon size={19} />
+      </a>
+    </h3>
+    <p>{description}</p>
+  </div>
+  <span class="row-kind">{kind}</span>
+</article>

@@ -1,0 +1,22 @@
+---
+import Icon from './Icon.astro';
+---
+
+<div class="data-field" aria-hidden="true">
+  <canvas id="data-canvas"></canvas>
+</div>
+<button
+  class="motion-toggle"
+  type="button"
+  aria-pressed="false"
+  aria-label="Pause background animation"
+  hidden
+>
+  Pause motion{' '}
+  <span aria-hidden="true">
+    <Icon name="pause" size={10} />
+  </span>
+</button>
+<script>
+  import '../scripts/data-field';
+</script>

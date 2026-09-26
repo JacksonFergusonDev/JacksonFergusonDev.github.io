@@ -1,0 +1,59 @@
+# .rumdl.toml — Jackson Ferguson portfolio
+# Relaxed Markdown linting. Goal: consistent behavior, minimal diff churn.
+# Markdown lives in: src/content/trips/**/*.md, README.md, docs/**/*.md
+
+[global]
+# Run from repo root; respect .gitignore (dist/, node_modules/, .astro/ are all ignored)
+respect-gitignore = true
+
+# Line length is off by default in Python configs and we keep it off here too.
+# Trip descriptions and README prose are naturally short; enforcing a limit
+# only creates churn when reformatting.
+disable = [
+    "MD013", # line length
+    "MD033", # inline HTML — needed for <br>, <a> in Markdown, and Astro content
+]
+
+# --- Heading style ---
+# ATX headings (# Heading) only; no setext (underlined) headings.
+[MD003]
+style = "atx"
+
+# --- Unordered list style ---
+# Dash for list markers — consistent with the Python config and cleaner in diffs.
+[MD004]
+style = "dash"
+
+# --- Trailing spaces ---
+# Allow exactly 2 spaces for hard line breaks; flag other stray whitespace.
+# strict = false lets us keep visual trailing spaces for intentional breaks
+# without fighting the linter on every paragraph.
+[MD009]
+br-spaces = 2
+strict = false
+
+# --- Duplicate headings ---
+# Allow identical subheadings as long as they appear under different parents.
+# This matters for trip journals if they ever add structured sections.
+[MD024]
+siblings-only = true
+
+# --- Ordered list numbering ---
+# Use "one" style (1., 1., 1.) so reordering list items doesn't create
+# massive diff churn. Same rationale as the Python config.
+[MD029]
+style = "one"
+
+# --- Per-file overrides ---
+# src/content/trips/ files have YAML frontmatter, so MD041 (first line
+# must be a top-level heading) does not apply — the first line is the
+# frontmatter delimiter, not a heading. The frontmatter is validated by
+# Astro's content schema (src/content/config.ts), not by rumdl.
+#
+# README.md and docs/**/*.md are mostly prose, but README opens with an H1
+# and docs/ may have generated content. We relax MD041 only where it is
+# genuinely unhelpful.
+[per-file-ignores]
+"src/content/trips/**/*.md" = ["MD041"]
+"README.md" = ["MD041"]
+"docs/**/*.md" = ["MD041", "MD046"]

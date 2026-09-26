@@ -1,0 +1,100 @@
+---
+import 'asciinema-player/dist/bundle/asciinema-player.css';
+---
+
+<div class="protostar-demo-shell">
+  <div class="panel-top">
+    <div class="terminal-dots" aria-hidden="true">
+      <span class="dot dot-close"></span>
+      <span class="dot dot-minimize"></span>
+      <span class="dot dot-maximize"></span>
+    </div>
+    <span class="terminal-title">PROTOSTAR / HEADLESS DEMO</span>
+  </div>
+  <div id="protostar-demo" class="protostar-asciinema" data-asciinema="/protostar-demo.cast">
+    <noscript>
+      <a href="/protostar-demo.cast">Download the Protostar terminal recording</a>
+    </noscript>
+  </div>
+</div>
+
+<script>
+  import { create } from 'asciinema-player';
+
+  const container = document.querySelector<HTMLElement>('#protostar-demo');
+
+  if (container && !container.dataset.initialized) {
+    container.dataset.initialized = 'true';
+    const src = container.dataset.asciinema;
+    if (src) {
+      // Warm the HTTP cache so playback starts without delay once revealed
+      fetch(src).catch(() => {});
+
+      // Pre-warm the symbols font in the background so glyphs render without pop-in
+      if (document.fonts) {
+        document.fonts.load("14px 'Symbols Nerd Font'").catch(() => {});
+      }
+
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      const player = create(src, container, {
+        autoPlay: false,
+        preload: true,
+        poster: 'npt:0:00.1',
+        loop: !reduceMotion,
+        speed: 1,
+        terminalFontFamily: "'JetBrains Mono', 'Symbols Nerd Font', 'Fira Code', monospace",
+        terminalFontSize: '14px',
+        fit: 'width',
+        controls: 'auto',
+      });
+
+      if (!reduceMotion) {
+        const card = container.closest<HTMLElement>('.landing-reveal');
+        if (!card) {
+          player.play();
+        } else {
+          let started = false;
+          let fallbackTimer: number | undefined;
+
+          const launch = () => {
+            if (started) return;
+            started = true;
+            if (fallbackTimer !== undefined) {
+              window.clearTimeout(fallbackTimer);
+            }
+            card.removeEventListener('transitionend', onTransitionEnd);
+            observer?.disconnect();
+            player.play();
+          };
+
+          const onTransitionEnd = (e: TransitionEvent) => {
+            if (e.target === card && e.propertyName === 'opacity') {
+              launch();
+            }
+          };
+
+          card.addEventListener('transitionend', onTransitionEnd);
+
+          let observer: MutationObserver | null = null;
+          const checkVisible = () => {
+            if (card.classList.contains('is-visible')) {
+              if (window.getComputedStyle(card).opacity === '1') {
+                launch();
+              } else if (fallbackTimer === undefined) {
+                fallbackTimer = window.setTimeout(launch, 1200);
+              }
+            }
+          };
+
+          if (window.MutationObserver) {
+            observer = new MutationObserver(checkVisible);
+            observer.observe(card, { attributes: true, attributeFilter: ['class'] });
+          }
+
+          checkVisible();
+        }
+      }
+    }
+  }
+</script>

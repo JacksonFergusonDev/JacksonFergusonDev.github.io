@@ -1,0 +1,18 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+import { routes } from '../lib/site';
+---
+
+<BaseLayout title="Page not found" noindex>
+  <section class="error-page container">
+    <p class="eyebrow">404 / OFF THE MAP</p>
+    <h1>
+      Signal lost<span class="accent">.</span>
+    </h1>
+    <p>This page isn’t here. Let’s get you back to familiar ground.</p>
+    <a class="button primary" href={routes.home.path}>
+      <Icon name="arrow-left" size={16} /> Back to home
+    </a>
+  </section>
+</BaseLayout>

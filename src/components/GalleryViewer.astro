@@ -1,0 +1,117 @@
+---
+import Icon from './Icon.astro';
+---
+
+<dialog class="photo-viewer" aria-label="Photo viewer">
+  <div class="viewer-bar">
+    <span class="viewer-position" aria-live="polite"></span>
+    <button class="viewer-close" autofocus aria-label="Close photo viewer">
+      Close <Icon name="close" size={14} />
+    </button>
+  </div>
+  <div class="viewer-stage">
+    <button class="viewer-prev" aria-label="Previous photo">
+      <Icon name="arrow-left" size={20} />
+    </button>
+    <img class="viewer-photo" alt="" />
+    <button class="viewer-next" aria-label="Next photo">
+      <Icon name="arrow-right" size={20} />
+    </button>
+  </div>
+  <p class="viewer-caption"></p>
+</dialog>
+<script>
+  const dialog = document.querySelector<HTMLDialogElement>('.photo-viewer');
+  const links = [...document.querySelectorAll<HTMLAnchorElement>('[data-gallery-image]')];
+  if (dialog && links.length) {
+    let current = 0;
+    let origin: HTMLAnchorElement | undefined;
+    let loadToken = 0;
+    const photo = dialog.querySelector<HTMLImageElement>('.viewer-photo')!;
+    const position = dialog.querySelector<HTMLElement>('.viewer-position')!;
+    const caption = dialog.querySelector<HTMLElement>('.viewer-caption')!;
+
+    const resetPhoto = () => {
+      loadToken++;
+      photo.removeAttribute('src');
+      photo.alt = '';
+    };
+
+    const show = (index: number) => {
+      const token = ++loadToken;
+      current = (index + links.length) % links.length;
+      const link = links[current];
+      const thumb = link.querySelector('img');
+      const thumbSrc = thumb?.currentSrc || thumb?.src || '';
+      const fullSrc = link.href;
+
+      photo.alt = thumb?.alt ?? '';
+      position.textContent = `${current + 1} / ${links.length}`;
+      const figure = link.closest('figure');
+      const figcaption = figure?.querySelector('figcaption');
+      const captionText = link.dataset.caption?.trim() || figcaption?.textContent?.trim() || '';
+      caption.textContent = captionText;
+      caption.hidden = !captionText;
+      caption.style.display = captionText ? '' : 'none';
+
+      if (fullSrc && fullSrc !== thumbSrc) {
+        const highRes = new Image();
+        highRes.src = fullSrc;
+        if (highRes.complete) {
+          photo.src = fullSrc;
+        } else {
+          if (thumbSrc) {
+            photo.src = thumbSrc;
+          } else {
+            photo.removeAttribute('src');
+          }
+          highRes
+            .decode()
+            .then(() => {
+              if (token === loadToken) {
+                photo.src = fullSrc;
+              }
+            })
+            .catch(() => {
+              if (token === loadToken) {
+                photo.src = fullSrc;
+              }
+            });
+        }
+      } else if (fullSrc) {
+        photo.src = fullSrc;
+      }
+    };
+    links.forEach((link, index) =>
+      link.addEventListener('click', (event) => {
+        if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+        event.preventDefault();
+        origin = link;
+        show(index);
+        dialog.showModal();
+        document.body.style.overflow = 'hidden';
+      }),
+    );
+    dialog.querySelector('.viewer-close')?.addEventListener('click', () => dialog.close());
+    dialog.querySelector('.viewer-prev')?.addEventListener('click', () => show(current - 1));
+    dialog.querySelector('.viewer-next')?.addEventListener('click', () => show(current + 1));
+    dialog.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        show(current - 1);
+      }
+      if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        show(current + 1);
+      }
+    });
+    dialog.addEventListener('close', () => {
+      document.body.style.overflow = '';
+      resetPhoto();
+      origin?.focus();
+    });
+    dialog.addEventListener('click', (event) => {
+      if (event.target === dialog) dialog.close();
+    });
+  }
+</script>

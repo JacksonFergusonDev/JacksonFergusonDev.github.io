@@ -1,0 +1,19 @@
+node_modules/
+dist/
+.astro/
+.DS_Store
+.env
+.env.*
+test-results/
+public/protostar-demo.cast
+public/images/protostar.svg
+public/images/audio-analysis.svg
+public/images/gmm-redshift-distribution.svg
+.rumdl_cache/
+.claude/
+
+# 3D assets and blender backups
+*.blend
+*.blend1
+*.obj
+*.mtl
