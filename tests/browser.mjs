@@ -72,7 +72,7 @@ try {
   );
   await page.getByRole('button', { name: 'Play background animation' }).click();
   await page.getByRole('button', { name: 'Pause background animation' }).click();
-  const resumeLink = page.getByRole('link', { name: 'Software résumé' });
+  const resumeLink = page.getByRole('link', { name: 'Software Resume' });
   assert.equal(await resumeLink.getAttribute('target'), '_blank');
   assert.equal(await resumeLink.getAttribute('rel'), 'noopener noreferrer');
   assert.equal(await resumeLink.getAttribute('href'), '/resumes/jackson-ferguson-software.pdf');

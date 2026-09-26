@@ -45,15 +45,15 @@ export async function GET({ site: origin }: APIContext) {
       ),
     ),
     '',
-    '## Résumés',
+    '## Resumes',
     '',
     link(
-      'Software résumé (PDF)',
+      'Software Resume (PDF)',
       abs('/resumes/jackson-ferguson-software.pdf'),
       'Software and infrastructure focus.',
     ),
     link(
-      'Instrumentation résumé (PDF)',
+      'Instrumentation Resume (PDF)',
       abs('/resumes/jackson-ferguson-instrumentation.pdf'),
       'Hardware and instrumentation focus.',
     ),
