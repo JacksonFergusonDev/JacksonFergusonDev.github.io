@@ -68,7 +68,10 @@ test('project hierarchy and real downloads are preserved', async () => {
     assert.ok(raw.includes(`href="${href}"`), `Missing project destination ${href}`);
   }
   assert.ok(raw.includes('data-asciinema="/protostar-demo.cast"'));
-  for (const file of ['jackson-ferguson-software.pdf', 'jackson-ferguson-instrumentation.pdf']) {
+  for (const file of [
+    'Jackson-Ferguson-Software-Resume.pdf',
+    'Jackson-Ferguson-Hardware-Software-Resume.pdf',
+  ]) {
     const pdf = await readFile(path.join(root, 'resumes', file));
     assert.equal(pdf.subarray(0, 5).toString(), '%PDF-');
   }

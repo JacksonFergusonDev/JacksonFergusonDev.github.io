@@ -471,8 +471,8 @@ body.landing-page .landing-reveal.is-visible {
 }
 .about-grid {
   display: grid;
-  grid-template-columns: 1fr 1.18fr;
-  gap: 70px;
+  grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+  gap: 88px;
 }
 .about-copy .lead {
   font-size: 22px;
@@ -483,22 +483,63 @@ body.landing-page .landing-reveal.is-visible {
 .about-copy p {
   font-size: 16px;
 }
-.resume-links {
-  display: flex;
-  gap: 29px;
-  margin-top: 30px;
-  flex-wrap: wrap;
+.resume-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin-top: 32px;
 }
-.resume-links a {
+.resume-card {
   display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 20px 22px;
+  transition: border-color 0.25s ease;
+}
+.resume-card:hover {
+  border-color: #3d5862;
+}
+.resume-card-title {
+  font-family: var(--sans);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 8px;
+  letter-spacing: -0.01em;
+}
+.resume-card-desc {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--muted);
+  margin: 0 0 18px;
+  flex-grow: 1;
+}
+.resume-card-link {
+  display: inline-flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
   border-bottom: 1px solid #3b484e;
-  padding-bottom: 9px;
+  padding-bottom: 4px;
+  align-self: flex-start;
+  transition:
+    border-color 0.2s ease,
+    color 0.2s ease;
 }
-.resume-links svg {
+.resume-card-link svg {
   color: var(--accent);
+  transition: transform 0.2s ease;
+}
+.resume-card-link:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.resume-card-link:hover svg {
+  transform: translate(1px, -1px);
 }
 .discipline-row {
   display: flex;
@@ -1407,7 +1448,7 @@ html.landing-js:not(.landing-reduced-motion) .protostar-asciinema .ap-overlay-st
     padding: 28px;
   }
   .about-grid {
-    gap: 45px;
+    gap: 52px;
   }
   .beyond-grid {
     gap: 40px;
@@ -1455,8 +1496,8 @@ html.landing-js:not(.landing-reduced-motion) .protostar-asciinema .ap-overlay-st
     padding-block: 65px;
   }
   .about-grid {
-    gap: 30px;
-    grid-template-columns: 1fr 1.1fr;
+    gap: 24px;
+    grid-template-columns: 1fr;
   }
   .about-copy .lead {
     font-size: 19px;
@@ -1653,12 +1694,22 @@ html.landing-js:not(.landing-reduced-motion) .protostar-asciinema .ap-overlay-st
   .about-copy p {
     font-size: 15px;
   }
-  .resume-links {
-    gap: 22px;
+  .resume-grid {
+    gap: 14px;
+    margin-top: 24px;
   }
-  .resume-links a {
-    font-size: 11px;
-    gap: 8px;
+  .resume-card {
+    padding: 16px 18px;
+  }
+  .resume-card-title {
+    font-size: 15px;
+  }
+  .resume-card-desc {
+    font-size: 13px;
+    margin-bottom: 14px;
+  }
+  .resume-card-link {
+    font-size: 12px;
   }
   .discipline-row {
     margin-top: 33px;

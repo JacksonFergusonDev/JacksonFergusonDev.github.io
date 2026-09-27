@@ -81,7 +81,7 @@ import {
   <div class="landing-sections">
     <section class="section container about-section" id="about" aria-labelledby="about-heading">
       <div class="landing-reveal">
-        <SectionMarker title="01 / ABOUT" star />
+        <SectionMarker title="01 / ABOUT" />
         <div class="about-grid">
           <h2 id="about-heading">
             Curiosity across <br class="desktop-break" />
@@ -101,21 +101,38 @@ import {
               I graduated from the University of Victoria in spring 2026. My next areas of
               exploration are DevOps, robotics, and physical AI.
             </p>
-            <div class="resume-links">
-              <a
-                href="/resumes/jackson-ferguson-software.pdf"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Software Resume <Icon size={16} />
-              </a>
-              <a
-                href="/resumes/jackson-ferguson-instrumentation.pdf"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Instrumentation Resume <Icon size={16} />
-              </a>
+            <div class="resume-grid">
+              <div class="resume-card">
+                <h3 class="resume-card-title">Software Development</h3>
+                <p class="resume-card-desc">
+                  Python, developer tooling, DevOps, CI/CD, automation, and software infrastructure.
+                </p>
+                <a
+                  class="resume-card-link"
+                  href="/resumes/Jackson-Ferguson-Software-Resume.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Download Software Development resume (PDF)"
+                >
+                  Download PDF <Icon size={16} />
+                </a>
+              </div>
+              <div class="resume-card">
+                <h3 class="resume-card-title">Hardware–Software Systems</h3>
+                <p class="resume-card-desc">
+                  Software development for physical systems, including automation, embedded
+                  interfaces, test systems, data acquisition, and hardware integration.
+                </p>
+                <a
+                  class="resume-card-link"
+                  href="/resumes/Jackson-Ferguson-Hardware-Software-Resume.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Download Hardware–Software Systems resume (PDF)"
+                >
+                  Download PDF <Icon size={16} />
+                </a>
+              </div>
             </div>
           </div>
         </div>

@@ -72,14 +72,29 @@ try {
   );
   await page.getByRole('button', { name: 'Play background animation' }).click();
   await page.getByRole('button', { name: 'Pause background animation' }).click();
-  const resumeLink = page.getByRole('link', { name: 'Software Resume' });
+  const resumeLink = page.getByRole('link', {
+    name: 'Download Software Development resume (PDF)',
+  });
   assert.equal(await resumeLink.getAttribute('target'), '_blank');
   assert.equal(await resumeLink.getAttribute('rel'), 'noopener noreferrer');
-  assert.equal(await resumeLink.getAttribute('href'), '/resumes/jackson-ferguson-software.pdf');
+  assert.equal(
+    await resumeLink.getAttribute('href'),
+    '/resumes/Jackson-Ferguson-Software-Resume.pdf',
+  );
   assert.equal(await resumeLink.getAttribute('download'), null);
   const [resumePopup] = await Promise.all([page.waitForEvent('popup'), resumeLink.click()]);
   assert.ok(resumePopup);
   await resumePopup.close();
+  const hwResumeLink = page.getByRole('link', {
+    name: 'Download Hardware–Software Systems resume (PDF)',
+  });
+  assert.equal(await hwResumeLink.getAttribute('target'), '_blank');
+  assert.equal(await hwResumeLink.getAttribute('rel'), 'noopener noreferrer');
+  assert.equal(
+    await hwResumeLink.getAttribute('href'),
+    '/resumes/Jackson-Ferguson-Hardware-Software-Resume.pdf',
+  );
+  assert.equal(await hwResumeLink.getAttribute('download'), null);
   for (const width of [320, 390, 560, 600, 768, 820, 1024]) {
     await page.setViewportSize({ width, height: 844 });
     for (const route of [
