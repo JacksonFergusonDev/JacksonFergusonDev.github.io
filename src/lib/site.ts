@@ -52,11 +52,3 @@ export const routes = {
     },
   },
 } as const;
-
-export const formatDate = (date: Date) =>
-  new Intl.DateTimeFormat('en-CA', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    timeZone: 'UTC',
-  }).format(date);
