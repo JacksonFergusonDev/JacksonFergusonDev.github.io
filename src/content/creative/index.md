@@ -25,14 +25,4 @@ collections:
   # 3. Python Generative Art
   - id: 'python'
     tag: 'SOURCE CODE INCLUDED'
-
-# -----------------------------------------------------------------------------
-# Featured Spotlight: Origins & Athletics (Alpine Ski Racing)
-# -----------------------------------------------------------------------------
-spotlight:
-  eyebrow: 'ORIGINS & ATHLETICS'
-  title: 'Roots on the slopes: Line choice under pressure'
-  description: 'Competitive alpine ski racing was my main sport growing up, with winters spent training across the Coast Mountains. It built a lasting respect for preparation, physical discipline, and fast decisions on variable terrain.'
-  image: ../../assets/skiing/1.jpg
-  alt: 'Alpine ski racing on course'
 ---

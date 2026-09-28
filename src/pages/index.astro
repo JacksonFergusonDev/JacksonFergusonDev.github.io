@@ -1,6 +1,7 @@
 ---
-import { Image } from 'astro:assets';
+import { Image, getImage } from 'astro:assets';
 import islandPhoto from '../assets/trips/north-vancouver-island-2026/1.jpg';
+import skiPhoto from '../assets/skiing/1.jpg';
 import headshot from '../assets/profile/jackson-ferguson.jpg';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Icon from '../components/Icon.astro';
@@ -10,6 +11,7 @@ import ServiceIcon from '../components/ServiceIcon.astro';
 import SectionMarker from '../components/SectionMarker.astro';
 import SecondaryProjectCard from '../components/SecondaryProjectCard.astro';
 import ProjectRow from '../components/ProjectRow.astro';
+import GalleryViewer from '../components/GalleryViewer.astro';
 import { site, routes } from '../lib/site';
 import { homepageGraph } from '../lib/structured-data';
 import {
@@ -20,6 +22,13 @@ import {
   starGround,
   tools,
 } from '../lib/projects';
+
+const skiPhotoEnlarged = await getImage({
+  src: skiPhoto,
+  width: Math.min(2400, skiPhoto.width),
+  format: 'webp',
+  quality: 85,
+});
 ---
 
 <BaseLayout
@@ -79,8 +88,8 @@ import {
     </div>
   </section>
   <div class="landing-sections">
-    <section class="section container about-section" id="about" aria-labelledby="about-heading">
-      <div class="landing-reveal">
+    <section class="section about-section" id="about" aria-labelledby="about-heading">
+      <div class="container landing-reveal">
         <SectionMarker title="01 / ABOUT" />
         <div class="about-grid">
           <h2 id="about-heading">
@@ -138,289 +147,293 @@ import {
         </div>
       </div>
     </section>
-    <section class="section container" id="projects" aria-labelledby="projects-heading">
-      <header class="projects-head landing-reveal">
-        <SectionMarker title="02 / SELECTED TECHNICAL PROJECTS" />
-        <div class="section-heading">
-          <h2 id="projects-heading">
-            Selected work <br class="desktop-break" />
-            <span class="muted">and technical systems.</span>
-          </h2>
-          <a class="text-link" href={site.github} target="_blank" rel="noopener noreferrer">
-            All repositories <Icon size={16} />
-          </a>
-        </div>
-      </header>
-      <article class="project-card flagship landing-reveal">
-        <div class="flagship-grid">
-          <div>
-            <div class="flagship-heading">
-              <span class="project-number">01</span>
-              <span class="eyebrow">
-                <span class="status-dot"></span> FEATURED PROJECT
-              </span>
+    <section class="section" id="projects" aria-labelledby="projects-heading">
+      <div class="container">
+        <header class="projects-head landing-reveal">
+          <SectionMarker title="02 / SELECTED TECHNICAL PROJECTS" />
+          <div class="section-heading">
+            <h2 id="projects-heading">
+              Selected work <br class="desktop-break" />
+              <span class="muted">and technical systems.</span>
+            </h2>
+            <a class="text-link" href={site.github} target="_blank" rel="noopener noreferrer">
+              All repositories <Icon size={16} />
+            </a>
+          </div>
+        </header>
+        <article class="project-card flagship landing-reveal">
+          <div class="flagship-grid">
+            <div>
+              <div class="flagship-heading">
+                <span class="project-number">01</span>
+                <span class="eyebrow">
+                  <span class="status-dot"></span> FEATURED PROJECT
+                </span>
+              </div>
+              <div class="project-title">
+                <a
+                  class="protostar-title-link"
+                  href="https://protostar.jacksonferguson.me/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Protostar documentation"
+                >
+                  <img src="/images/protostar.svg" alt="" width="42" height="42" />
+                  <h3>Protostar</h3>
+                </a>
+              </div>
+              <p class="project-subtitle">{protostar.subtitle}</p>
+              <p>{protostar.description}</p>
+              <div class="protostar-install-header">
+                <span class="protostar-command-label">Install globally</span>
+                <div class="protostar-pm-toggle" role="tablist" aria-label="Installation method">
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected="true"
+                    class="pm-tab is-active"
+                    data-pm="uv"
+                  >
+                    uv
+                  </button>
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected="false"
+                    class="pm-tab"
+                    data-pm="brew"
+                  >
+                    brew
+                  </button>
+                </div>
+              </div>
+              <div class="protostar-install" aria-label="Install command">
+                <code id="protostar-install-cmd">uv tool install protostar</code>
+                <button
+                  type="button"
+                  class="protostar-copy"
+                  data-copy="uv tool install protostar"
+                  aria-label="Copy install command"
+                >
+                  Copy<span class="protostar-copy-long"> command</span>
+                </button>
+              </div>
+              <div class="tags">
+                {protostar.tags?.map((tag) => (
+                  <span>{tag}</span>
+                ))}
+              </div>
             </div>
-            <div class="project-title">
+            <AsciinemaDemo />
+          </div>
+          <div class="feature-principles">
+            <div>
+              <span>01 /</span>
+              <h4>Dry runs don’t guess.</h4>
+              <p>The preview is the exact manifest a live run executes, not a simulation of it.</p>
+            </div>
+            <div>
+              <span>02 /</span>
+              <h4>No half-finished setups.</h4>
+              <p>A failed step or Ctrl+C restores every tracked file, byte for byte.</p>
+            </div>
+            <div>
+              <span>03 /</span>
+              <h4>Your edits survive.</h4>
+              <p>
+                Config merges as a syntax tree, so your keys, comments, and formatting stay put.
+              </p>
+            </div>
+          </div>
+          <div class="card-footer">
+            <div class="project-actions">
               <a
-                class="protostar-title-link"
+                class="button primary"
                 href="https://protostar.jacksonferguson.me/"
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="Protostar documentation"
               >
-                <img src="/images/protostar.svg" alt="" width="42" height="42" />
-                <h3>Protostar</h3>
+                Documentation <Icon size={16} />
+              </a>
+              <a
+                class="text-link"
+                href={`${site.github}/protostar`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                View on GitHub <Icon size={16} />
               </a>
             </div>
-            <p class="project-subtitle">{protostar.subtitle}</p>
-            <p>{protostar.description}</p>
-            <div class="protostar-install-header">
-              <span class="protostar-command-label">Install globally</span>
-              <div class="protostar-pm-toggle" role="tablist" aria-label="Installation method">
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected="true"
-                  class="pm-tab is-active"
-                  data-pm="uv"
-                >
-                  uv
-                </button>
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected="false"
-                  class="pm-tab"
-                  data-pm="brew"
-                >
-                  brew
-                </button>
+          </div>
+        </article>
+        <article class="project-card audio-card landing-reveal">
+          <div class="audio-copy">
+            <p class="eyebrow">{systemsAudioLab.eyebrow}</p>
+            <h3>
+              <a href={systemsAudioLab.repo} target="_blank" rel="noopener noreferrer">
+                {systemsAudioLab.name}
+              </a>
+            </h3>
+            <p class="project-subtitle">{systemsAudioLab.subtitle}</p>
+            <p>{systemsAudioLab.description}</p>
+            <div class="metrics">
+              <div>
+                <strong>
+                  97.8 <small>kSps</small>
+                </strong>
+                <span>Calibrated sample rate</span>
+              </div>
+              <div>
+                <strong>
+                  1.3 <small>mV RMS</small>
+                </strong>
+                <span>Measured read-noise floor</span>
               </div>
             </div>
-            <div class="protostar-install" aria-label="Install command">
-              <code id="protostar-install-cmd">uv tool install protostar</code>
-              <button
-                type="button"
-                class="protostar-copy"
-                data-copy="uv tool install protostar"
-                aria-label="Copy install command"
-              >
-                Copy<span class="protostar-copy-long"> command</span>
-              </button>
-            </div>
             <div class="tags">
-              {protostar.tags?.map((tag) => (
+              {systemsAudioLab.tags?.map((tag) => (
                 <span>{tag}</span>
               ))}
             </div>
-          </div>
-          <AsciinemaDemo />
-        </div>
-        <div class="feature-principles">
-          <div>
-            <span>01 /</span>
-            <h4>Dry runs don’t guess.</h4>
-            <p>The preview is the exact manifest a live run executes, not a simulation of it.</p>
-          </div>
-          <div>
-            <span>02 /</span>
-            <h4>No half-finished setups.</h4>
-            <p>A failed step or Ctrl+C restores every tracked file, byte for byte.</p>
-          </div>
-          <div>
-            <span>03 /</span>
-            <h4>Your edits survive.</h4>
-            <p>Config merges as a syntax tree, so your keys, comments, and formatting stay put.</p>
-          </div>
-        </div>
-        <div class="card-footer">
-          <div class="project-actions">
-            <a
-              class="button primary"
-              href="https://protostar.jacksonferguson.me/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Documentation <Icon size={16} />
-            </a>
-            <a
-              class="text-link"
-              href={`${site.github}/protostar`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              View on GitHub <Icon size={16} />
-            </a>
-          </div>
-        </div>
-      </article>
-      <article class="project-card audio-card landing-reveal">
-        <div class="audio-copy">
-          <p class="eyebrow">{systemsAudioLab.eyebrow}</p>
-          <h3>
-            <a href={systemsAudioLab.repo} target="_blank" rel="noopener noreferrer">
-              {systemsAudioLab.name}
-            </a>
-          </h3>
-          <p class="project-subtitle">{systemsAudioLab.subtitle}</p>
-          <p>{systemsAudioLab.description}</p>
-          <div class="metrics">
-            <div>
-              <strong>
-                97.8 <small>kSps</small>
-              </strong>
-              <span>Calibrated sample rate</span>
-            </div>
-            <div>
-              <strong>
-                1.3 <small>mV RMS</small>
-              </strong>
-              <span>Measured read-noise floor</span>
+            <div class="project-actions">
+              <a
+                class="button primary"
+                href="https://raw.githubusercontent.com/JacksonFergusonDev/systems-audio-lab/main/docs/systems_audio_tech_report.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Read the Full Technical Report (PDF) <Icon size={16} />
+              </a>
+              <a
+                class="text-link"
+                href={systemsAudioLab.repo}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                View on GitHub <Icon size={16} />
+              </a>
             </div>
           </div>
-          <div class="tags">
-            {systemsAudioLab.tags?.map((tag) => (
-              <span>{tag}</span>
-            ))}
-          </div>
-          <div class="project-actions">
+          <div class="signal-art">
+            <span class="signal-label">MEASURED SIGNAL / TIME + FREQUENCY DOMAIN</span>
             <a
-              class="button primary"
-              href="https://raw.githubusercontent.com/JacksonFergusonDev/systems-audio-lab/main/docs/systems_audio_tech_report.pdf"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Read the Full Technical Report (PDF) <Icon size={16} />
-            </a>
-            <a
-              class="text-link"
               href={systemsAudioLab.repo}
               target="_blank"
               rel="noopener noreferrer"
+              aria-label="Systems Audio Lab on GitHub"
             >
-              View on GitHub <Icon size={16} />
+              <img
+                src="/images/audio-analysis.svg"
+                alt="Measured time-domain soft clipping and frequency-domain harmonic analysis"
+              />
             </a>
+            <span class="signal-note">Prototype measurements from the full signal chain</span>
           </div>
-        </div>
-        <div class="signal-art">
-          <span class="signal-label">MEASURED SIGNAL / TIME + FREQUENCY DOMAIN</span>
-          <a
-            href={systemsAudioLab.repo}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Systems Audio Lab on GitHub"
-          >
-            <img
-              src="/images/audio-analysis.svg"
-              alt="Measured time-domain soft clipping and frequency-domain harmonic analysis"
-            />
-          </a>
-          <span class="signal-note">Prototype measurements from the full signal chain</span>
-        </div>
-      </article>
-      <article class="project-card data-science-card landing-reveal">
-        <div class="data-science-copy">
-          <p class="eyebrow">{dataSciencePortfolio.eyebrow}</p>
-          <h3>
-            <a href={dataSciencePortfolio.repo} target="_blank" rel="noopener noreferrer">
-              {dataSciencePortfolio.name}
-            </a>
-          </h3>
-          <p class="project-subtitle">{dataSciencePortfolio.subtitle}</p>
-          <p>{dataSciencePortfolio.description}</p>
-          <div class="metrics">
-            <div>
-              <strong>
-                291 ± 60{' '}
-                <small>
-                  M<sub>☉</sub>/L<sub>☉</sub>
-                </small>
-              </strong>
-              <span>Mass-to-light ratio (ACO 2670)</span>
+        </article>
+        <article class="project-card data-science-card landing-reveal">
+          <div class="data-science-copy">
+            <p class="eyebrow">{dataSciencePortfolio.eyebrow}</p>
+            <h3>
+              <a href={dataSciencePortfolio.repo} target="_blank" rel="noopener noreferrer">
+                {dataSciencePortfolio.name}
+              </a>
+            </h3>
+            <p class="project-subtitle">{dataSciencePortfolio.subtitle}</p>
+            <p>{dataSciencePortfolio.description}</p>
+            <div class="metrics">
+              <div>
+                <strong>
+                  291 ± 60{' '}
+                  <small>
+                    M<sub>☉</sub>/L<sub>☉</sub>
+                  </small>
+                </strong>
+                <span>Mass-to-light ratio (ACO 2670)</span>
+              </div>
+              <div>
+                <strong>
+                  932 <small>km/s</small>
+                </strong>
+                <span>
+                  Velocity dispersion (&sigma;<sub>v</sub>)
+                </span>
+              </div>
             </div>
-            <div>
-              <strong>
-                932 <small>km/s</small>
-              </strong>
-              <span>
-                Velocity dispersion (&sigma;<sub>v</sub>)
-              </span>
+            <div class="tags">
+              {dataSciencePortfolio.tags?.map((tag) => (
+                <span>{tag}</span>
+              ))}
+            </div>
+            <div class="project-actions">
+              <a
+                class="button primary"
+                href="https://raw.githubusercontent.com/JacksonFergusonDev/data-science-portfolio/main/astrophysics/aco_2670_dark_matter_analysis_report.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Read the Technical Report (PDF) <Icon size={16} />
+              </a>
+              <a
+                class="text-link"
+                href={`${site.github}/data-science-portfolio`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                View on GitHub <Icon size={16} />
+              </a>
             </div>
           </div>
-          <div class="tags">
-            {dataSciencePortfolio.tags?.map((tag) => (
-              <span>{tag}</span>
-            ))}
-          </div>
-          <div class="project-actions">
+          <div class="signal-art">
+            <span class="signal-label">ACO 2670 / KINEMATICS & REDSHIFT DISTRIBUTION</span>
             <a
-              class="button primary"
-              href="https://raw.githubusercontent.com/JacksonFergusonDev/data-science-portfolio/main/astrophysics/aco_2670_dark_matter_analysis_report.pdf"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Read the Technical Report (PDF) <Icon size={16} />
-            </a>
-            <a
-              class="text-link"
               href={`${site.github}/data-science-portfolio`}
               target="_blank"
               rel="noopener noreferrer"
+              aria-label="Data Science Portfolio on GitHub"
             >
-              View on GitHub <Icon size={16} />
+              <img
+                src="/images/gmm-redshift-distribution.svg"
+                alt="Redshift distribution and Gaussian mixture model selection for galaxy cluster ACO 2670"
+              />
             </a>
+            <span class="signal-note">
+              Gaussian Mixture Model selection and virialization analysis for ACO 2670
+            </span>
           </div>
-        </div>
-        <div class="signal-art">
-          <span class="signal-label">ACO 2670 / KINEMATICS & REDSHIFT DISTRIBUTION</span>
-          <a
-            href={`${site.github}/data-science-portfolio`}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Data Science Portfolio on GitHub"
-          >
-            <img
-              src="/images/gmm-redshift-distribution.svg"
-              alt="Redshift distribution and Gaussian mixture model selection for galaxy cluster ACO 2670"
-            />
-          </a>
-          <span class="signal-note">
-            Gaussian Mixture Model selection and virialization analysis for ACO 2670
-          </span>
-        </div>
-      </article>
-      <div class="project-pair landing-reveal">
-        <SecondaryProjectCard
-          eyebrow={cicdRelease.eyebrow!}
-          titleLines={cicdRelease.titleLines!}
-          subtitle={cicdRelease.subtitle!}
-          repoUrl={cicdRelease.repo}
-          description={cicdRelease.description}
-          tags={cicdRelease.tags!}
-        />
-        <SecondaryProjectCard
-          eyebrow={starGround.eyebrow!}
-          title={starGround.name}
-          subtitle={starGround.subtitle!}
-          repoUrl={starGround.repo}
-          description={starGround.description}
-          tags={starGround.tags!}
-        />
-      </div>
-      <div class="other-projects landing-reveal">
-        {tools.map((tool, i) => (
-          <ProjectRow
-            number={`0${i + 6}`}
-            name={tool.name}
-            repoUrl={tool.url}
-            description={tool.description}
-            kind={tool.kind}
+        </article>
+        <div class="project-pair landing-reveal">
+          <SecondaryProjectCard
+            eyebrow={cicdRelease.eyebrow!}
+            titleLines={cicdRelease.titleLines!}
+            subtitle={cicdRelease.subtitle!}
+            repoUrl={cicdRelease.repo}
+            description={cicdRelease.description}
+            tags={cicdRelease.tags!}
           />
-        ))}
+          <SecondaryProjectCard
+            eyebrow={starGround.eyebrow!}
+            title={starGround.name}
+            subtitle={starGround.subtitle!}
+            repoUrl={starGround.repo}
+            description={starGround.description}
+            tags={starGround.tags!}
+          />
+        </div>
+        <div class="other-projects landing-reveal">
+          {tools.map((tool, i) => (
+            <ProjectRow
+              number={`0${i + 6}`}
+              name={tool.name}
+              repoUrl={tool.url}
+              description={tool.description}
+              kind={tool.kind}
+            />
+          ))}
+        </div>
       </div>
     </section>
-    <section class="section beyond-section container" aria-labelledby="beyond-heading">
-      <div class="landing-reveal">
+    <section class="section beyond-section" aria-labelledby="beyond-heading">
+      <div class="container landing-reveal">
         <SectionMarker title="03 / BEYOND THE TERMINAL" />
         <div class="beyond-grid">
           <div>
@@ -456,10 +469,42 @@ import {
             </span>
           </a>
         </div>
+        <div class="beyond-subgrid">
+          <div class="beyond-subgrid-copy">
+            <p class="eyebrow">ORIGINS & ATHLETICS</p>
+            <h3 id="skiing-heading">
+              Roots on the slopes<span class="accent">:</span> Line choice under pressure
+            </h3>
+            <p>
+              Competitive alpine ski racing was my main sport growing up, with winters spent
+              training across the Coast Mountains. It built a lasting respect for preparation,
+              physical discipline, and fast decisions on variable terrain.
+            </p>
+          </div>
+          <div class="beyond-subgrid-media">
+            <figure>
+              <a
+                class="gallery-image-link"
+                href={skiPhotoEnlarged.src}
+                data-gallery-image
+                aria-label="Enlarge ski racing photo"
+              >
+                <Image
+                  src={skiPhoto}
+                  alt="Alpine ski racing on course"
+                  widths={[480, 800, 1200]}
+                  sizes="(max-width: 800px) 100vw, 50vw"
+                  width={800}
+                  format="webp"
+                />
+              </a>
+            </figure>
+          </div>
+        </div>
       </div>
     </section>
-    <section class="contact-section container" id="contact">
-      <div class="landing-reveal">
+    <section class="contact-section" id="contact">
+      <div class="container landing-reveal">
         <div class="contact-head">
           <p class="eyebrow">
             <span class="status-dot"></span> CONTACT / COLLABORATION
@@ -489,6 +534,7 @@ import {
       </div>
     </section>
   </div>
+  <GalleryViewer />
 </BaseLayout>
 
 <script>

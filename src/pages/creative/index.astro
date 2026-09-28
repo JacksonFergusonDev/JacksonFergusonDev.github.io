@@ -2,7 +2,6 @@
 import { getEntry } from 'astro:content';
 import type { ImageMetadata } from 'astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import GalleryViewer from '../../components/GalleryViewer.astro';
 import PageIntro from '../../components/PageIntro.astro';
 import SubpageNav from '../../components/SubpageNav.astro';
 import Icon from '../../components/Icon.astro';
@@ -95,17 +94,6 @@ const featuredCover = collections.find((c) => c.id === 'blender') ?? collections
 const ogImage = featuredCover
   ? await getImage({ src: featuredCover.image, width: 1200, format: 'jpg', quality: 85 })
   : undefined;
-
-const spotlight = data.spotlight;
-const spotlightEnlarged = await getImage({
-  src: spotlight.image,
-  width: Math.min(2400, spotlight.image.width),
-  format: 'webp',
-  quality: 85,
-});
-const colonIndex = spotlight.title.indexOf(':');
-const titleBeforeColon = colonIndex !== -1 ? spotlight.title.slice(0, colonIndex) : spotlight.title;
-const titleAfterColon = colonIndex !== -1 ? spotlight.title.slice(colonIndex + 1) : '';
 ---
 
 <BaseLayout
@@ -148,42 +136,7 @@ const titleAfterColon = colonIndex !== -1 ? spotlight.title.slice(colonIndex + 1
     ))}
   </section>
 
-  <!-- Skiing Spotlight Feature -->
-  <section class="skiing-spotlight container" aria-labelledby="skiing-heading">
-    <div class="spotlight-header">
-      <p class="eyebrow">{spotlight.eyebrow}</p>
-      <h2 id="skiing-heading">
-        {titleBeforeColon}
-        {colonIndex !== -1 && <span class="accent">:</span>}
-        {titleAfterColon}
-      </h2>
-      <p>{spotlight.description}</p>
-    </div>
-
-    <div class="skiing-media">
-      <figure>
-        <a
-          class="gallery-image-link"
-          href={spotlightEnlarged.src}
-          data-gallery-image
-          aria-label="Enlarge ski racing photo"
-        >
-          <Image
-            src={spotlight.image}
-            alt={spotlight.alt}
-            widths={[480, 800, 1200]}
-            sizes="(max-width: 768px) 100vw, 720px"
-            width={720}
-            format="webp"
-          />
-        </a>
-      </figure>
-    </div>
-  </section>
-
   <SubpageNav prev={{ href: routes.trips.path, label: routes.trips.exploreLabel }} />
-
-  <GalleryViewer />
 </BaseLayout>
 
 <style>
@@ -268,42 +221,6 @@ const titleAfterColon = colonIndex !== -1 ? spotlight.title.slice(colonIndex + 1
     margin: 0;
   }
 
-  /* Skiing Spotlight */
-  .skiing-spotlight {
-    margin-bottom: 90px;
-    padding-top: 50px;
-    border-top: 1px solid var(--line);
-  }
-  .spotlight-header {
-    max-width: 720px;
-    margin-bottom: 40px;
-  }
-  .spotlight-header h2 {
-    font-size: 32px;
-    letter-spacing: -0.8px;
-    margin: 8px 0 16px;
-  }
-  .spotlight-header p {
-    font-size: 16px;
-    line-height: 1.6;
-    color: var(--muted);
-  }
-  .skiing-media {
-    max-width: 720px;
-  }
-  .skiing-media figure {
-    margin: 0;
-  }
-  .skiing-media img {
-    width: 100%;
-    height: auto;
-    border-radius: 8px;
-    border: 1px solid var(--line);
-    transition: transform 0.25s ease;
-  }
-  .skiing-media figure:hover img {
-    transform: scale(1.01);
-  }
   @media (max-width: 768px) {
     .creative-grid {
       padding-block: 40px;

@@ -40,7 +40,7 @@ export const routes = {
     breadcrumb: 'ALL CREATIVE ARCHIVES',
     hubLabel: 'Back to creative hub',
     description:
-      'Beyond the codebase: live event sound, 3D simulations in Blender, algorithmic art in Python, and roots in alpine ski racing.',
+      'Beyond the codebase: live event sound, 3D simulations in Blender, and algorithmic art in Python.',
     events: {
       path: '/creative/events/',
     },

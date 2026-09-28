@@ -84,6 +84,12 @@ if the browser binary is missing.
 - Use the existing icon/component patterns before introducing a new dependency.
 - Keep project cards and repeated items accessible by keyboard and meaningful
   without JavaScript.
+- Horizontal rules separating major numbered sections (between Hero, 01 / ABOUT,
+  02 / SELECTED TECHNICAL PROJECTS, 03 / BEYOND THE TERMINAL, and CONTACT) must
+  extend full bleed to the edges of the screen. Horizontal rules separating
+  subsections or items within a section (such as between Beyond the Terminal
+  overview and Origins & Athletics, or between individual project rows) must
+  remain inset to the container width.
 
 ## Content Rules
 

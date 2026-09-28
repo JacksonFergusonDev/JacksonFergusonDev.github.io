@@ -1023,6 +1023,45 @@ html.landing-js:not(.landing-reduced-motion) .protostar-asciinema .ap-overlay-st
 .beyond-grid p {
   font-size: 16px;
 }
+.beyond-subgrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 90px;
+  margin-top: 55px;
+  padding-top: 55px;
+  border-top: 1px solid var(--line);
+  align-items: center;
+}
+.beyond-subgrid-copy .eyebrow {
+  margin: 0 0 10px;
+}
+.beyond-subgrid-copy h3 {
+  font-size: clamp(24px, 2.5vw, 34px);
+  line-height: 1.25;
+  letter-spacing: -0.8px;
+  margin: 0 0 16px;
+  color: var(--text);
+}
+.beyond-subgrid-copy p {
+  font-size: 16px;
+  line-height: 1.75;
+  color: var(--muted);
+  margin: 0;
+}
+.beyond-subgrid-media figure {
+  margin: 0;
+}
+.beyond-subgrid-media img {
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+  border: 1px solid var(--line);
+  display: block;
+  transition: transform 0.25s ease;
+}
+.beyond-subgrid-media figure:hover img {
+  transform: scale(1.01);
+}
 .beyond-links {
   display: flex;
   flex-wrap: wrap;
@@ -1363,7 +1402,8 @@ html.landing-js:not(.landing-reduced-motion) .protostar-asciinema .ap-overlay-st
   .about-grid {
     gap: 52px;
   }
-  .beyond-grid {
+  .beyond-grid,
+  .beyond-subgrid {
     gap: 40px;
   }
   .contact-email {
@@ -1448,7 +1488,8 @@ html.landing-js:not(.landing-reduced-motion) .protostar-asciinema .ap-overlay-st
   .secondary h3 {
     font-size: 26px;
   }
-  .beyond-grid {
+  .beyond-grid,
+  .beyond-subgrid {
     gap: 20px;
     grid-template-columns: 1.1fr 1fr;
   }
@@ -1751,12 +1792,18 @@ html.landing-js:not(.landing-reduced-motion) .protostar-asciinema .ap-overlay-st
   .project-number {
     font-size: 11px;
   }
-  .beyond-grid {
+  .beyond-grid,
+  .beyond-subgrid {
     grid-template-columns: 1fr;
-    gap: 12px;
+    gap: 16px;
   }
-  .beyond-grid p {
+  .beyond-grid p,
+  .beyond-subgrid-copy p {
     font-size: 15px;
+  }
+  .beyond-subgrid {
+    margin-top: 36px;
+    padding-top: 36px;
   }
   .contact-section {
     padding-block: 60px;
@@ -1863,11 +1910,6 @@ html.landing-js:not(.landing-reduced-motion) .protostar-asciinema .ap-overlay-st
   aspect-ratio: 4/3;
   object-fit: cover;
   border-radius: 4px;
-  filter: saturate(0.7);
-  transition: filter 0.25s;
-}
-.beyond-photo:hover img {
-  filter: saturate(1);
 }
 .beyond-photo > span {
   display: flex;

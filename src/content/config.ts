@@ -99,13 +99,6 @@ const creative = defineCollection({
             noun: z.string().optional(),
           }),
         ),
-        spotlight: z.object({
-          eyebrow: z.string(),
-          title: z.string(),
-          description: z.string(),
-          image: image(),
-          alt: z.string().default(''),
-        }),
       }),
     ]),
 });
