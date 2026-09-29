@@ -4,7 +4,6 @@ import GalleryViewer from '../../components/GalleryViewer.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ArticleHeader from '../../components/ArticleHeader.astro';
 import SubpageNav from '../../components/SubpageNav.astro';
-import Icon from '../../components/Icon.astro';
 import { Image, getImage } from 'astro:assets';
 import { routes } from '../../lib/site';
 
@@ -91,10 +90,10 @@ const ogImage = data.projects[0]
               target="_blank"
               rel="noopener noreferrer"
             >
-              Download .blend <span class="file-size">({proj.size})</span>
-              <Icon size={14} />
+              <span class="download-label">
+                Download {proj.downloadFile} <span class="file-size">({proj.size})</span>
+              </span>
             </a>
-            <span class="file-label">{proj.blendFile}</span>
           </div>
         </div>
       </article>
@@ -169,16 +168,17 @@ const ogImage = data.projects[0]
   .download-btn {
     font-size: 13px;
     padding: 8px 16px;
+    max-width: 100%;
+    text-align: left;
+  }
+  .download-label {
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
   .file-size {
     opacity: 0.7;
     font-size: 11px;
     font-family: var(--mono);
-  }
-  .file-label {
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--muted);
   }
   @media (max-width: 900px) {
     .blender-card {

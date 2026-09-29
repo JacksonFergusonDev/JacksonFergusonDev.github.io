@@ -76,6 +76,36 @@ test('project hierarchy and real downloads are preserved', async () => {
     assert.equal(pdf.subarray(0, 5).toString(), '%PDF-');
   }
 });
+test('Blender cards link to their named project archives in order', async () => {
+  const html = await read(path.join(root, 'creative', 'blender', 'index.html'));
+  const cards = [...html.matchAll(/<article class="blender-card"[^>]*>([\s\S]*?)<\/article>/g)].map(
+    ([, card]) => card,
+  );
+  const archives = [
+    'Minimalist.Living.Space.zip',
+    'Atmospheric.Lighthouse.zip',
+    'Retro.Highway.Diner.zip',
+    'Nebula.zip',
+    'Sci-Fi.Abstract.Structure.zip',
+    'Concentric.Geometric.Circles.blend.zip',
+    'Abstract.Landscape.zip',
+  ];
+
+  assert.equal(cards.length, archives.length);
+  for (const [index, archive] of archives.entries()) {
+    const [downloadButton] =
+      cards[index].match(/<a class="button secondary download-btn"[\s\S]*?<\/a>/) ?? [];
+    assert.ok(downloadButton?.includes(`Download ${archive}`), `Missing button label ${archive}`);
+    assert.ok(!downloadButton.includes('<svg'), `Unexpected icon in download button ${archive}`);
+    assert.ok(
+      downloadButton.includes(
+        `href="https://github.com/JacksonFergusonDev/JacksonFergusonDev.github.io/releases/download/blender-downloads/${archive}"`,
+      ),
+      `Missing direct download for ${archive}`,
+    );
+  }
+  assert.ok(cards.at(-1).includes('Abstract Landscape'));
+});
 test('remote build asset manifest feeds generated public assets', async () => {
   const manifest = JSON.parse(
     await readFile(path.join(projectRoot, 'config', 'remote-assets.json'), 'utf8'),
@@ -179,12 +209,14 @@ test('every <a> containing the diagonal arrow SVG path must have target="_blank"
     }
   }
 });
-test('every <a> with target="_blank" must contain the diagonal arrow SVG path', async () => {
+test('external links except Blender downloads show the diagonal arrow', async () => {
   const diagonalPath = 'M5 19 19 5M5 5h14v14';
   for (const page of pages) {
     const html = await read(page);
     for (const [fullMatch, attrs, content] of html.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/gi)) {
       if (!/target="_blank"/i.test(attrs)) continue;
+      // Download buttons name the archive directly and do not use an external-link icon.
+      if (/class="[^"]*\bdownload-btn\b/.test(attrs)) continue;
       // Header social navigation uses dedicated service brand icons
       if (content.includes('class="service-icon"')) continue;
       // Pure media preview / diagram links wrapping an image
@@ -275,7 +307,7 @@ test('creative index cards match the title and description within each subpage',
     {
       subpage: 'blender',
       title: '3D Visuals &amp; Blender Projects',
-      desc: 'I use Blender to explore atmosphere, light, and geometry, from quiet interiors to imagined cosmic scenes. Source project files are available to download.',
+      desc: 'I use Blender to explore atmosphere, light, and geometry, from quiet interiors to imagined cosmic scenes. Project archives are available to download.',
     },
     {
       subpage: 'python',

@@ -56,7 +56,7 @@ const creative = defineCollection({
               description: z.string(),
               image: image(),
               alt: z.string(),
-              blendFile: z.string(),
+              downloadFile: z.string(),
               size: z.string(),
               tools: z.array(z.string()),
               downloadUrl: z.string(),
