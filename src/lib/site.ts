@@ -19,6 +19,10 @@ export const routes = {
     path: '/#projects',
     title: 'Projects',
   },
+  beyond: {
+    path: '/#beyond',
+    title: 'Beyond',
+  },
   contact: {
     path: '/#contact',
     title: 'Contact',

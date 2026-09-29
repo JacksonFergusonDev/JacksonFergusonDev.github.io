@@ -90,29 +90,12 @@ const path = Astro.url.pathname;
             class="wordmark-icon"
           />
         </a>
-        <div class="nav-consoles">
-          <nav aria-label="Landing page sections" class="nav-console nav-console-landing">
-            <a href={routes.about.path}>{routes.about.title}</a>
-            <a href={routes.projects.path}>{routes.projects.title}</a>
-            <a href={routes.contact.path}>{routes.contact.title}</a>
-          </nav>
-          <nav aria-label="Creative and field archives" class="nav-console nav-console-archives">
-            <a
-              href={routes.trips.path}
-              aria-current={path.startsWith(routes.trips.path) ? 'page' : undefined}
-            >
-              <Icon name="collection" size={13} />
-              {routes.trips.navLabel}
-            </a>
-            <a
-              href={routes.creative.path}
-              aria-current={path.startsWith(routes.creative.path) ? 'page' : undefined}
-            >
-              <Icon name="collection" size={13} />
-              {routes.creative.navLabel}
-            </a>
-          </nav>
-        </div>
+        <nav aria-label="Sections" class="nav-console nav-console-landing">
+          <a href={routes.about.path}>{routes.about.title}</a>
+          <a href={routes.projects.path}>{routes.projects.title}</a>
+          <a href={routes.beyond.path}>{routes.beyond.title}</a>
+          <a href={routes.contact.path}>{routes.contact.title}</a>
+        </nav>
         <nav aria-label="Social links" class="social-nav">
           <a href={site.github} target="_blank" rel="me noopener noreferrer">
             GitHub <ServiceIcon name="github" size={13} />
