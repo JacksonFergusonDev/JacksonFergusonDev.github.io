@@ -12,6 +12,30 @@ JavaScript supports specific interactions: a Three.js hero animation, an Asciine
 
 The New Computer Modern regular and italic WOFF2 files in `public/fonts/` are Latin and common-symbol subsets of the 7.1.1 OpenType fonts distributed with TeX Live 2026. They were generated with FontTools `pyftsubset` using `--unicodes='U+0000-024F,U+1E00-1EFF,U+2000-206F,U+20AC,U+2122,U+2200-22FF' --layout-features='*' --name-IDs='*' --name-languages='*' --flavor=woff2`. The original full fonts fail Chromium's font parser; the subsets retain the characters used by this site and load in the browser. The bundled GUST font license remains in `public/fonts/`.
 
+## Visual system
+
+The whole site uses one type scale. Each tier has a single size, defined as a custom property on `:root` in [`global.css`](src/styles/global.css), and the tokens shrink together at the 560px breakpoint. Components refer to the tokens rather than setting their own sizes.
+
+| Tier    | Token        | Desktop / mobile | Used for                                                                          |
+| ------- | ------------ | ---------------- | --------------------------------------------------------------------------------- |
+| Display | —            | Hero only        | The name in the hero                                                              |
+| H1      | `--fs-h1`    | 40–72px          | Subpage and 404 titles                                                            |
+| Label   | `--fs-label` | 11px, mono       | Section markers, card eyebrows, tags, badges, figure labels                       |
+| H2      | `--fs-h2`    | 32–45px          | Section headline                                                                  |
+| H3      | `--fs-h3`    | 32px / 28px      | Card title (every project and Beyond card, Protostar included), metric values     |
+| Lead    | `--fs-lead`  | 19px / 17px      | The one-line summary under a card title, the About lead, index page intros        |
+| H4      | `--fs-h4`    | 18px / 17px      | Items inside a card or list: principles, thumbnails, resume cards, minor projects |
+| Body    | `--fs-body`  | 16px             | All paragraphs                                                                    |
+| UI      | `--fs-ui`    | 14px / 13px      | Buttons, text links, metric captions, photo captions                              |
+
+Each major section opens with a short numbered marker (`01 / ABOUT`, `02 / PROJECTS`, `03 / BEYOND`, `04 / CONTACT`), followed by an H2 headline that says something the marker doesn't. Only sections are numbered. Card eyebrows are unnumbered labels such as `FEATURED PROJECT`, since card order already shows importance.
+
+Content inside a section is grouped into cards with the same anatomy: eyebrow, H3 title, optional lead, body, supporting content (demo, metrics, figures, or a thumbnail grid), then actions. Thumbnails inside a card have no panel of their own, so cards are never nested inside cards.
+
+Subpages follow the same system. Index pages (trips, creative) open with a `PageIntro`, and detail pages (a trip, a creative collection) open with an `ArticleHeader` that adds a breadcrumb; both use the H1 token. Collection links on the homepage and on the index pages are the same `ThumbnailCard` component. Blender and Python entries are `.project-card` cards with H3 titles. Subpages are not numbered, and neither are entry categories.
+
+Journal text uses a second voice: New Computer Modern serif, for detail-page descriptions (`--fs-journal-lead`, 24px / 22px) and long-form `.prose` writing (`--fs-journal-body`, 20px / 19px). The serif runs smaller than DM Sans at the same size, so these tokens are larger than their sans equivalents. Headings inside prose stay in DM Sans on the H3 and journal-lead sizes.
+
 ## Remote project assets
 
 [config/remote-assets.json](config/remote-assets.json) is the central manifest for assets sourced from other project repositories. [scripts/fetch-remote-assets.mjs](scripts/fetch-remote-assets.mjs) downloads and validates them, then writes the copies into `public/` for Astro to include in the static site. These generated copies are git-ignored; this repository tracks the fetching process rather than snapshots that can go stale.

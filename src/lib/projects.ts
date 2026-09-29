@@ -35,7 +35,7 @@ export const projects: Project[] = [
     name: 'Systems Audio Lab',
     url: `${site.github}/systems-audio-lab`,
     repo: `${site.github}/systems-audio-lab`,
-    eyebrow: '02 / HARDWARE → SOFTWARE',
+    eyebrow: 'HARDWARE → SOFTWARE',
     subtitle: 'Own the entire measurement chain.',
     description:
       'Low-noise power, a CMOS overdrive circuit, a custom RP2040 acquisition instrument, and Python signal analysis. Built together to understand how circuit topology becomes sound.',
@@ -45,7 +45,7 @@ export const projects: Project[] = [
     name: 'Data Science Portfolio',
     url: `${site.github}/data-science-portfolio`,
     repo: `${site.github}/data-science-portfolio`,
-    eyebrow: '03 / ASTROPHYSICS & DATA',
+    eyebrow: 'ASTROPHYSICS & DATA',
     subtitle: 'Physical modeling from first principles.',
     description:
       'Computational pipelines bridging theoretical astrophysics, atmospheric science, and statistical inference. Estimating galaxy cluster dark matter via virial kinematics, exoplanet atmospheres, and Monte Carlo transport.',
@@ -55,7 +55,7 @@ export const projects: Project[] = [
     name: 'CI/CD & Release Infrastructure',
     url: `${site.github}/ci-cd-release-infrastructure`,
     repo: `${site.github}/ci-cd-release-infrastructure`,
-    eyebrow: '04 / INFRASTRUCTURE',
+    eyebrow: 'INFRASTRUCTURE',
     titleLines: ['CI/CD & Release', 'Infrastructure'],
     subtitle: 'Release policy belongs in one place.',
     description:
@@ -66,7 +66,7 @@ export const projects: Project[] = [
     name: 'Star Ground',
     url: `${site.github}/star-ground`,
     repo: `${site.github}/star-ground`,
-    eyebrow: '05 / HARDWARE LOGISTICS',
+    eyebrow: 'HARDWARE LOGISTICS',
     subtitle: 'Dependency management, made physical.',
     description:
       'Inconsistent bills of materials become a reproducible procurement pipeline. Exact unit normalization, inventory-aware sourcing, and assembly guides ordered by component height.',

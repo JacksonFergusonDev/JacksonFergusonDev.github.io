@@ -1,0 +1,49 @@
+---
+import type { ImageMetadata } from 'astro';
+import { Image } from 'astro:assets';
+import Icon from './Icon.astro';
+
+interface Props {
+  href: string;
+  image?: ImageMetadata;
+  alt: string;
+  badge: string;
+  title: string;
+  description: string;
+  widths: number[];
+  sizes: string;
+  width: number;
+  headingLevel?: 'h2' | 'h4';
+}
+
+const {
+  href,
+  image,
+  alt,
+  badge,
+  title,
+  description,
+  widths,
+  sizes,
+  width,
+  headingLevel: Heading = 'h4',
+} = Astro.props;
+---
+
+<a href={href} class="thumb-card">
+  <div class="thumb-media">
+    {image && (
+      <Image src={image} alt={alt} widths={widths} sizes={sizes} width={width} format="webp" />
+    )}
+    <span class="card-badge">{badge}</span>
+  </div>
+  <div class="thumb-copy">
+    <Heading class="thumb-title">
+      {title}{' '}
+      <span class="accent">
+        <Icon name="arrow-right" size={16} />
+      </span>
+    </Heading>
+    <p>{description}</p>
+  </div>
+</a>

@@ -2,9 +2,9 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageIntro from '../../components/PageIntro.astro';
 import SubpageNav from '../../components/SubpageNav.astro';
-import Icon from '../../components/Icon.astro';
+import ThumbnailCard from '../../components/ThumbnailCard.astro';
 import { getCollection, getEntry, type CollectionEntry } from 'astro:content';
-import { Image, getImage } from 'astro:assets';
+import { getImage } from 'astro:assets';
 import { routes } from '../../lib/site';
 
 type TripEntry = CollectionEntry<'trips'> & {
@@ -40,27 +40,20 @@ const coverImage = featuredCover
     titleLine2={intro.titleLine2}
     description={intro.description}
   />
-  <div class="trips-grid container">
+  <div class="thumb-grid index-grid container">
     {trips.map((trip) => (
-      <a href={`/trips/${trip.id}/`} class="trip-card">
-        <Image
-          src={trip.data.images[0].src}
-          alt={trip.data.images[0].alt}
-          widths={[480, 800, 1200]}
-          sizes="(max-width: 560px) 100vw, 50vw"
-          width={800}
-          format="webp"
-        />
-        <h2>
-          {trip.data.title}{' '}
-          <span class="accent">
-            <Icon name="arrow-right" size={20} />
-          </span>
-        </h2>
-        <p>
-          {trip.data.location} · {trip.data.dateLabel ?? trip.data.date.getUTCFullYear()}
-        </p>
-      </a>
+      <ThumbnailCard
+        href={`/trips/${trip.id}/`}
+        image={trip.data.images[0].src}
+        alt={trip.data.images[0].alt}
+        badge={`${trip.data.location} · ${trip.data.dateLabel ?? trip.data.date.getUTCFullYear()}`}
+        title={trip.data.title}
+        description={trip.data.description}
+        widths={[480, 800, 1200]}
+        sizes="(max-width: 768px) 100vw, 50vw"
+        width={800}
+        headingLevel="h2"
+      />
     ))}
   </div>
   <SubpageNav next={{ href: routes.creative.path, label: routes.creative.exploreLabel }} />

@@ -78,9 +78,9 @@ test('project hierarchy and real downloads are preserved', async () => {
 });
 test('Blender cards link to their named project archives in order', async () => {
   const html = await read(path.join(root, 'creative', 'blender', 'index.html'));
-  const cards = [...html.matchAll(/<article class="blender-card"[^>]*>([\s\S]*?)<\/article>/g)].map(
-    ([, card]) => card,
-  );
+  const cards = [
+    ...html.matchAll(/<article class="[^"]*\bblender-card\b[^"]*"[^>]*>([\s\S]*?)<\/article>/g),
+  ].map(([, card]) => card);
   const archives = [
     'Minimalist.Living.Space.zip',
     'Atmospheric.Lighthouse.zip',
@@ -152,7 +152,7 @@ test('publishes four real photo journals', async () => {
   assert.ok(!trips.includes('Photo journals are on their way'));
   assert.ok(trips.includes('Out of office'));
   assert.ok(trips.includes('Into the mountains.'));
-  assert.ok((trips.match(/class="trip-card"/g) ?? []).length >= 4);
+  assert.ok((trips.match(/class="thumb-card"/g) ?? []).length >= 4);
   assert.ok(trips.includes('/creative/'));
   assert.match(trips, /Explore creative studio, events (&amp;|&) 3D/);
   const creative = await read(path.join(root, 'creative', 'index.html'));

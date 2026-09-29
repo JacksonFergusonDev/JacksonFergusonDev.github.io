@@ -8,6 +8,7 @@ import DataField from '../components/DataField.astro';
 import AsciinemaDemo from '../components/AsciinemaDemo.astro';
 import ServiceIcon from '../components/ServiceIcon.astro';
 import SectionMarker from '../components/SectionMarker.astro';
+import ThumbnailCard from '../components/ThumbnailCard.astro';
 import SecondaryProjectCard from '../components/SecondaryProjectCard.astro';
 import ProjectRow from '../components/ProjectRow.astro';
 import GalleryViewer from '../components/GalleryViewer.astro';
@@ -226,7 +227,7 @@ const skiPhotoEnlarged = await getImage({
     <section class="section" id="projects" aria-labelledby="projects-heading">
       <div class="container">
         <header class="projects-head landing-reveal">
-          <SectionMarker title="02 / SELECTED TECHNICAL PROJECTS" />
+          <SectionMarker title="02 / PROJECTS" />
           <div class="section-heading">
             <h2 id="projects-heading">
               Selected work <br class="desktop-break" />
@@ -240,7 +241,7 @@ const skiPhotoEnlarged = await getImage({
         <article class="project-card flagship landing-reveal">
           <div class="flagship-grid">
             <div class="flagship-copy">
-              <p class="eyebrow">01 / FEATURED PROJECT</p>
+              <p class="eyebrow">FEATURED PROJECT</p>
               <h3 class="flagship-title">
                 <a
                   class="protostar-title-link"
@@ -299,17 +300,14 @@ const skiPhotoEnlarged = await getImage({
           </div>
           <div class="feature-principles">
             <div>
-              <span>01 /</span>
               <h4>Dry runs don’t guess.</h4>
               <p>The preview is the exact manifest a live run executes, not a simulation of it.</p>
             </div>
             <div>
-              <span>02 /</span>
               <h4>No half-finished setups.</h4>
               <p>A failed step or Ctrl+C restores every tracked file, byte for byte.</p>
             </div>
             <div>
-              <span>03 /</span>
               <h4>Your edits survive.</h4>
               <p>
                 Config merges as a syntax tree, so your keys, comments, and formatting stay put.
@@ -501,9 +499,8 @@ const skiPhotoEnlarged = await getImage({
           />
         </div>
         <div class="other-projects landing-reveal">
-          {tools.map((tool, i) => (
+          {tools.map((tool) => (
             <ProjectRow
-              number={`0${i + 6}`}
               name={tool.name}
               repoUrl={tool.url}
               description={tool.description}
@@ -514,97 +511,77 @@ const skiPhotoEnlarged = await getImage({
       </div>
     </section>
     <section class="section beyond-section" id="beyond" aria-labelledby="beyond-heading">
-      <div class="container landing-reveal">
-        <SectionMarker title="03 / BEYOND THE TERMINAL" />
-        <div class="section-heading">
-          <h2 id="beyond-heading">
-            Field work <br class="desktop-break" />
-            <span class="muted">& creative systems</span>
-          </h2>
-        </div>
+      <div class="container">
+        <header class="landing-reveal">
+          <SectionMarker title="03 / BEYOND" />
+          <div class="section-heading">
+            <h2 id="beyond-heading">
+              Field work <br class="desktop-break" />
+              <span class="muted">& creative systems</span>
+            </h2>
+          </div>
+        </header>
 
-        <div class="beyond-block">
-          <div class="beyond-subhead">
-            <div>
-              <p class="eyebrow">CREATIVE STUDIO & MEDIA</p>
-              <h3>Sound, 3D simulation & generative code</h3>
-            </div>
+        <article class="project-card beyond-card landing-reveal">
+          <p class="eyebrow">CREATIVE STUDIO & MEDIA</p>
+          <h3>Sound, 3D simulation & generative code</h3>
+          <p class="beyond-card-intro">
+            Outside of code, I work with sound, light, and simulation: running live events, building
+            scenes in Blender, and generating art with Python.
+          </p>
+          <div class="thumb-grid thumb-grid-3">
+            {creativeCollections.map((col) => (
+              <ThumbnailCard
+                href={col.href}
+                image={col.image}
+                alt={col.alt}
+                badge={col.eyebrow}
+                title={col.title}
+                description={col.description}
+                widths={[400, 700]}
+                sizes="(max-width: 768px) 100vw, 33vw"
+                width={600}
+              />
+            ))}
+          </div>
+          <div class="project-actions">
             <a class="text-link" href={routes.creative.path}>
               Creative Hub <Icon name="arrow-right" size={16} />
             </a>
           </div>
-          <div class="landing-creative-grid">
-            {creativeCollections.map((col) => (
-              <a href={col.href} class="landing-creative-card">
-                <div class="landing-creative-media">
-                  {col.image && (
-                    <Image
-                      src={col.image}
-                      alt={col.alt}
-                      widths={[400, 700]}
-                      sizes="(max-width: 768px) 100vw, 33vw"
-                      width={600}
-                      format="webp"
-                    />
-                  )}
-                  <span class="card-badge">{col.eyebrow}</span>
-                </div>
-                <div class="landing-creative-copy">
-                  <h4>
-                    {col.title}{' '}
-                    <span class="accent">
-                      <Icon name="arrow-right" size={16} />
-                    </span>
-                  </h4>
-                  <p>{col.description}</p>
-                </div>
-              </a>
+        </article>
+
+        <article class="project-card beyond-card landing-reveal">
+          <p class="eyebrow">CAMPING & EXPEDITIONS</p>
+          <h3>Photo journals from the coast & alpine</h3>
+          <p class="beyond-card-intro">
+            Trips along the BC coast, through the Sea to Sky, and into the Rockies, documented as
+            photo journals.
+          </p>
+          <div class="thumb-grid">
+            {trips.slice(0, 2).map((trip) => (
+              <ThumbnailCard
+                href={`/trips/${trip.id}/`}
+                image={trip.data.images[0].src}
+                alt={trip.data.images[0].alt}
+                badge={`${trip.data.location} · ${trip.data.dateLabel ?? trip.data.date.getUTCFullYear()}`}
+                title={trip.data.title}
+                description={trip.data.description}
+                widths={[480, 800]}
+                sizes="(max-width: 768px) 100vw, 50vw"
+                width={800}
+              />
             ))}
           </div>
-        </div>
-
-        <div class="beyond-block">
-          <div class="beyond-subhead">
-            <div>
-              <p class="eyebrow">CAMPING & EXPEDITIONS</p>
-              <h3>Photo journals from the coast & alpine</h3>
-            </div>
+          <div class="project-actions">
             <a class="text-link" href={routes.trips.path}>
               All Camping Trips <Icon name="arrow-right" size={16} />
             </a>
           </div>
-          <div class="landing-trips-grid">
-            {trips.slice(0, 2).map((trip) => (
-              <a href={`/trips/${trip.id}/`} class="landing-trip-card">
-                <div class="landing-trip-media">
-                  <Image
-                    src={trip.data.images[0].src}
-                    alt={trip.data.images[0].alt}
-                    widths={[480, 800]}
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                    width={800}
-                    format="webp"
-                  />
-                  <span class="card-badge">
-                    {trip.data.location} · {trip.data.dateLabel ?? trip.data.date.getUTCFullYear()}
-                  </span>
-                </div>
-                <div class="landing-trip-copy">
-                  <h4>
-                    {trip.data.title}{' '}
-                    <span class="accent">
-                      <Icon name="arrow-right" size={16} />
-                    </span>
-                  </h4>
-                  <p>{trip.data.description}</p>
-                </div>
-              </a>
-            ))}
-          </div>
-        </div>
+        </article>
 
-        <div class="beyond-subgrid">
-          <div class="beyond-subgrid-copy">
+        <article class="project-card beyond-card beyond-split landing-reveal">
+          <div class="beyond-split-copy">
             <p class="eyebrow">ORIGINS & ATHLETICS</p>
             <h3 id="skiing-heading">Years on the slopes</h3>
             <p>
@@ -613,7 +590,7 @@ const skiPhotoEnlarged = await getImage({
               physical discipline, and fast decisions on variable terrain.
             </p>
           </div>
-          <div class="beyond-subgrid-media">
+          <div class="signal-art">
             <figure>
               <a
                 class="gallery-image-link"
@@ -632,7 +609,7 @@ const skiPhotoEnlarged = await getImage({
               </a>
             </figure>
           </div>
-        </div>
+        </article>
       </div>
     </section>
     <section class="contact-section" id="contact">

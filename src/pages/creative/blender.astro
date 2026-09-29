@@ -55,7 +55,7 @@ const ogImage = data.projects[0]
 
   <div class="blender-grid container">
     {data.projects.map((proj, i) => (
-      <article class="blender-card">
+      <article class="project-card blender-card">
         <figure class="blender-figure">
           <a
             class="gallery-image-link"
@@ -112,7 +112,7 @@ const ogImage = data.projects[0]
   .blender-grid {
     display: flex;
     flex-direction: column;
-    gap: 60px;
+    gap: 25px;
     margin-block: 40px 70px;
   }
   .blender-card {
@@ -121,14 +121,11 @@ const ogImage = data.projects[0]
     gap: 36px;
     align-items: center;
     padding: 24px;
-    background: rgba(14, 17, 20, 0.7);
-    border: 1px solid var(--line);
-    border-radius: 12px;
   }
   .blender-figure {
     margin: 0;
     overflow: hidden;
-    border-radius: 8px;
+    border-radius: 4px;
     border: 1px solid var(--line);
   }
   .blender-figure img {
@@ -148,14 +145,12 @@ const ogImage = data.projects[0]
     gap: 12px;
   }
   .blender-details h2 {
-    font-size: 26px;
-    letter-spacing: -0.5px;
+    font-size: var(--fs-h3);
+    line-height: 1.2;
+    letter-spacing: -0.8px;
     margin: 0;
   }
   .project-desc {
-    color: var(--muted);
-    font-size: 15px;
-    line-height: 1.6;
     margin: 0;
   }
   .blender-actions {
@@ -166,7 +161,6 @@ const ogImage = data.projects[0]
     flex-wrap: wrap;
   }
   .download-btn {
-    font-size: 13px;
     padding: 8px 16px;
     max-width: 100%;
     text-align: left;
@@ -177,7 +171,7 @@ const ogImage = data.projects[0]
   }
   .file-size {
     opacity: 0.7;
-    font-size: 11px;
+    font-size: var(--fs-label);
     font-family: var(--mono);
   }
   @media (max-width: 900px) {

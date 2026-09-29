@@ -85,11 +85,41 @@ if the browser binary is missing.
 - Keep project cards and repeated items accessible by keyboard and meaningful
   without JavaScript.
 - Horizontal rules separating major numbered sections (between Hero, 01 / ABOUT,
-  02 / SELECTED TECHNICAL PROJECTS, 03 / BEYOND THE TERMINAL, and CONTACT) must
-  extend full bleed to the edges of the screen. Horizontal rules separating
-  subsections or items within a section (such as between Beyond the Terminal
-  overview and Origins & Athletics, or between individual project rows) must
-  remain inset to the container width.
+  02 / PROJECTS, 03 / BEYOND, and 04 / CONTACT) must extend full bleed to the
+  edges of the screen. Rules inside a section (between minor project rows, or
+  inside a card) must remain inset to the container width. Beyond subsections
+  are separated by card gaps, not rules.
+
+## Visual System Rules
+
+The type scale and card anatomy are documented in the README "Visual system"
+section. Follow them on every page:
+
+- Use the `--fs-*` tokens in `src/styles/global.css` for every text size. Do not
+  add raw `font-size` values or per-breakpoint size overrides for content text;
+  adjust the token instead. Scoped `<style>` blocks in pages follow the same
+  rule. The hero, contact headline, Protostar install widget, terminal demo,
+  Python code panel, and gallery viewer controls are the only exceptions.
+- Keep one size per tier: Label, H1, H2, H3, Lead, H4, Body, UI. Never add a
+  text size below Body for paragraphs, even inside thumbnails or narrow cards.
+- The serif (`var(--serif)`) is reserved for the journal voice: detail-page
+  descriptions and `.prose` writing, sized with the `--fs-journal-*` tokens.
+  Keep it; do not replace it with sans or spread it to headings and UI.
+- Each section has one numbered marker (`NN / WORD`) and one H2 headline. The
+  headline must not repeat the marker.
+- Number homepage sections only. Card eyebrows, project rows, in-card items,
+  subpages, and content categories (such as Blender and Python `category`
+  frontmatter) stay unnumbered.
+- All eyebrows use the shared `.eyebrow` style with no local size or color
+  override.
+- Group section content into `.project-card` cards: eyebrow, H3 title, optional
+  lead or intro, body, supporting content, actions. All card titles share the
+  H3 token, including Protostar. Items inside a card use H4 and must not have
+  their own panel background or border.
+- Use `ThumbnailCard` for any image link to a trip or creative collection, on
+  the homepage and on index pages alike. Its title stays at H4 everywhere.
+- Subpage titles use `PageIntro` (index pages) or `ArticleHeader` (detail
+  pages); do not build a one-off page header.
 
 ## Content Rules
 
