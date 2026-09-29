@@ -1,12 +1,12 @@
 @font-face {
   font-family: 'New Computer Modern';
-  src: url('/fonts/NewCM10-Regular.woff2') format('woff2');
+  src: url('/fonts/NewCM10-Regular-Latin.woff2') format('woff2');
   font-weight: 400;
   font-display: swap;
 }
 @font-face {
   font-family: 'New Computer Modern';
-  src: url('/fonts/NewCM10-Italic.woff2') format('woff2');
+  src: url('/fonts/NewCM10-Italic-Latin.woff2') format('woff2');
   font-style: italic;
   font-display: swap;
 }

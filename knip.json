@@ -1,5 +1,0 @@
-{
-  "$schema": "https://unpkg.com/knip@5/schema.json",
-  "ignore": [".astro/types.d.ts", "src/content/**/*.md"],
-  "ignoreFiles": ["src/pages/llms.txt.ts", "src/pages/sitemap.xml.ts"]
-}

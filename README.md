@@ -10,6 +10,8 @@ Astro components handle the shared layout, project cards, navigation, and galler
 
 JavaScript supports specific interactions: a Three.js hero animation, an Asciinema terminal recording, photo viewers, and copy buttons. Astro generates responsive image variants, while fonts and selected upstream project assets are served from the site itself.
 
+The New Computer Modern regular and italic WOFF2 files in `public/fonts/` are Latin and common-symbol subsets of the 7.1.1 OpenType fonts distributed with TeX Live 2026. They were generated with FontTools `pyftsubset` using `--unicodes='U+0000-024F,U+1E00-1EFF,U+2000-206F,U+20AC,U+2122,U+2200-22FF' --layout-features='*' --name-IDs='*' --name-languages='*' --flavor=woff2`. The original full fonts fail Chromium's font parser; the subsets retain the characters used by this site and load in the browser. The bundled GUST font license remains in `public/fonts/`.
+
 ## Remote project assets
 
 [config/remote-assets.json](config/remote-assets.json) is the central manifest for assets sourced from other project repositories. [scripts/fetch-remote-assets.mjs](scripts/fetch-remote-assets.mjs) downloads and validates them, then writes the copies into `public/` for Astro to include in the static site. These generated copies are git-ignored; this repository tracks the fetching process rather than snapshots that can go stale.

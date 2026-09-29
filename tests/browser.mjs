@@ -55,6 +55,22 @@ try {
     );
   }
   await page.goto(base + '/');
+  for (const font of [
+    '400 16px "Space Grotesk"',
+    '400 16px "JetBrains Mono"',
+    '400 16px "New Computer Modern"',
+    'italic 400 16px "New Computer Modern"',
+    '700 16px "New Computer Modern"',
+  ]) {
+    const loaded = await page.evaluate(async (descriptor) => {
+      try {
+        return (await document.fonts.load(descriptor)).some((face) => face.status === 'loaded');
+      } catch {
+        return false;
+      }
+    }, font);
+    assert.ok(loaded, `${font} must load from the production build`);
+  }
   await loadVisibleImages(page);
   assert.ok(
     Math.abs(
