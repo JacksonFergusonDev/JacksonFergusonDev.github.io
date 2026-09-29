@@ -3,8 +3,8 @@
   "assets": [
     {
       "id": "protostar-demo",
-      "description": "Protostar Asciinema headless demo used on the flagship project card.",
-      "source": "https://raw.githubusercontent.com/JacksonFergusonDev/protostar/refs/heads/main/docs/assets/demo_headless.cast",
+      "description": "Protostar Asciinema interactive init demo used on the flagship project card.",
+      "source": "https://raw.githubusercontent.com/JacksonFergusonDev/protostar/refs/heads/main/docs/assets/demo_init_interactive.cast",
       "target": "public/protostar-demo.cast",
       "type": "asciinema-cast",
       "minBytes": 10000

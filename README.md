@@ -16,12 +16,12 @@ The New Computer Modern regular and italic WOFF2 files in `public/fonts/` are La
 
 [config/remote-assets.json](config/remote-assets.json) is the central manifest for assets sourced from other project repositories. [scripts/fetch-remote-assets.mjs](scripts/fetch-remote-assets.mjs) downloads and validates them, then writes the copies into `public/` for Astro to include in the static site. These generated copies are git-ignored; this repository tracks the fetching process rather than snapshots that can go stale.
 
-| Asset ID                             | Source project                                                                         | Local target                                  | Validation                           |
-| ------------------------------------ | -------------------------------------------------------------------------------------- | --------------------------------------------- | ------------------------------------ |
-| `protostar-demo`                     | [Protostar](https://github.com/JacksonFergusonDev/protostar)                           | `public/protostar-demo.cast`                  | Asciinema v2 header and minimum size |
-| `protostar-icon`                     | [Protostar](https://github.com/JacksonFergusonDev/protostar)                           | `public/images/protostar.svg`                 | SVG markup and minimum size          |
-| `systems-audio-analysis`             | [Systems Audio Lab](https://github.com/JacksonFergusonDev/systems-audio-lab)           | `public/images/audio-analysis.svg`            | SVG markup and minimum size          |
-| `data-science-redshift-distribution` | [Data Science Portfolio](https://github.com/JacksonFergusonDev/data-science-portfolio) | `public/images/gmm-redshift-distribution.svg` | SVG markup and minimum size          |
+| Asset ID                             | Source project                                                                                                                      | Local target                                  | Validation                           |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- | ------------------------------------ |
+| `protostar-demo`                     | [Protostar interactive init demo](https://github.com/JacksonFergusonDev/protostar/blob/main/docs/assets/demo_init_interactive.cast) | `public/protostar-demo.cast`                  | Asciinema v2 header and minimum size |
+| `protostar-icon`                     | [Protostar](https://github.com/JacksonFergusonDev/protostar)                                                                        | `public/images/protostar.svg`                 | SVG markup and minimum size          |
+| `systems-audio-analysis`             | [Systems Audio Lab](https://github.com/JacksonFergusonDev/systems-audio-lab)                                                        | `public/images/audio-analysis.svg`            | SVG markup and minimum size          |
+| `data-science-redshift-distribution` | [Data Science Portfolio](https://github.com/JacksonFergusonDev/data-science-portfolio)                                              | `public/images/gmm-redshift-distribution.svg` | SVG markup and minimum size          |
 
 ### Why fetch at build time?
 

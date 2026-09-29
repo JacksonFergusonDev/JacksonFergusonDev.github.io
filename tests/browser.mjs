@@ -56,7 +56,7 @@ try {
   }
   await page.goto(base + '/');
   for (const font of [
-    '400 16px "Space Grotesk"',
+    '400 16px "DM Sans"',
     '400 16px "JetBrains Mono"',
     '400 16px "New Computer Modern"',
     'italic 400 16px "New Computer Modern"',
@@ -301,6 +301,15 @@ try {
     'Protostar demo should begin typing after reveal animation completes',
   );
   await motionPage.close();
+
+  const projectsPage = await browser.newPage();
+  await projectsPage.goto(base + '/#projects');
+  assert.equal(
+    await projectsPage.locator('#protostar-demo .ap-term canvas').count(),
+    1,
+    'Protostar player should be ready when the projects deep link finishes loading',
+  );
+  await projectsPage.close();
 
   console.log(
     'Passed navigation, resume tab opening, responsive widths, reduced motion, gallery keyboard behavior, and no-JavaScript checks.',

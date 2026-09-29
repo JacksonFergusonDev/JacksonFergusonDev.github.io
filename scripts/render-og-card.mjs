@@ -8,9 +8,9 @@ const root = path.resolve('.');
 const out = path.join(root, 'public/images/og-card.png');
 const font = (file) =>
   readFile(path.join(root, 'node_modules/@fontsource', file)).then((b) => b.toString('base64'));
-const [grotesk400, grotesk700, mono400, favicon] = await Promise.all([
-  font('space-grotesk/files/space-grotesk-latin-400-normal.woff2'),
-  font('space-grotesk/files/space-grotesk-latin-700-normal.woff2'),
+const [sans400, sans700, mono400, favicon] = await Promise.all([
+  font('dm-sans/files/dm-sans-latin-400-normal.woff2'),
+  font('dm-sans/files/dm-sans-latin-700-normal.woff2'),
   font('jetbrains-mono/files/jetbrains-mono-latin-400-normal.woff2'),
   readFile(path.join(root, 'public/favicon.svg'), 'utf8'),
 ]);
@@ -28,11 +28,11 @@ const stars = Array.from({ length: 140 }, () => {
 }).join('');
 
 const html = `<!doctype html><html><head><style>
-@font-face { font-family: 'Space Grotesk'; font-weight: 400; src: url(data:font/woff2;base64,${grotesk400}) format('woff2'); }
-@font-face { font-family: 'Space Grotesk'; font-weight: 700; src: url(data:font/woff2;base64,${grotesk700}) format('woff2'); }
+@font-face { font-family: 'DM Sans'; font-weight: 400; src: url(data:font/woff2;base64,${sans400}) format('woff2'); }
+@font-face { font-family: 'DM Sans'; font-weight: 700; src: url(data:font/woff2;base64,${sans700}) format('woff2'); }
 @font-face { font-family: 'JetBrains Mono'; font-weight: 400; src: url(data:font/woff2;base64,${mono400}) format('woff2'); }
 * { margin: 0; box-sizing: border-box; }
-body { width: 1200px; height: 630px; background: #0a0c0e; color: #e8edef; font-family: 'Space Grotesk'; position: relative; overflow: hidden; }
+body { width: 1200px; height: 630px; background: #0a0c0e; color: #e8edef; font-family: 'DM Sans'; position: relative; overflow: hidden; }
 .field { position: absolute; inset: 0; }
 .glow { position: absolute; right: -180px; top: -160px; width: 720px; height: 720px; border-radius: 50%;
   background: radial-gradient(circle, rgba(34, 211, 238, 0.10), rgba(34, 211, 238, 0) 65%); }

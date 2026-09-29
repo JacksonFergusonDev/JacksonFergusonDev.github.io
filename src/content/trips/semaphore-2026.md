@@ -4,7 +4,7 @@ title: 'Semaphore, take two'
 description: 'Back among the granite, alpine lakes, and long views of Semaphore.'
 date: 2026-09-07
 dateLabel: 'September 2026'
-location: 'Coast Mountains, British Columbia'
+location: 'Semaphore Lakes, British Columbia'
 images:
   - src: ../../assets/trips/semaphore-2026/1.jpg
     alt: 'A blue alpine lake enclosed by rounded granite ridges'
