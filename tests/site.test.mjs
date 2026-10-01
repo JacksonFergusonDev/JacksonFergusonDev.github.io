@@ -94,7 +94,7 @@ test('Blender cards link to their named project archives in order', async () => 
   assert.equal(cards.length, archives.length);
   for (const [index, archive] of archives.entries()) {
     const [downloadButton] =
-      cards[index].match(/<a class="button secondary download-btn"[\s\S]*?<\/a>/) ?? [];
+      cards[index].match(/<a class="hs-button secondary download-btn"[\s\S]*?<\/a>/) ?? [];
     assert.ok(downloadButton?.includes(`Download ${archive}`), `Missing button label ${archive}`);
     assert.ok(!downloadButton.includes('<svg'), `Unexpected icon in download button ${archive}`);
     assert.ok(

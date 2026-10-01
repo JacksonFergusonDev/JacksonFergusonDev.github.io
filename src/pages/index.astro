@@ -146,7 +146,7 @@ const skiPhotoEnlarged = await getImage({
         </span>
       </p>
       <div class="hero-actions landing-fade">
-        <a class="button primary" href="#projects">
+        <a class="hs-button hs-button--primary" href="#projects">
           Explore my work <Icon name="down" size={17} />
         </a>
         <a class="text-link" href="#about">
@@ -256,15 +256,16 @@ const skiPhotoEnlarged = await getImage({
               </h3>
               <p class="project-subtitle">{protostar.subtitle}</p>
               <p>{protostar.description}</p>
-              <div class="protostar-install-header">
-                <span class="protostar-command-label">Install globally</span>
-                <div class="protostar-pm-toggle" role="tablist" aria-label="Installation method">
+              <div class="hs-install-header">
+                <span class="hs-install-label">Install globally</span>
+                <div class="hs-install-toggle" role="tablist" aria-label="Installation method">
                   <button
                     type="button"
                     role="tab"
                     aria-selected="true"
-                    class="pm-tab is-active"
-                    data-pm="uv"
+                    aria-controls="protostar-install"
+                    class="hs-install-tab is-active"
+                    data-command="uv tool install protostar"
                   >
                     uv
                   </button>
@@ -272,22 +273,23 @@ const skiPhotoEnlarged = await getImage({
                     type="button"
                     role="tab"
                     aria-selected="false"
-                    class="pm-tab"
-                    data-pm="brew"
+                    aria-controls="protostar-install"
+                    class="hs-install-tab"
+                    data-command="brew install jacksonfergusondev/tap/protostar"
                   >
                     brew
                   </button>
                 </div>
               </div>
-              <div class="protostar-install" aria-label="Install command">
-                <code id="protostar-install-cmd">uv tool install protostar</code>
+              <div class="hs-install" id="protostar-install" aria-label="Install command">
+                <code>uv tool install protostar</code>
                 <button
                   type="button"
-                  class="protostar-copy"
+                  class="hs-install-copy"
                   data-copy="uv tool install protostar"
                   aria-label="Copy install command"
                 >
-                  Copy<span class="protostar-copy-long"> command</span>
+                  Copy<span class="hs-install-copy-long"> command</span>
                 </button>
               </div>
               <div class="tags">
@@ -317,7 +319,7 @@ const skiPhotoEnlarged = await getImage({
           <div class="card-footer">
             <div class="project-actions">
               <a
-                class="button primary"
+                class="hs-button hs-button--primary"
                 href="https://protostar.jacksonferguson.me/"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -366,7 +368,7 @@ const skiPhotoEnlarged = await getImage({
             </div>
             <div class="project-actions">
               <a
-                class="button primary"
+                class="hs-button hs-button--primary"
                 href="https://raw.githubusercontent.com/JacksonFergusonDev/systems-audio-lab/main/docs/systems_audio_tech_report.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -440,7 +442,7 @@ const skiPhotoEnlarged = await getImage({
             </div>
             <div class="project-actions">
               <a
-                class="button primary"
+                class="hs-button hs-button--primary"
                 href="https://raw.githubusercontent.com/JacksonFergusonDev/data-science-portfolio/main/astrophysics/aco_2670_dark_matter_analysis_report.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -645,6 +647,8 @@ const skiPhotoEnlarged = await getImage({
 </BaseLayout>
 
 <script>
+  import { initCopyCommands } from 'house-style/js/copy-command.js';
+
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const page = document.body;
   const fadeTargets = [...document.querySelectorAll<HTMLElement>('.landing-fade')];
@@ -726,44 +730,5 @@ const skiPhotoEnlarged = await getImage({
     page.classList.add('landing-intro-complete');
   }
 
-  const installCmds: Record<string, string> = {
-    uv: 'uv tool install protostar',
-    brew: 'brew install jacksonfergusondev/tap/protostar',
-  };
-  const codeEl = document.getElementById('protostar-install-cmd');
-  const copyBtn = document.querySelector<HTMLButtonElement>('.protostar-copy');
-  const tabs = document.querySelectorAll<HTMLButtonElement>('.pm-tab');
-
-  tabs.forEach((tab) => {
-    tab.addEventListener('click', () => {
-      const pm = tab.dataset.pm;
-      if (!pm || !(pm in installCmds)) return;
-
-      tabs.forEach((t) => {
-        const isCurrent = t === tab;
-        t.classList.toggle('is-active', isCurrent);
-        t.setAttribute('aria-selected', isCurrent ? 'true' : 'false');
-      });
-
-      const cmd = installCmds[pm];
-      if (codeEl) codeEl.textContent = cmd;
-      if (copyBtn) copyBtn.dataset.copy = cmd;
-    });
-  });
-
-  if (copyBtn) {
-    const idle = copyBtn.innerHTML;
-    copyBtn.addEventListener('click', async () => {
-      const text = copyBtn.dataset.copy || '';
-      try {
-        await navigator.clipboard.writeText(text);
-        copyBtn.textContent = 'Copied!';
-      } catch {
-        copyBtn.textContent = 'Failed';
-      }
-      window.setTimeout(() => {
-        copyBtn.innerHTML = idle;
-      }, 1800);
-    });
-  }
+  initCopyCommands();
 </script>

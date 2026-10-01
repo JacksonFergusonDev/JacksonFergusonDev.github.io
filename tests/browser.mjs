@@ -141,16 +141,16 @@ try {
       assert.deepEqual(clippedLinks, [], `Header links clipped at ${width}px on ${route}`);
       if (route === '/') {
         for (const manager of ['brew', 'uv']) {
-          await page.locator(`[data-pm="${manager}"]`).click();
+          await page.locator(`.hs-install-tab:text-is("${manager}")`).click();
           if (width <= 800) {
             assert.equal(
               await page
-                .locator('#protostar-install-cmd')
+                .locator('#protostar-install code')
                 .evaluate((el) => el.scrollWidth <= el.clientWidth + 1),
               true,
               `${manager} command must fit at ${width}px`,
             );
-            assert.equal((await page.locator('.protostar-copy').innerText()).trim(), 'Copy');
+            assert.equal((await page.locator('.hs-install-copy').innerText()).trim(), 'Copy');
           }
         }
         await page.evaluate(() => window.scrollTo(0, 0));
@@ -230,14 +230,14 @@ try {
     await revealPage.goto(base + '/');
     await revealPage.evaluate(() => document.fonts.ready);
     for (const selector of [
-      '#about .section-marker',
-      '.projects-head .section-marker',
+      '#about .hs-section-marker',
+      '.projects-head .hs-section-marker',
       '.flagship',
       '.audio-card',
       '.data-science-card',
       '.project-pair',
       '.other-projects',
-      '.beyond-section .section-marker',
+      '.beyond-section .hs-section-marker',
       '.contact-head',
     ]) {
       const content = revealPage.locator(selector);
