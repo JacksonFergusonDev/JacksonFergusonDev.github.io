@@ -2,16 +2,16 @@
 import 'asciinema-player/dist/bundle/asciinema-player.css';
 ---
 
-<div class="protostar-demo-shell">
-  <div class="panel-top">
-    <div class="terminal-dots" aria-hidden="true">
+<div class="hs-terminal">
+  <div class="hs-terminal-bar">
+    <div class="hs-terminal-dots" aria-hidden="true">
       <span class="dot dot-close"></span>
       <span class="dot dot-minimize"></span>
       <span class="dot dot-maximize"></span>
     </div>
-    <span class="terminal-title">PROTOSTAR / INTERACTIVE INIT DEMO</span>
+    <span class="hs-terminal-title">PROTOSTAR / INTERACTIVE INIT DEMO</span>
   </div>
-  <div id="protostar-demo" class="protostar-asciinema" data-asciinema="/protostar-demo.cast">
+  <div id="protostar-demo" class="hs-terminal-screen" data-asciinema="/protostar-demo.cast">
     <noscript>
       <a href="/protostar-demo.cast">Download the Protostar terminal recording</a>
     </noscript>
@@ -20,92 +20,70 @@ import 'asciinema-player/dist/bundle/asciinema-player.css';
 
 <script>
   import { create } from 'asciinema-player';
+  import { loadSymbolsFont, mountCast, prefersReducedMotion } from 'house-style/js/cast.js';
 
   const container = document.querySelector<HTMLElement>('#protostar-demo');
+  const player = container ? mountCast(create, container) : undefined;
 
-  if (container && !container.dataset.initialized) {
-    container.dataset.initialized = 'true';
-    const src = container.dataset.asciinema;
-    if (src) {
-      let symbolsReady: Promise<FontFace[]> | undefined;
-      const loadSymbols = () => {
-        symbolsReady ??= document.fonts.load("14px 'Symbols Nerd Font'").catch(() => []);
-        return symbolsReady;
-      };
+  if (container && player) {
+    // Start the font download once the initial page has finished loading.
+    if (document.readyState === 'complete') {
+      void loadSymbolsFont();
+    } else {
+      window.addEventListener('load', () => void loadSymbolsFont(), { once: true });
+    }
 
-      // Start the font download once the initial page has finished loading.
-      if (document.readyState === 'complete') {
-        void loadSymbols();
+    // A projects deep link can put the demo in the first viewport.
+    const loadSymbolsForProjectsLink = () => {
+      if (window.location.hash === '#projects') void loadSymbolsFont();
+    };
+    loadSymbolsForProjectsLink();
+    window.addEventListener('hashchange', loadSymbolsForProjectsLink);
+
+    if (!prefersReducedMotion()) {
+      const card = container.closest<HTMLElement>('.landing-reveal');
+      if (!card) {
+        void loadSymbolsFont().then(() => player.play());
       } else {
-        window.addEventListener('load', () => void loadSymbols(), { once: true });
-      }
+        let started = false;
+        let fallbackTimer: number | undefined;
 
-      // A projects deep link can put the demo in the first viewport.
-      const loadSymbolsForProjectsLink = () => {
-        if (window.location.hash === '#projects') void loadSymbols();
-      };
-      loadSymbolsForProjectsLink();
-      window.addEventListener('hashchange', loadSymbolsForProjectsLink);
-
-      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-      const player = create(src, container, {
-        autoPlay: false,
-        preload: true,
-        poster: 'npt:0:00.1',
-        loop: !reduceMotion,
-        speed: 1,
-        terminalFontFamily: "'JetBrains Mono', 'Symbols Nerd Font', 'Fira Code', monospace",
-        terminalFontSize: '14px',
-        fit: 'width',
-        controls: 'auto',
-      });
-
-      if (!reduceMotion) {
-        const card = container.closest<HTMLElement>('.landing-reveal');
-        if (!card) {
-          void loadSymbols().then(() => player.play());
-        } else {
-          let started = false;
-          let fallbackTimer: number | undefined;
-
-          const launch = () => {
-            if (started) return;
-            started = true;
-            if (fallbackTimer !== undefined) {
-              window.clearTimeout(fallbackTimer);
-            }
-            card.removeEventListener('transitionend', onTransitionEnd);
-            observer?.disconnect();
-            void loadSymbols().then(() => player.play());
-          };
-
-          const onTransitionEnd = (e: TransitionEvent) => {
-            if (e.target === card && e.propertyName === 'opacity') {
-              launch();
-            }
-          };
-
-          card.addEventListener('transitionend', onTransitionEnd);
-
-          let observer: MutationObserver | null = null;
-          const checkVisible = () => {
-            if (card.classList.contains('is-visible')) {
-              if (window.getComputedStyle(card).opacity === '1') {
-                launch();
-              } else if (fallbackTimer === undefined) {
-                fallbackTimer = window.setTimeout(launch, 1200);
-              }
-            }
-          };
-
-          if (window.MutationObserver) {
-            observer = new MutationObserver(checkVisible);
-            observer.observe(card, { attributes: true, attributeFilter: ['class'] });
+        const launch = () => {
+          if (started) return;
+          started = true;
+          if (fallbackTimer !== undefined) {
+            window.clearTimeout(fallbackTimer);
           }
+          card.removeEventListener('transitionend', onTransitionEnd);
+          observer?.disconnect();
+          void loadSymbolsFont().then(() => player.play());
+        };
 
-          checkVisible();
+        const onTransitionEnd = (e: TransitionEvent) => {
+          if (e.target === card && e.propertyName === 'opacity') {
+            launch();
+          }
+        };
+
+        card.addEventListener('transitionend', onTransitionEnd);
+
+        let observer: MutationObserver | null = null;
+        const checkVisible = () => {
+          if (card.classList.contains('is-visible')) {
+            if (window.getComputedStyle(card).opacity === '1') {
+              launch();
+            } else if (fallbackTimer === undefined) {
+              fallbackTimer = window.setTimeout(launch, 1200);
+            }
+          }
+        };
+
+        if (window.MutationObserver) {
+          observer = new MutationObserver(checkVisible);
+          observer.observe(card, { attributes: true, attributeFilter: ['class'] });
         }
+
+        checkVisible();
       }
     }
   }

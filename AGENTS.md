@@ -90,12 +90,26 @@ if the browser binary is missing.
   inside a card) must remain inset to the container width. Beyond subsections
   are separated by card gaps, not rules.
 
+## Shared House Style
+
+The palette, type scale, fonts, icons, section markers, buttons, terminal
+window, install box, and their scripts come from
+[house-style](https://github.com/JacksonFergusonDev/house-style), which
+`package.json` pins to a release tag and the project sites on subdomains share.
+
+- Follow `node_modules/house-style/GUIDELINES.md`. It holds the rules every
+  site follows, including which arrow icon a link takes.
+- Change a shared style in house-style, tag a release, then move this site to
+  the new tag. Never override a shared rule here to work around it.
+- Draw icons only with `Icon` and `ServiceIcon`, which inline house-style's
+  `icons/`. A missing icon is added to house-style first.
+
 ## Visual System Rules
 
 The type scale and card anatomy are documented in the README "Visual system"
 section. Follow them on every page:
 
-- Use the `--fs-*` tokens in `src/styles/global.css` for every text size. Do not
+- Use the `--fs-*` tokens from house-style's `tokens.css` for every text size. Do not
   add raw `font-size` values or per-breakpoint size overrides for content text;
   adjust the token instead. Scoped `<style>` blocks in pages follow the same
   rule. The hero, contact headline, Protostar install widget, terminal demo,

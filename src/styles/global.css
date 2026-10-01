@@ -16,43 +16,13 @@
   font-weight: 700;
   font-display: swap;
 }
-@font-face {
-  font-family: 'Symbols Nerd Font';
-  src: url('/fonts/SymbolsNerdFontMono-Regular.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
+/* The palette, typefaces, and type scale come from house-style's tokens.css. */
 :root {
   --header-height: 80px;
-  --bg: #0a0c0e;
-  --panel: #0e1114;
-  --text: #e8edef;
-  --muted: #939da6;
-  --accent: #22d3ee;
-  --line: #252c31;
-  --sans: 'DM Sans', sans-serif;
-  --mono: 'JetBrains Mono', monospace;
   --serif: 'New Computer Modern', 'Georgia', serif;
-  /* Type scale: see README "Visual system". Components use these tokens, not raw sizes. */
-  --fs-h1: clamp(40px, 5.5vw, 72px);
-  --fs-h2: clamp(32px, 3.1vw, 45px);
-  --fs-h3: 32px;
-  --fs-lead: 19px;
-  --fs-h4: 18px;
-  --fs-body: 16px;
-  --fs-ui: 14px;
-  --fs-label: 11px;
   /* Journal voice: serif reading text. Larger because the serif runs smaller optically. */
   --fs-journal-lead: 24px;
   --fs-journal-body: 20px;
-  --md-default-fg-color: #81929b;
-  --protostar-cyan: #22d3ee;
-  --protostar-radius: 6px;
-  --protostar-code-bg: #090e11;
-  --protostar-code-fg: #cdd6f4;
-  --protostar-code-border: #2d3c43;
-  --protostar-term-prompt: #4ade80;
   color-scheme: dark;
   font-family: var(--sans);
   background: var(--bg);
@@ -136,7 +106,6 @@ p {
   color: var(--muted);
 }
 .eyebrow,
-.section-marker,
 .hero-bottom,
 .signal-label,
 .row-kind,
@@ -346,26 +315,6 @@ body.landing-page .landing-reveal.is-visible {
   align-items: center;
   gap: 28px;
 }
-.button {
-  display: inline-flex;
-  gap: 24px;
-  align-items: center;
-  justify-content: center;
-  font-size: var(--fs-ui);
-  padding: 15px 20px;
-  border: 1px solid var(--line);
-  border-radius: 3px;
-}
-.button.primary {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #081014;
-  font-weight: 500;
-}
-.button.primary:hover {
-  background: #86eaf7;
-  border-color: #86eaf7;
-}
 .text-link {
   display: inline-flex;
   align-items: center;
@@ -426,24 +375,6 @@ body.landing-page .landing-reveal.is-visible {
   padding-top: 95px;
   padding-bottom: 90px;
   border-bottom: 1px solid var(--line);
-}
-.section-marker {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  color: var(--muted);
-  margin-bottom: 36px;
-  font-weight: 600;
-  letter-spacing: 1.6px;
-}
-.section-marker > span:first-child {
-  display: inline-flex;
-  align-items: center;
-  color: var(--accent);
-  background: rgba(34, 211, 238, 0.08);
-  border: 1px solid rgba(34, 211, 238, 0.22);
-  padding: 4px 10px;
-  border-radius: 4px;
 }
 .about-grid {
   display: grid;
@@ -574,120 +505,6 @@ body.landing-page .landing-reveal.is-visible {
   line-height: 1.5;
   margin-bottom: 18px;
 }
-/* --- Hero Install Box & Copy Button --- */
-.protostar-install-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  max-width: 32rem;
-  margin: 1.5rem 0 0.5rem;
-}
-.protostar-command-label {
-  color: var(--md-default-fg-color);
-  font-size: 0.75rem;
-  font-weight: 700;
-  margin: 0;
-}
-.protostar-pm-toggle {
-  display: inline-flex;
-  gap: 3px;
-  background: #090e11;
-  border: 1px solid var(--protostar-code-border);
-  border-radius: 4px;
-  padding: 2px;
-}
-.pm-tab {
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: 3px;
-  color: var(--muted);
-  font-family: var(--mono);
-  font-size: 0.72rem;
-  font-weight: 500;
-  padding: 3px 9px;
-  line-height: 1;
-  cursor: pointer;
-  transition:
-    color 0.15s ease,
-    background-color 0.15s ease,
-    border-color 0.15s ease;
-}
-.pm-tab:hover {
-  color: var(--text);
-}
-.pm-tab.is-active {
-  background: #151d24;
-  border-color: #2d3c43;
-  color: var(--protostar-cyan);
-  font-weight: 600;
-}
-.pm-tab:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 1px;
-}
-.protostar-install {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  max-width: 32rem;
-  min-height: 48px;
-  overflow: hidden;
-  border: 1px solid var(--protostar-code-border);
-  border-radius: var(--protostar-radius);
-  background: var(--protostar-code-bg);
-  transition:
-    background-color 0.25s ease,
-    border-color 0.25s ease;
-}
-.protostar-install:focus-within {
-  border-color: var(--accent);
-}
-.protostar-install code {
-  padding: 0.75rem 0.9rem;
-  color: var(--protostar-code-fg);
-  background: transparent;
-  font-family: var(--mono);
-  font-size: 0.78rem;
-  white-space: nowrap;
-  overflow-x: auto;
-  scrollbar-width: none;
-  transition: color 0.25s ease;
-}
-.protostar-install code::-webkit-scrollbar {
-  display: none;
-}
-.protostar-install code::before {
-  margin-right: 0.6rem;
-  color: var(--protostar-term-prompt);
-  /* Terminal green */
-  content: '$';
-  transition: color 0.25s ease;
-}
-.protostar-copy {
-  align-self: stretch;
-  min-width: 7.25rem;
-  border: 0;
-  border-left: 1px solid var(--protostar-code-border);
-  color: #000;
-  background: var(--protostar-cyan);
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 0.75rem;
-  font-weight: 600;
-  transition:
-    background-color 0.2s ease,
-    border-color 0.25s ease;
-}
-.protostar-copy:hover {
-  background: #00e5ff;
-}
-.protostar-copy:active {
-  background: #00b4d8;
-}
-.protostar-copy:focus-visible {
-  outline: 2px solid #ffffff;
-  outline-offset: -2px;
-}
 .tags {
   display: flex;
   gap: 7px;
@@ -703,110 +520,11 @@ body.landing-page .landing-reveal.is-visible {
   color: #aebec6;
   padding: 5px 9px;
 }
-.protostar-demo-shell {
-  border: 1px solid #2d3c43;
-  border-radius: 8px;
-  background: #090e11;
-  align-self: start;
-  width: 100%;
-  overflow: hidden;
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
-}
-.panel-top {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  position: relative;
-  border-bottom: 1px solid #243138;
-  padding: 8px 14px;
-  background: #11171c;
-  min-height: 28px;
-  box-sizing: border-box;
-}
-.terminal-dots {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  z-index: 1;
-}
-.terminal-dots .dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  display: inline-block;
-  box-sizing: border-box;
-}
-.terminal-dots .dot-close {
-  background: #ff5f56;
-  border: 1px solid #e0443e;
-}
-.terminal-dots .dot-minimize {
-  background: #ffbd2e;
-  border: 1px solid #dea123;
-}
-.terminal-dots .dot-maximize {
-  background: #27c93f;
-  border: 1px solid #1aab29;
-}
-.terminal-title {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  font-family: var(--mono);
-  font-size: 9px;
-  letter-spacing: 0.5px;
-  color: #7a909c;
-  max-width: calc(100% - 90px);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  pointer-events: none;
-  text-align: center;
-}
-.protostar-asciinema {
-  width: 100%;
-  min-height: 280px;
-  overflow: hidden;
-  position: relative;
-}
-.protostar-asciinema .ap-wrapper {
-  border-radius: 0;
-  box-shadow: none;
-}
-.protostar-asciinema .ap-player {
-  position: relative;
-  height: auto !important;
-  background: #0a0f1f;
-}
-.protostar-asciinema .ap-control-bar,
-.protostar-asciinema .ap-wrapper.ap-hud .ap-control-bar {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s ease;
-  background: rgba(10, 15, 31, 0.92);
-  backdrop-filter: blur(4px);
-}
-.protostar-demo-shell:hover .ap-control-bar,
-.protostar-demo-shell:hover .ap-wrapper.ap-hud .ap-control-bar,
-.protostar-demo-shell:focus-within .ap-control-bar,
-.protostar-demo-shell:focus-within .ap-wrapper.ap-hud .ap-control-bar {
-  opacity: 1;
-  pointer-events: auto;
-}
-@media (prefers-reduced-motion: reduce) {
-  .protostar-asciinema .ap-control-bar {
-    transition: none;
-  }
-}
-html.landing-js:not(.landing-reduced-motion) .protostar-asciinema .ap-overlay-start {
+html.landing-js:not(.landing-reduced-motion) .hs-terminal-screen .ap-overlay-start {
   display: none;
 }
 @media (prefers-reduced-motion: reduce) {
-  .protostar-asciinema .ap-overlay-start {
+  .hs-terminal-screen .ap-overlay-start {
     display: flex;
   }
 }
@@ -888,7 +606,7 @@ html.landing-js:not(.landing-reduced-motion) .protostar-asciinema .ap-overlay-st
   flex-wrap: wrap;
   gap: 16px 24px;
 }
-.project-actions .button {
+.project-actions .hs-button {
   padding: 12px 15px;
   gap: 12px;
 }
@@ -1431,9 +1149,6 @@ html.landing-js:not(.landing-reduced-motion) .protostar-asciinema .ap-overlay-st
   .flagship-grid {
     grid-template-columns: 1fr;
   }
-  .panel-top {
-    font-size: 9px;
-  }
   .feature-principles {
     gap: 20px;
   }
@@ -1490,10 +1205,6 @@ html.landing-js:not(.landing-reduced-motion) .protostar-asciinema .ap-overlay-st
   }
   :root {
     --header-height: 104px;
-    --fs-h3: 28px;
-    --fs-lead: 17px;
-    --fs-h4: 17px;
-    --fs-ui: 13px;
     --fs-journal-lead: 22px;
     --fs-journal-body: 19px;
   }
@@ -1538,7 +1249,7 @@ html.landing-js:not(.landing-reduced-motion) .protostar-asciinema .ap-overlay-st
     z-index: 1;
     flex-wrap: wrap;
   }
-  .hero-actions .button {
+  .hero-actions .hs-button {
     font-size: 12px;
     padding: 13px 15px;
     gap: 15px;
@@ -1570,9 +1281,6 @@ html.landing-js:not(.landing-reduced-motion) .protostar-asciinema .ap-overlay-st
     right: 20px;
     font-size: 9px;
   }
-  .section-marker {
-    margin-bottom: 24px;
-  }
   .section {
     padding-block: 52px;
   }
@@ -1602,46 +1310,11 @@ html.landing-js:not(.landing-reduced-motion) .protostar-asciinema .ap-overlay-st
   .flagship-grid {
     gap: 14px;
   }
-  .protostar-install-header {
-    margin: 18px 0 6px;
-    max-width: 100%;
-  }
-  .protostar-install {
-    max-width: 100%;
-    min-height: 42px;
-  }
-  .protostar-install code {
-    font-size: 0.72rem;
-    padding: 0.6rem 0.7rem;
-  }
-  .protostar-install code::before {
-    margin-right: 0.4rem;
-  }
-  .protostar-copy {
-    min-width: 3.5rem;
-    padding: 0 0.6rem;
-    font-size: 0.7rem;
-  }
   .tags {
     margin: 20px 0;
   }
   .tags span {
     padding: 4px 7px;
-  }
-  .panel-top {
-    padding: 6px 10px;
-    min-height: 24px;
-  }
-  .terminal-dots .dot {
-    width: 8px;
-    height: 8px;
-  }
-  .terminal-title {
-    font-size: 8px;
-    max-width: calc(100% - 75px);
-  }
-  .protostar-asciinema {
-    min-height: 0;
   }
   .feature-principles {
     grid-template-columns: 1fr;
@@ -1892,7 +1565,7 @@ html.landing-js:not(.landing-reduced-motion) .protostar-asciinema .ap-overlay-st
     line-height: 1.45;
     margin-bottom: 17px;
   }
-  .hero-actions .button {
+  .hero-actions .hs-button {
     padding-block: 11px;
   }
 }
@@ -1932,7 +1605,7 @@ html.landing-js:not(.landing-reduced-motion) .protostar-asciinema .ap-overlay-st
   .hero-actions {
     gap: 14px;
   }
-  .hero-actions .button {
+  .hero-actions .hs-button {
     gap: 10px;
     padding-inline: 12px;
     font-size: 11px;
@@ -1944,7 +1617,7 @@ html.landing-js:not(.landing-reduced-motion) .protostar-asciinema .ap-overlay-st
   .project-actions {
     gap: 12px;
   }
-  .project-actions .button {
+  .project-actions .hs-button {
     font-size: 11px;
     padding: 10px 12px;
     gap: 8px;
@@ -1958,7 +1631,6 @@ html.landing-js:not(.landing-reduced-motion) .protostar-asciinema .ap-overlay-st
 .beyond-split > * {
   min-width: 0;
 }
-.button svg,
 .text-link svg {
   flex-shrink: 0;
 }
@@ -1979,16 +1651,6 @@ html.landing-js:not(.landing-reduced-motion) .protostar-asciinema .ap-overlay-st
   .desktop-break {
     display: none;
   }
-  .protostar-copy-long {
-    display: none;
-  }
-  .protostar-copy {
-    min-width: 3.5rem;
-  }
-  .protostar-install code {
-    white-space: normal;
-    overflow-wrap: anywhere;
-  }
   .article-end {
     flex-wrap: wrap;
     gap: 20px;
@@ -1998,12 +1660,5 @@ html.landing-js:not(.landing-reduced-motion) .protostar-asciinema .ap-overlay-st
   .page-intro h1,
   .article-header h1 {
     overflow-wrap: anywhere;
-  }
-}
-@media (hover: none) {
-  .protostar-asciinema .ap-control-bar,
-  .protostar-asciinema .ap-wrapper.ap-hud .ap-control-bar {
-    opacity: 1;
-    pointer-events: auto;
   }
 }

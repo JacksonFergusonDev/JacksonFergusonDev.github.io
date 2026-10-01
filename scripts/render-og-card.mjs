@@ -7,11 +7,13 @@ import { chromium } from '@playwright/test';
 const root = path.resolve('.');
 const out = path.join(root, 'public/images/og-card.png');
 const font = (file) =>
-  readFile(path.join(root, 'node_modules/@fontsource', file)).then((b) => b.toString('base64'));
+  readFile(path.join(root, 'node_modules/house-style/fonts', file)).then((b) =>
+    b.toString('base64'),
+  );
 const [sans400, sans700, mono400, favicon] = await Promise.all([
-  font('dm-sans/files/dm-sans-latin-400-normal.woff2'),
-  font('dm-sans/files/dm-sans-latin-700-normal.woff2'),
-  font('jetbrains-mono/files/jetbrains-mono-latin-400-normal.woff2'),
+  font('dm-sans-latin-400-normal.woff2'),
+  font('dm-sans-latin-700-normal.woff2'),
+  font('jetbrains-mono-latin-400-normal.woff2'),
   readFile(path.join(root, 'public/favicon.svg'), 'utf8'),
 ]);
 

@@ -1,6 +1,8 @@
 ---
-import { faGithub, faLinkedin } from '@fortawesome/free-brands-svg-icons';
-import { faEnvelope } from '@fortawesome/free-solid-svg-icons';
+// Font Awesome's brand marks, by way of house-style so every site draws the same ones.
+import github from 'house-style/icons/brand-github.svg?raw';
+import linkedin from 'house-style/icons/brand-linkedin.svg?raw';
+import email from 'house-style/icons/brand-email.svg?raw';
 
 interface Props {
   name: 'github' | 'linkedin' | 'email';
@@ -8,20 +10,17 @@ interface Props {
 }
 
 const { name, size = 14 } = Astro.props;
-const icons = { github: faGithub, linkedin: faLinkedin, email: faEnvelope };
-const [width, height, , , path] = icons[name].icon;
-const paths = Array.isArray(path) ? path : [path];
+const icon = { github, linkedin, email }[name];
+const viewBox = icon.match(/viewBox="([^"]+)"/)?.[1];
+const shape = icon.replace(/^[\s\S]*?<svg[^>]*>|<\/svg>\s*$/g, '');
 ---
 
 <svg
   class="service-icon"
   width={size}
   height={size}
-  viewBox={`0 0 ${width} ${height}`}
+  viewBox={viewBox}
   fill="currentColor"
   aria-hidden="true"
->
-  {paths.map((data) => (
-    <path d={data} />
-  ))}
-</svg>
+  set:html={shape}
+/>

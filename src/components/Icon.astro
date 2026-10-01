@@ -1,20 +1,37 @@
 ---
+// The icons are house-style's, shared with the project sites; this inlines one.
+import arrow from 'house-style/icons/arrow-up-right.svg?raw';
+import arrowLeft from 'house-style/icons/arrow-left.svg?raw';
+import arrowRight from 'house-style/icons/arrow-right.svg?raw';
+import arrowUp from 'house-style/icons/arrow-up.svg?raw';
+import close from 'house-style/icons/close.svg?raw';
+import pause from 'house-style/icons/pause.svg?raw';
+import play from 'house-style/icons/play.svg?raw';
+import down from 'house-style/icons/arrow-down.svg?raw';
+import collection from 'house-style/icons/collection.svg?raw';
+import github from 'house-style/icons/github.svg?raw';
+import mail from 'house-style/icons/mail.svg?raw';
+
+const icons = {
+  arrow,
+  'arrow-left': arrowLeft,
+  'arrow-right': arrowRight,
+  'arrow-up': arrowUp,
+  close,
+  pause,
+  play,
+  down,
+  collection,
+  github,
+  mail,
+};
+
 interface Props {
-  name?:
-    | 'arrow'
-    | 'arrow-left'
-    | 'arrow-right'
-    | 'arrow-up'
-    | 'close'
-    | 'pause'
-    | 'play'
-    | 'down'
-    | 'collection'
-    | 'github'
-    | 'mail';
+  name?: keyof typeof icons;
   size?: number;
 }
 const { name = 'arrow', size = 20 } = Astro.props;
+const shape = icons[name].replace(/^[\s\S]*?<svg[^>]*>|<\/svg>\s*$/g, '');
 ---
 
 <svg
@@ -27,33 +44,5 @@ const { name = 'arrow', size = 20 } = Astro.props;
   stroke-linecap="round"
   stroke-linejoin="round"
   aria-hidden="true"
->
-  {name === 'arrow' && <path d="M5 19 19 5M5 5h14v14" />}
-  {name === 'arrow-left' && <path d="M19 12H5M12 19l-7-7 7-7" />}
-  {name === 'arrow-right' && <path d="M5 12h14m-7-7 7 7-7 7" />}
-  {name === 'arrow-up' && <path d="M12 19V5m-7 7 7-7 7 7" />}
-  {name === 'close' && <path d="M18 6 6 18M6 6l12 12" />}
-  {name === 'pause' && (
-    <>
-      <rect x="6" y="4" width="4" height="16" rx="1" fill="currentColor" stroke="none" />
-      <rect x="14" y="4" width="4" height="16" rx="1" fill="currentColor" stroke="none" />
-    </>
-  )}
-  {name === 'play' && <polygon points="6 4 20 12 6 20 6 4" fill="currentColor" stroke="none" />}
-  {name === 'down' && <path d="M12 3v18m-7-7 7 7 7-7" />}
-  {name === 'collection' && (
-    <>
-      <rect x="3" y="7" width="13" height="14" rx="2" />
-      <path d="M7 3h11a2 2 0 0 1 2 2v11" />
-    </>
-  )}
-  {name === 'github' && (
-    <path d="M9 19c-4 1-4-2-6-2m12 5v-4c0-1-.4-2-1-2 4-.5 7-2 7-6 0-1.5-.5-3-1.5-4 .2-1 .2-2-.3-3-2 0-3 1-4 1.5a13 13 0 0 0-6 0C8 3.5 7 3 5 3c-.5 1-.5 2-.3 3C3.5 7 3 8.5 3 10c0 4 3 5.5 7 6-.6.5-1 1-1 2v4" />
-  )}
-  {name === 'mail' && (
-    <>
-      <rect x="3" y="5" width="18" height="14" rx="2" />
-      <path d="m3 6 9 7 9-7" />
-    </>
-  )}
-</svg>
+  set:html={shape}
+/>

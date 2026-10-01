@@ -14,7 +14,9 @@ The New Computer Modern regular and italic WOFF2 files in `public/fonts/` are La
 
 ## Visual system
 
-The whole site uses one type scale. Each tier has a single size, defined as a custom property on `:root` in [`global.css`](src/styles/global.css), and the tokens shrink together at the 560px breakpoint. Components refer to the tokens rather than setting their own sizes.
+The whole site uses one type scale. Each tier has a single size, defined as a custom property on `:root` in [house-style](https://github.com/JacksonFergusonDev/house-style)'s `tokens.css` (the journal tokens below stay in [`global.css`](src/styles/global.css)), and the tokens shrink together at the 560px breakpoint. Components refer to the tokens rather than setting their own sizes.
+
+The palette, the fonts, the section markers and buttons, the terminal window, and the install box are shared with the project sites on subdomains through [house-style](https://github.com/JacksonFergusonDev/house-style), which `package.json` pins to a release tag. Change them there, tag a release, and move this site to the new tag.
 
 | Tier    | Token        | Desktop / mobile | Used for                                                                          |
 | ------- | ------------ | ---------------- | --------------------------------------------------------------------------------- |
