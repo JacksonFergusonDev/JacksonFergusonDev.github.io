@@ -28,11 +28,9 @@
     "knip:fix": "knip --fix"
   },
   "dependencies": {
-    "@fortawesome/free-brands-svg-icons": "^7.3.1",
-    "@fortawesome/free-solid-svg-icons": "^7.3.1",
     "asciinema-player": "^3.17.0",
     "astro": "^7.3.2",
-    "house-style": "github:JacksonFergusonDev/house-style#v1.0.1",
+    "house-style": "github:JacksonFergusonDev/house-style#v1.1.0",
     "three": "^0.186.0"
   },
   "devDependencies": {
