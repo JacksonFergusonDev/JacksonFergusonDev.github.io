@@ -1,24 +1,16 @@
-import { getCollection } from 'astro:content';
 import type { APIContext } from 'astro';
 import { routes } from '../lib/site';
+import { getCreativeSubpages, getTrips } from '../lib/content';
 
 export async function GET({ site }: APIContext) {
-  const [trips, creativeEntries] = await Promise.all([
-    getCollection('trips', ({ data }) => data.type === 'trip' && !data.draft),
-    getCollection('creative', ({ data }) => data.type !== 'index'),
-  ]);
-
-  const creativeOrder = ['events', 'blender', 'python'];
-  const sortedCreative = creativeEntries.sort(
-    (a, b) => creativeOrder.indexOf(a.id) - creativeOrder.indexOf(b.id),
-  );
+  const [trips, creativePages] = await Promise.all([getTrips(), getCreativeSubpages()]);
 
   const paths = [
     routes.home.path,
     routes.trips.path,
     ...trips.map((p) => `${routes.trips.path}${p.id}/`),
     routes.creative.path,
-    ...sortedCreative.map((c) => `${routes.creative.path}${c.id}/`),
+    ...creativePages.map((c) => `${routes.creative.path}${c.id}/`),
   ];
   const escape = (s: string) =>
     s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');

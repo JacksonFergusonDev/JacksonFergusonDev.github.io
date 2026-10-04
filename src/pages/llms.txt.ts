@@ -1,26 +1,11 @@
-import { getCollection, type CollectionEntry } from 'astro:content';
 import type { APIContext } from 'astro';
 import { site } from '../lib/site';
 import { projects, tools } from '../lib/projects';
-
-type TripEntry = CollectionEntry<'trips'> & {
-  data: Extract<CollectionEntry<'trips'>['data'], { type: 'trip' }>;
-};
+import { getCreativeSubpages, getTrips } from '../lib/content';
 
 export async function GET({ site: origin }: APIContext) {
   const abs = (path: string) => new URL(path, origin).href;
-  const [trips, creativeEntries] = await Promise.all([
-    getCollection('trips', ({ data }) => data.type === 'trip' && !data.draft) as Promise<
-      TripEntry[]
-    >,
-    getCollection('creative', ({ data }) => data.type !== 'index'),
-  ]);
-
-  const sortedTrips = trips.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
-  const creativeOrder = ['events', 'blender', 'python'];
-  const sortedCreative = creativeEntries.sort(
-    (a, b) => creativeOrder.indexOf(a.id) - creativeOrder.indexOf(b.id),
-  );
+  const [trips, creativePages] = await Promise.all([getTrips(), getCreativeSubpages()]);
 
   const link = (name: string, url: string, note: string) => `- [${name}](${url}): ${note}`;
 
@@ -62,14 +47,8 @@ export async function GET({ site: origin }: APIContext) {
     '',
     ...tools.map((t) => link(t.name, t.url, t.description)),
     link('Homepage', abs('/'), 'About, full project list, and contact.'),
-    ...sortedCreative.map((c) =>
-      link(
-        c.data.type !== 'index' ? c.data.title : c.id,
-        abs(`/creative/${c.id}/`),
-        c.data.type !== 'index' ? c.data.description : '',
-      ),
-    ),
-    ...sortedTrips.map((t) =>
+    ...creativePages.map((c) => link(c.data.title, abs(`/creative/${c.id}/`), c.data.description)),
+    ...trips.map((t) =>
       link(t.data.title, abs(`/trips/${t.id}/`), `${t.data.location}. ${t.data.description}`),
     ),
     '',
