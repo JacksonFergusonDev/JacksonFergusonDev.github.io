@@ -22,6 +22,10 @@ const webgl = canvas && button ? createRenderer(canvas) : null;
 if (canvas && button && webgl) {
   const surface = canvas;
   const renderer = webgl;
+  const toggle = button;
+  const label = toggle.querySelector<HTMLElement>('.motion-toggle-label')!;
+  const pauseIcon = toggle.querySelector<HTMLElement>('[data-motion-icon="pause"]')!;
+  const playIcon = toggle.querySelector<HTMLElement>('[data-motion-icon="play"]')!;
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
   let paused = reducedMotion.matches;
   let visible = true;
@@ -374,19 +378,10 @@ if (canvas && button && webgl) {
   function sync(): void {
     cancelAnimationFrame(frame);
     frame = 0;
-    button!.hidden = false;
-    button!.setAttribute('aria-pressed', String(paused));
-    button!.setAttribute(
-      'aria-label',
-      paused ? 'Play background animation' : 'Pause background animation',
-    );
-    const pauseSvg =
-      '<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4" width="4" height="16" rx="1" /><rect x="14" y="4" width="4" height="16" rx="1" /></svg>';
-    const playSvg =
-      '<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="6 4 20 12 6 20 6 4" /></svg>';
-    button!.innerHTML = paused
-      ? `Play motion <span aria-hidden="true">${playSvg}</span>`
-      : `Pause motion <span aria-hidden="true">${pauseSvg}</span>`;
+    toggle.hidden = false;
+    label.textContent = paused ? 'Play motion' : 'Pause motion';
+    pauseIcon.hidden = paused;
+    playIcon.hidden = !paused;
 
     renderScene(0);
     if (!paused && visible && !document.hidden) {
@@ -403,7 +398,7 @@ if (canvas && button && webgl) {
     sync();
   }).observe(surface);
 
-  button.addEventListener('click', () => {
+  toggle.addEventListener('click', () => {
     paused = !paused;
     sync();
   });
