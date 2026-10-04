@@ -16,7 +16,8 @@ permissions:
 
 concurrency:
   group: pages-${{ github.ref }}
-  cancel-in-progress: true
+  # Superseded pull request runs can stop early; a deploy from main must finish.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   build:
@@ -28,7 +29,8 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - run: npm audit --audit-level=high
+      # Dev tooling never reaches visitors, so only shipped dependencies gate the build.
+      - run: npm audit --omit=dev --audit-level=high
       - run: npm run format:check
       - run: npm run lint
       - run: npm run check
@@ -38,15 +40,20 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Run browser and accessibility tests
         run: |
-          npm run preview -- --host 127.0.0.1 --port 4322 &
+          npx astro preview --background --host 127.0.0.1 --port 4322
+          trap 'npx astro preview stop || true' EXIT
           for _ in $(seq 1 30); do
-            if curl -s http://127.0.0.1:4322 > /dev/null; then
+            if curl -sf http://127.0.0.1:4322/ > /dev/null; then
               break
             fi
             sleep 1
           done
+          if ! curl -sf http://127.0.0.1:4322/ > /dev/null; then
+            npx astro preview logs || true
+            echo "::error::astro preview did not respond on port 4322 within 30 seconds"
+            exit 1
+          fi
           npm run test:browser
-          npx astro preview stop || true
       - name: Upload browser test results
         uses: actions/upload-artifact@v4
         if: always()
