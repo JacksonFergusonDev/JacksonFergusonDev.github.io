@@ -113,8 +113,9 @@ const pieces = data.pieces.map((piece, i) => {
                 <code class="py-icon">.py</code> {piece.filename}
               </span>
               <button
+                type="button"
                 class="copy-btn"
-                data-code={piece.code}
+                data-copy={piece.code}
                 aria-label={`Copy code for ${piece.filename}`}
               >
                 Copy code
@@ -138,22 +139,9 @@ const pieces = data.pieces.map((piece, i) => {
 </BaseLayout>
 
 <script>
-  document.querySelectorAll<HTMLButtonElement>('.copy-btn').forEach((btn) => {
-    btn.addEventListener('click', async () => {
-      const code = btn.dataset.code;
-      if (!code) return;
-      try {
-        await navigator.clipboard.writeText(code);
-        const originalText = btn.textContent;
-        btn.textContent = 'Copied!';
-        setTimeout(() => {
-          btn.textContent = originalText;
-        }, 2000);
-      } catch (err) {
-        console.error('Failed to copy code: ', err);
-      }
-    });
-  });
+  import { initCopyCommands } from 'house-style/js/copy-command.js';
+
+  initCopyCommands();
 </script>
 
 <style>
