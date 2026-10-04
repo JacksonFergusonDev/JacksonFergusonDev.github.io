@@ -30,7 +30,7 @@
             "pattern": "^public/"
           },
           "type": {
-            "enum": ["svg", "asciinema-cast"]
+            "enum": ["svg", "asciinema-cast", "pdf"]
           },
           "minBytes": {
             "type": "integer",

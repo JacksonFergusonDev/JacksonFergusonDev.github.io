@@ -42,7 +42,7 @@ function validateManifestAsset(asset) {
   seenTargets.add(asset.target);
 
   assertManifest(
-    ['svg', 'asciinema-cast'].includes(asset.type),
+    ['svg', 'asciinema-cast', 'pdf'].includes(asset.type),
     `${asset.id} has unsupported type`,
   );
   assertManifest(
@@ -72,7 +72,18 @@ function validateCast(asset, text) {
   }
 }
 
+function validatePdf(asset, bytes) {
+  if (Buffer.from(bytes.subarray(0, 5)).toString('latin1') !== '%PDF-') {
+    throw new Error(`${asset.id}: expected a PDF document from ${asset.source}`);
+  }
+}
+
 function validateAsset(asset, bytes) {
+  if (asset.type === 'pdf') {
+    validatePdf(asset, bytes);
+    return;
+  }
+
   const text = new TextDecoder('utf8', { fatal: true }).decode(bytes);
   if (asset.type === 'svg') validateSvg(asset, text);
   if (asset.type === 'asciinema-cast') validateCast(asset, text);

@@ -32,6 +32,22 @@
       "target": "public/images/gmm-redshift-distribution.svg",
       "type": "svg",
       "minBytes": 10000
+    },
+    {
+      "id": "systems-audio-report",
+      "description": "Systems Audio Lab full technical report linked from its project card.",
+      "source": "https://raw.githubusercontent.com/JacksonFergusonDev/systems-audio-lab/refs/heads/main/docs/systems_audio_tech_report.pdf",
+      "target": "public/reports/systems-audio-lab-technical-report.pdf",
+      "type": "pdf",
+      "minBytes": 200000
+    },
+    {
+      "id": "data-science-aco-2670-report",
+      "description": "Data Science Portfolio ACO 2670 dark matter analysis report linked from its project card.",
+      "source": "https://raw.githubusercontent.com/JacksonFergusonDev/data-science-portfolio/refs/heads/main/astrophysics/aco_2670_dark_matter_analysis_report.pdf",
+      "target": "public/reports/aco-2670-dark-matter-analysis-report.pdf",
+      "type": "pdf",
+      "minBytes": 100000
     }
   ]
 }
