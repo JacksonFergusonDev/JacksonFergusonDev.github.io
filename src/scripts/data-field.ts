@@ -3,8 +3,25 @@ import * as THREE from 'three';
 const canvas = document.querySelector<HTMLCanvasElement>('#data-canvas');
 const button = document.querySelector<HTMLButtonElement>('.motion-toggle');
 
-if (canvas && button) {
+// Without WebGL the hero keeps its static background and the motion toggle stays hidden.
+function createRenderer(surface: HTMLCanvasElement): THREE.WebGLRenderer | null {
+  try {
+    return new THREE.WebGLRenderer({
+      canvas: surface,
+      alpha: true,
+      antialias: true,
+      powerPreference: 'high-performance',
+    });
+  } catch {
+    return null;
+  }
+}
+
+const webgl = canvas && button ? createRenderer(canvas) : null;
+
+if (canvas && button && webgl) {
   const surface = canvas;
+  const renderer = webgl;
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
   let paused = reducedMotion.matches;
   let visible = true;
@@ -139,12 +156,6 @@ if (canvas && button) {
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(54, 1, 0.1, 150);
 
-  const renderer = new THREE.WebGLRenderer({
-    canvas: surface,
-    alpha: true,
-    antialias: true,
-    powerPreference: 'high-performance',
-  });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
   const positionAttr = new THREE.BufferAttribute(positions, 3);
