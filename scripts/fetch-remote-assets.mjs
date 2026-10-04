@@ -7,6 +7,8 @@ const root = process.cwd();
 const manifestPath = path.join(root, 'config', 'remote-assets.json');
 const timeoutMs = 15000;
 const attempts = 3;
+// CI starts without any fetched copies, so a failed download must fail the build there.
+const allowLocalFallback = !process.env.CI;
 
 const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
 const seenIds = new Set();
@@ -70,6 +72,12 @@ function validateCast(asset, text) {
   }
 }
 
+function validateAsset(asset, bytes) {
+  const text = new TextDecoder('utf8', { fatal: true }).decode(bytes);
+  if (asset.type === 'svg') validateSvg(asset, text);
+  if (asset.type === 'asciinema-cast') validateCast(asset, text);
+}
+
 async function fetchWithTimeout(url) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -104,22 +112,18 @@ async function fetchAsset(asset) {
         );
       }
 
-      const text = new TextDecoder('utf8', { fatal: true }).decode(bytes);
-      if (asset.type === 'svg') validateSvg(asset, text);
-      if (asset.type === 'asciinema-cast') validateCast(asset, text);
+      validateAsset(asset, bytes);
 
-      return {
-        bytes,
-        hash: createHash('sha256').update(bytes).digest('hex'),
-        size: bytes.byteLength,
-      };
+      return bytes;
     } catch (error) {
       lastError = error;
       if (attempt < attempts) await new Promise((resolve) => setTimeout(resolve, attempt * 500));
     }
   }
 
-  throw lastError;
+  throw new Error(`${asset.id}: no valid download after ${attempts} attempts`, {
+    cause: lastError,
+  });
 }
 
 async function writeIfChanged(targetPath, bytes) {
@@ -139,6 +143,22 @@ async function writeIfChanged(targetPath, bytes) {
   }
 }
 
+// Offline local work can keep using the last copy that passed validation.
+async function readFallback(asset, targetPath, error) {
+  if (!allowLocalFallback) throw error;
+
+  const bytes = await readFile(targetPath).catch(() => null);
+  if (!bytes) throw error;
+
+  try {
+    validateAsset(asset, bytes);
+  } catch {
+    throw error;
+  }
+  console.warn(`warning: ${error.message}; keeping the existing ${asset.target}`);
+  return bytes;
+}
+
 assertManifest(Array.isArray(manifest.assets), 'assets must be an array');
 manifest.assets.forEach(validateManifestAsset);
 
@@ -146,19 +166,25 @@ const results = [];
 
 for (const asset of manifest.assets) {
   const targetPath = path.join(root, asset.target);
-  const fetched = await fetchAsset(asset);
-  const changed = await writeIfChanged(targetPath, fetched.bytes);
+  let bytes;
+  let status;
+
+  try {
+    bytes = await fetchAsset(asset);
+    status = (await writeIfChanged(targetPath, bytes)) ? 'updated' : 'current';
+  } catch (error) {
+    bytes = await readFallback(asset, targetPath, error);
+    status = 'kept';
+  }
 
   results.push({
-    id: asset.id,
     target: asset.target,
-    size: fetched.size,
-    sha256: fetched.hash,
-    changed,
+    size: bytes.byteLength,
+    sha256: createHash('sha256').update(bytes).digest('hex'),
+    status,
   });
 }
 
 for (const result of results) {
-  const status = result.changed ? 'updated' : 'current';
-  console.log(`${status} ${result.target} ${result.size} bytes sha256:${result.sha256}`);
+  console.log(`${result.status} ${result.target} ${result.size} bytes sha256:${result.sha256}`);
 }

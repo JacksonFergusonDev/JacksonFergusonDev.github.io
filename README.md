@@ -57,7 +57,7 @@ The current sources follow upstream `main` branches, so rebuilding a portfolio c
 
 ### Fetching and validation
 
-`npm run assets:fetch` runs the fetcher directly. Both `npm run dev` and `npm run build` invoke it automatically through npm pre-scripts. If a download remains unavailable after retries, or fails validation, the command fails before Astro starts.
+`npm run assets:fetch` runs the fetcher directly. Both `npm run dev` and `npm run build` invoke it automatically through npm pre-scripts. If a download remains unavailable after retries, or fails validation, the command fails before Astro starts. Outside CI, the fetcher instead keeps an existing local copy that still passes validation and prints a warning, so offline development keeps working. CI never has a local copy, so there a failed download always fails the build.
 
 Each manifest entry supplies a unique ID, a description, an HTTPS source, a unique target inside `public/`, a supported validation type, and a positive `minBytes` threshold. The type matches the asset format, and the size threshold helps catch empty or unexpectedly small responses. SVG checks look for opening and closing SVG markup; terminal recordings require a JSON Asciinema v2 header with numeric dimensions. These are format checks, not a full content audit.
 
