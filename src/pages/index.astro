@@ -173,11 +173,11 @@ const skiPhotoEnlarged = await getImage({
         <article class="project-card flagship landing-reveal">
           <div class="flagship-grid">
             <div class="flagship-copy">
-              <p class="eyebrow">FEATURED PROJECT</p>
+              <p class="eyebrow">{protostar.eyebrow}</p>
               <h3 class="flagship-title">
                 <a
                   class="protostar-title-link"
-                  href="https://protostar.jacksonferguson.me/"
+                  href={protostar.url}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Protostar documentation"
@@ -252,18 +252,13 @@ const skiPhotoEnlarged = await getImage({
             <div class="project-actions">
               <a
                 class="hs-button hs-button--primary"
-                href="https://protostar.jacksonferguson.me/"
+                href={protostar.url}
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 Documentation <Icon size={16} />
               </a>
-              <a
-                class="text-link"
-                href={`${site.github}/protostar`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+              <a class="text-link" href={protostar.repo} target="_blank" rel="noopener noreferrer">
                 View on GitHub <Icon size={16} />
               </a>
             </div>
@@ -280,18 +275,14 @@ const skiPhotoEnlarged = await getImage({
             <p class="project-subtitle">{systemsAudioLab.subtitle}</p>
             <p>{systemsAudioLab.description}</p>
             <div class="metrics">
-              <div>
-                <strong>
-                  97.8 <small>kSps</small>
-                </strong>
-                <span>Calibrated sample rate</span>
-              </div>
-              <div>
-                <strong>
-                  1.3 <small>mV RMS</small>
-                </strong>
-                <span>Measured read-noise floor</span>
-              </div>
+              {systemsAudioLab.metrics.map((metric) => (
+                <div>
+                  <strong>
+                    {metric.value} <small set:html={metric.unit} />
+                  </strong>
+                  <span set:html={metric.label} />
+                </div>
+              ))}
             </div>
             <div class="tags">
               {systemsAudioLab.tags?.map((tag) => (
@@ -301,11 +292,11 @@ const skiPhotoEnlarged = await getImage({
             <div class="project-actions">
               <a
                 class="hs-button hs-button--primary"
-                href="/reports/systems-audio-lab-technical-report.pdf"
+                href={systemsAudioLab.report.href}
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Read the Full Technical Report (PDF) <Icon size={16} />
+                {systemsAudioLab.report.label} <Icon size={16} />
               </a>
               <a
                 class="text-link"
@@ -349,23 +340,14 @@ const skiPhotoEnlarged = await getImage({
             <p class="project-subtitle">{dataSciencePortfolio.subtitle}</p>
             <p>{dataSciencePortfolio.description}</p>
             <div class="metrics">
-              <div>
-                <strong>
-                  291 ± 60{' '}
-                  <small>
-                    M<sub>☉</sub>/L<sub>☉</sub>
-                  </small>
-                </strong>
-                <span>Mass-to-light ratio (ACO 2670)</span>
-              </div>
-              <div>
-                <strong>
-                  932 <small>km/s</small>
-                </strong>
-                <span>
-                  Velocity dispersion (&sigma;<sub>v</sub>)
-                </span>
-              </div>
+              {dataSciencePortfolio.metrics.map((metric) => (
+                <div>
+                  <strong>
+                    {metric.value} <small set:html={metric.unit} />
+                  </strong>
+                  <span set:html={metric.label} />
+                </div>
+              ))}
             </div>
             <div class="tags">
               {dataSciencePortfolio.tags?.map((tag) => (
@@ -375,15 +357,15 @@ const skiPhotoEnlarged = await getImage({
             <div class="project-actions">
               <a
                 class="hs-button hs-button--primary"
-                href="/reports/aco-2670-dark-matter-analysis-report.pdf"
+                href={dataSciencePortfolio.report.href}
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Read the Technical Report (PDF) <Icon size={16} />
+                {dataSciencePortfolio.report.label} <Icon size={16} />
               </a>
               <a
                 class="text-link"
-                href={`${site.github}/data-science-portfolio`}
+                href={dataSciencePortfolio.repo}
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -394,7 +376,7 @@ const skiPhotoEnlarged = await getImage({
           <div class="signal-art">
             <span class="signal-label">ACO 2670 / KINEMATICS & REDSHIFT DISTRIBUTION</span>
             <a
-              href={`${site.github}/data-science-portfolio`}
+              href={dataSciencePortfolio.repo}
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Data Science Portfolio on GitHub"
@@ -416,20 +398,20 @@ const skiPhotoEnlarged = await getImage({
         </article>
         <div class="project-pair landing-reveal">
           <SecondaryProjectCard
-            eyebrow={cicdRelease.eyebrow!}
-            titleLines={cicdRelease.titleLines!}
-            subtitle={cicdRelease.subtitle!}
+            eyebrow={cicdRelease.eyebrow}
+            titleLines={cicdRelease.titleLines}
+            subtitle={cicdRelease.subtitle}
             repoUrl={cicdRelease.repo}
             description={cicdRelease.description}
-            tags={cicdRelease.tags!}
+            tags={cicdRelease.tags}
           />
           <SecondaryProjectCard
-            eyebrow={starGround.eyebrow!}
+            eyebrow={starGround.eyebrow}
             title={starGround.name}
-            subtitle={starGround.subtitle!}
+            subtitle={starGround.subtitle}
             repoUrl={starGround.repo}
             description={starGround.description}
-            tags={starGround.tags!}
+            tags={starGround.tags}
           />
         </div>
         <div class="other-projects landing-reveal">
