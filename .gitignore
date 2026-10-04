@@ -9,6 +9,7 @@ public/protostar-demo.cast
 public/images/protostar.svg
 public/images/audio-analysis.svg
 public/images/gmm-redshift-distribution.svg
+public/data/protostar-mutation-score.json
 public/reports/
 .rumdl_cache/
 .claude/

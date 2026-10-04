@@ -18,6 +18,18 @@
       "minBytes": 500
     },
     {
+      "id": "protostar-mutation-score",
+      "description": "Protostar's latest engine mutation score, shown on the flagship project card.",
+      "source": "https://protostar.jacksonferguson.me/benchmarks/mutation-latest.json",
+      "target": "public/data/protostar-mutation-score.json",
+      "type": "json",
+      "shape": {
+        "label": "string",
+        "message": "string"
+      },
+      "minBytes": 50
+    },
+    {
       "id": "systems-audio-analysis",
       "description": "Systems Audio Lab measured analysis topology figure.",
       "source": "https://raw.githubusercontent.com/JacksonFergusonDev/systems-audio-lab/refs/heads/main/docs/figures/fig_analysis_topology.svg",

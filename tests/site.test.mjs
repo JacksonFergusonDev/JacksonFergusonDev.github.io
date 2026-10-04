@@ -68,6 +68,17 @@ test('project hierarchy and real downloads are preserved', async () => {
     assert.ok(raw.includes(`href="${href}"`), `Missing project destination ${href}`);
   }
   assert.ok(raw.includes('data-asciinema="/protostar-demo.cast"'));
+  const { message: score } = JSON.parse(
+    await readFile(
+      path.join(projectRoot, 'public', 'data', 'protostar-mutation-score.json'),
+      'utf8',
+    ),
+  );
+  assert.ok(raw.includes('href="https://protostar.jacksonferguson.me/benchmarks/"'));
+  assert.ok(
+    home.includes(`Engine mutation score ${score}`),
+    'Protostar card shows its mutation score',
+  );
   for (const file of [
     'Jackson-Ferguson-Software-Resume.pdf',
     'Jackson-Ferguson-Hardware-Software-Resume.pdf',
@@ -131,6 +142,11 @@ test('remote build asset manifest feeds generated public assets', async () => {
     if (asset.type === 'asciinema-cast') {
       const header = JSON.parse(text.split(/\r?\n/, 1)[0]);
       assert.equal(header.version, 2, `${asset.id} is not an Asciinema v2 cast`);
+    }
+    if (asset.type === 'json') {
+      const document = JSON.parse(text);
+      for (const [key, kind] of Object.entries(asset.shape))
+        assert.equal(typeof document[key], kind, `${asset.id} has no ${kind} "${key}"`);
     }
     if (asset.type === 'pdf') {
       assert.equal(output.subarray(0, 5).toString(), '%PDF-', `${asset.id} is not a PDF`);
