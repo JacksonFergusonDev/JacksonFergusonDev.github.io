@@ -166,6 +166,9 @@ if (canvas && button && webgl) {
     uniforms: {
       uTime: { value: 0 },
     },
+    defines: {
+      NUM_POINTS: NUM_POINTS.toFixed(1),
+    },
     vertexShader: `
       attribute float aIndex;
       attribute float aStrand;
@@ -185,7 +188,7 @@ if (canvas && button && webgl) {
         vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
         gl_Position = projectionMatrix * mvPosition;
 
-        float normIdx = aIndex / 18000.0;
+        float normIdx = aIndex / NUM_POINTS;
         float tailAttenuation = exp(-normIdx * 2.2);
 
         // Traveling soliton phase wave
