@@ -8,6 +8,8 @@ import { render } from 'astro:content';
 import { getImage } from 'astro:assets';
 import { routes } from '../../lib/site';
 import { getTrips, type TripEntry } from '../../lib/content';
+import { getEnlargedImage } from '../../lib/images';
+import { galleryGraph } from '../../lib/structured-data';
 
 export async function getStaticPaths() {
   const trips = await getTrips();
@@ -30,6 +32,22 @@ const ogImage = await getImage({
   format: 'jpg',
   quality: 85,
 });
+
+const enlarged = await Promise.all(trip.data.images.map((image) => getEnlargedImage(image.src)));
+const structuredData = galleryGraph(Astro.site!, {
+  path: Astro.url.pathname,
+  name: trip.data.title,
+  description: trip.data.description,
+  crumbs: [
+    { name: routes.trips.navLabel, path: routes.trips.path },
+    { name: trip.data.title, path: Astro.url.pathname },
+  ],
+  location: trip.data.location,
+  images: trip.data.images.map((image, i) => ({
+    url: enlarged[i].src,
+    caption: image.caption ?? image.alt,
+  })),
+});
 ---
 
 <BaseLayout
@@ -37,6 +55,7 @@ const ogImage = await getImage({
   description={trip.data.description}
   image={ogImage.src}
   imageAlt={trip.data.images[0].alt}
+  structuredData={structuredData}
 >
   <ArticleHeader
     breadcrumbHref={routes.trips.path}

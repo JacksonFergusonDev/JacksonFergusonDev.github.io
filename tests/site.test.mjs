@@ -293,6 +293,27 @@ test('homepage exposes a schema.org profile and a share card', async () => {
   );
   assert.ok(!/engineer/i.test(home.replace(/<[^>]+>/g, ' ')), 'Homepage copy mentions engineering');
 });
+test('trip and creative pages expose breadcrumbs and gallery structured data', async () => {
+  const subpages = pages.filter((page) => /[/\\](trips|creative)[/\\]/.test(page));
+  assert.ok(subpages.length >= 6, 'Expected trip and creative pages');
+  for (const page of subpages) {
+    const html = await read(page);
+    const [, json] = html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/) ?? [];
+    assert.ok(json, `Missing JSON-LD on ${page}`);
+    const graph = JSON.parse(json)['@graph'];
+    const [, canonical] = html.match(/rel="canonical" href="([^"]+)"/);
+    const crumbs = graph.find((node) => node['@type'] === 'BreadcrumbList').itemListElement;
+    assert.equal(crumbs[0].item, 'https://jacksonferguson.me/');
+    assert.equal(crumbs.at(-1).item, canonical, `Breadcrumb should end at ${canonical}`);
+    const main = graph.find((node) => ['CollectionPage', 'ImageGallery'].includes(node['@type']));
+    assert.equal(main.url, canonical);
+    for (const image of main.image ?? []) {
+      const file = new URL(image.contentUrl).pathname;
+      assert.ok(await stat(path.join(root, file)).catch(() => false), `Missing ${file}`);
+      assert.ok(image.caption, `Missing caption for ${file} on ${page}`);
+    }
+  }
+});
 test('buttons and interactive controls use SVG icons instead of raw unicode symbols', async () => {
   const PSEUDO_ICONS = /[→←↑↓↗↖↘↙▶◀▲▼►◄✕✖×✓✔☰⏸⏯⏹]|&(?:rarr|larr|uarr|darr|times|check);/i;
   for (const page of pages) {

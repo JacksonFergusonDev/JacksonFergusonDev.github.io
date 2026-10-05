@@ -1,6 +1,7 @@
 ---
-import { Image, getImage } from 'astro:assets';
+import { Image } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
+import { getEnlargedImage } from '../lib/images';
 
 interface GalleryPhoto {
   src: ImageMetadata;
@@ -14,16 +15,7 @@ interface Props {
 
 const { photos } = Astro.props;
 
-const enlargedPhotos = await Promise.all(
-  photos.map((photo) =>
-    getImage({
-      src: photo.src,
-      width: Math.min(2400, photo.src.width),
-      format: 'webp',
-      quality: 85,
-    }),
-  ),
-);
+const enlargedPhotos = await Promise.all(photos.map((photo) => getEnlargedImage(photo.src)));
 ---
 
 <div class="trip-gallery container">

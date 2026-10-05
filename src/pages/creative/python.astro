@@ -7,6 +7,8 @@ import GalleryViewer from '../../components/GalleryViewer.astro';
 import ArticleHeader from '../../components/ArticleHeader.astro';
 import SubpageNav from '../../components/SubpageNav.astro';
 import { routes } from '../../lib/site';
+import { getEnlargedImage } from '../../lib/images';
+import { galleryGraph } from '../../lib/structured-data';
 
 const entry = await getEntry('creative', 'python');
 if (!entry || entry.data.type !== 'python') {
@@ -22,16 +24,7 @@ const pythonScripts = import.meta.glob<string>('../../assets/python/*.py', {
   eager: true,
 });
 
-const enlargedPieces = await Promise.all(
-  data.pieces.map((piece) =>
-    getImage({
-      src: piece.image,
-      width: Math.min(2400, piece.image.width),
-      format: 'webp',
-      quality: 85,
-    }),
-  ),
-);
+const enlargedPieces = await Promise.all(data.pieces.map((piece) => getEnlargedImage(piece.image)));
 
 const ogImage = data.pieces[0]
   ? await getImage({ src: data.pieces[0].image, width: 1200, format: 'jpg', quality: 85 })
@@ -46,6 +39,21 @@ const pieces = data.pieces.map((piece, i) => {
     enlargedSrc: enlargedPieces[i].src,
   };
 });
+
+const structuredData = galleryGraph(Astro.site!, {
+  path: routes.creative.python.path,
+  name: data.title,
+  description: data.description,
+  crumbs: [
+    { name: routes.creative.navLabel, path: routes.creative.path },
+    { name: data.title, path: routes.creative.python.path },
+  ],
+  images: pieces.map((piece) => ({
+    url: piece.enlargedSrc,
+    caption: `${piece.title}: ${piece.alt}`,
+    byAuthor: true,
+  })),
+});
 ---
 
 <BaseLayout
@@ -53,6 +61,7 @@ const pieces = data.pieces.map((piece, i) => {
   description={data.description}
   image={ogImage?.src}
   imageAlt={pieces[0]?.alt ?? 'Python generative art'}
+  structuredData={structuredData}
 >
   <ArticleHeader
     breadcrumbHref={routes.creative.path}
