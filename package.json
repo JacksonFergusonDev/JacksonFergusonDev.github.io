@@ -32,15 +32,13 @@
   "dependencies": {
     "asciinema-player": "^3.17.0",
     "astro": "^7.3.2",
-    "house-style": "github:JacksonFergusonDev/house-style#v1.3.0",
-    "three": "^0.186.0"
+    "house-style": "github:JacksonFergusonDev/house-style#v1.3.0"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
     "@axe-core/playwright": "^4.13.0",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.63.0",
-    "@types/three": "^0.186.0",
     "eslint": "^10.10.0",
     "eslint-plugin-astro": "^3.2.1",
     "globals": "^17.12.0",
