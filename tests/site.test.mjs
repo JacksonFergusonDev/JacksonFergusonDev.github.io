@@ -314,6 +314,24 @@ test('trip and creative pages expose breadcrumbs and gallery structured data', a
     }
   }
 });
+test('sitemap lists every page with a plausible lastmod', async () => {
+  const xml = await read(path.join(root, 'sitemap.xml'));
+  const entries = [
+    ...xml.matchAll(/<url><loc>([^<]+)<\/loc>(?:<lastmod>([^<]+)<\/lastmod>)?<\/url>/g),
+  ];
+  assert.ok(entries.length >= 10, 'Expected every page in the sitemap');
+  const dated = entries.filter(([, , lastmod]) => lastmod);
+  // CI checks out full history; a shallow or git-less build would leave every date missing.
+  assert.ok(dated.length > 0, 'No <lastmod> dates: is git history available?');
+  const now = Date.now();
+  for (const [, loc, lastmod] of dated) {
+    const time = Date.parse(lastmod);
+    assert.ok(
+      time > Date.parse('2024-01-01') && time <= now + 86_400_000,
+      `Bad lastmod for ${loc}`,
+    );
+  }
+});
 test('buttons and interactive controls use SVG icons instead of raw unicode symbols', async () => {
   const PSEUDO_ICONS = /[→←↑↓↗↖↘↙▶◀▲▼►◄✕✖×✓✔☰⏸⏯⏹]|&(?:rarr|larr|uarr|darr|times|check);/i;
   for (const page of pages) {
