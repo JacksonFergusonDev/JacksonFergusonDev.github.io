@@ -132,6 +132,9 @@ test('remote build asset manifest feeds generated public assets', async () => {
       const header = JSON.parse(text.split(/\r?\n/, 1)[0]);
       assert.equal(header.version, 2, `${asset.id} is not an Asciinema v2 cast`);
     }
+    if (asset.type === 'pdf') {
+      assert.equal(output.subarray(0, 5).toString(), '%PDF-', `${asset.id} is not a PDF`);
+    }
   }
 
   const home = await read(path.join(root, 'index.html'));
@@ -139,6 +142,14 @@ test('remote build asset manifest feeds generated public assets', async () => {
   assert.ok(home.includes('src="/images/protostar.svg"'));
   assert.ok(home.includes('src="/images/audio-analysis.svg"'));
   assert.ok(home.includes('src="/images/gmm-redshift-distribution.svg"'));
+  assert.ok(home.includes('href="/reports/systems-audio-lab-technical-report.pdf"'));
+  assert.ok(home.includes('href="/reports/aco-2670-dark-matter-analysis-report.pdf"'));
+  for (const page of pages) {
+    assert.ok(
+      !(await read(page)).includes('raw.githubusercontent.com'),
+      `${path.relative(root, page)} links to raw GitHub content instead of a fetched copy`,
+    );
+  }
 });
 test('publishes four real photo journals', async () => {
   assert.ok(
