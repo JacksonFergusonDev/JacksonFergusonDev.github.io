@@ -8,7 +8,7 @@ The site is built with **Astro, TypeScript, and CSS**, with static HTML generate
 
 Astro components handle the shared layout, project cards, navigation, and galleries. Trip journals and creative collections live in Markdown with schema-validated metadata. Project descriptions, site metadata, and contact links are centralized in TypeScript so the pages and structured data share the same source.
 
-JavaScript supports specific interactions: a Three.js hero animation, an Asciinema terminal recording, photo viewers, and copy buttons. Astro generates responsive image variants, while fonts and selected upstream project assets are served from the site itself.
+JavaScript supports specific interactions: a WebGL hero animation, an Asciinema terminal recording, photo viewers, and copy buttons. Astro generates responsive image variants, while fonts and selected upstream project assets are served from the site itself.
 
 The New Computer Modern regular and italic WOFF2 files in `public/fonts/` are Latin and common-symbol subsets of the 7.1.1 OpenType fonts distributed with TeX Live 2026. They were generated with FontTools `pyftsubset` using `--unicodes='U+0000-024F,U+1E00-1EFF,U+2000-206F,U+20AC,U+2122,U+2200-22FF' --layout-features='*' --name-IDs='*' --name-languages='*' --flavor=woff2`. The original full fonts fail Chromium's font parser; the subsets retain the characters used by this site and load in the browser. The bundled GUST font license remains in `public/fonts/`.
 
@@ -121,7 +121,7 @@ GitHub Pages receives the static `dist/` artifact, with the custom domain record
 | [`src/components/`](src/components/)                     | Shared interface components and interactive media        |
 | [`src/layouts/`](src/layouts/)                           | Shared page structure, navigation, and metadata          |
 | [`src/lib/`](src/lib/)                                   | Project descriptions, site metadata, and structured data |
-| [`src/scripts/data-field.ts`](src/scripts/data-field.ts) | Three.js hero animation and motion controls              |
+| [`src/scripts/data-field.ts`](src/scripts/data-field.ts) | WebGL hero animation and motion controls                 |
 | [`src/styles/global.css`](src/styles/global.css)         | Typography, colour, spacing, and responsive layout       |
 | [`src/assets/`](src/assets/)                             | Source photography, artwork, and creative code           |
 | [`public/`](public/)                                     | Static downloads, fonts, favicon, and custom-domain file |
