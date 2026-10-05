@@ -13,6 +13,7 @@ const allowLocalFallback = !process.env.CI;
 const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
 const seenIds = new Set();
 const seenTargets = new Set();
+const jsonKinds = ['string', 'number', 'boolean'];
 
 function assertManifest(condition, message) {
   if (!condition) throw new Error(`Remote asset manifest error: ${message}`);
@@ -42,9 +43,20 @@ function validateManifestAsset(asset) {
   seenTargets.add(asset.target);
 
   assertManifest(
-    ['svg', 'asciinema-cast', 'pdf'].includes(asset.type),
+    ['svg', 'asciinema-cast', 'pdf', 'json'].includes(asset.type),
     `${asset.id} has unsupported type`,
   );
+  if (asset.type === 'json') {
+    assertManifest(
+      asset.shape &&
+        typeof asset.shape === 'object' &&
+        Object.keys(asset.shape).length > 0 &&
+        Object.values(asset.shape).every((kind) => jsonKinds.includes(kind)),
+      `${asset.id} shape must map each required key to one of ${jsonKinds.join(', ')}`,
+    );
+  } else {
+    assertManifest(asset.shape === undefined, `${asset.id} shape applies only to json assets`);
+  }
   assertManifest(
     Number.isInteger(asset.minBytes) && asset.minBytes > 0,
     `${asset.id} minBytes must be positive`,
@@ -72,6 +84,25 @@ function validateCast(asset, text) {
   }
 }
 
+function validateJson(asset, text) {
+  let document;
+
+  try {
+    document = JSON.parse(text);
+  } catch (error) {
+    throw new Error(`${asset.id}: expected a JSON document from ${asset.source}`, { cause: error });
+  }
+
+  if (!document || typeof document !== 'object' || Array.isArray(document)) {
+    throw new Error(`${asset.id}: expected a JSON object from ${asset.source}`);
+  }
+  for (const [key, kind] of Object.entries(asset.shape)) {
+    if (typeof document[key] !== kind) {
+      throw new Error(`${asset.id}: expected "${key}" to be a ${kind} in ${asset.source}`);
+    }
+  }
+}
+
 function validatePdf(asset, bytes) {
   if (Buffer.from(bytes.subarray(0, 5)).toString('latin1') !== '%PDF-') {
     throw new Error(`${asset.id}: expected a PDF document from ${asset.source}`);
@@ -87,6 +118,7 @@ function validateAsset(asset, bytes) {
   const text = new TextDecoder('utf8', { fatal: true }).decode(bytes);
   if (asset.type === 'svg') validateSvg(asset, text);
   if (asset.type === 'asciinema-cast') validateCast(asset, text);
+  if (asset.type === 'json') validateJson(asset, text);
 }
 
 async function fetchWithTimeout(url) {

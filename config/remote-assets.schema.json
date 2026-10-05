@@ -30,12 +30,28 @@
             "pattern": "^public/"
           },
           "type": {
-            "enum": ["svg", "asciinema-cast", "pdf"]
+            "enum": ["svg", "asciinema-cast", "pdf", "json"]
+          },
+          "shape": {
+            "type": "object",
+            "minProperties": 1,
+            "additionalProperties": {
+              "enum": ["string", "number", "boolean"]
+            }
           },
           "minBytes": {
             "type": "integer",
             "minimum": 1
           }
+        },
+        "if": {
+          "properties": { "type": { "const": "json" } }
+        },
+        "then": {
+          "required": ["shape"]
+        },
+        "else": {
+          "not": { "required": ["shape"] }
         }
       }
     }
