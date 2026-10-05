@@ -1,10 +1,13 @@
+const emailAddress = 'jackson.ferguson0@gmail.com';
+
 export const site = {
   name: 'Jackson Ferguson',
   description:
     'Physics & Astronomy graduate building reliable systems across software, infrastructure, and hardware. Explore Protostar, instrumentation, and projects.',
   github: 'https://github.com/JacksonFergusonDev',
   linkedin: 'https://www.linkedin.com/in/jackson--ferguson/',
-  email: 'mailto:jackson.ferguson0@gmail.com',
+  emailAddress,
+  email: `mailto:${emailAddress}`,
 };
 
 export const routes = {

@@ -37,7 +37,7 @@ export function homepageGraph(origin: URL) {
         url: home,
         image: new URL(headshot.src, origin).href,
         description: site.description,
-        email: site.email.replace('mailto:', ''),
+        email: site.emailAddress,
         address: {
           '@type': 'PostalAddress',
           addressLocality: 'Vancouver',

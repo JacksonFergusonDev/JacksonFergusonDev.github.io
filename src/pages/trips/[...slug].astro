@@ -4,19 +4,13 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import ArticleHeader from '../../components/ArticleHeader.astro';
 import PhotoGallery from '../../components/PhotoGallery.astro';
 import SubpageNav from '../../components/SubpageNav.astro';
-import { getCollection, render, type CollectionEntry } from 'astro:content';
+import { render } from 'astro:content';
 import { getImage } from 'astro:assets';
 import { routes } from '../../lib/site';
-
-type TripEntry = CollectionEntry<'trips'> & {
-  data: Extract<CollectionEntry<'trips'>['data'], { type: 'trip' }>;
-};
+import { getTrips, type TripEntry } from '../../lib/content';
 
 export async function getStaticPaths() {
-  const trips = (await getCollection(
-    'trips',
-    ({ data }) => data.type === 'trip' && !data.draft,
-  )) as TripEntry[];
+  const trips = await getTrips();
   return trips.map((trip) => ({
     params: { slug: trip.id },
     props: { trip },
