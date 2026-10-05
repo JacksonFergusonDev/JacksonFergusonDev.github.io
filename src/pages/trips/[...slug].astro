@@ -51,7 +51,7 @@ const structuredData = galleryGraph(Astro.site!, {
 ---
 
 <BaseLayout
-  title={trip.data.title}
+  title={trip.data.seoTitle ?? trip.data.title}
   description={trip.data.description}
   image={ogImage.src}
   imageAlt={trip.data.images[0].alt}

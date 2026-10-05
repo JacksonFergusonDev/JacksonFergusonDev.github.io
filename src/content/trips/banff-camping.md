@@ -1,6 +1,7 @@
 ---
 type: trip
 title: 'Banff & the Rockies'
+seoTitle: 'Banff Backcountry Camping & Via Ferrata, 2025'
 description: 'Alpine lakes, high mountain trails, via ferrata, and days deep in the Canadian Rockies.'
 date: 2025-08-27
 dateLabel: 'August 2025'

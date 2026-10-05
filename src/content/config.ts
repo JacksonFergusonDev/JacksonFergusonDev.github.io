@@ -9,6 +9,8 @@ const trips = defineCollection({
       z.object({
         type: z.literal('trip'),
         title: z.string(),
+        // The <title> for search results, when the heading alone doesn't name the place.
+        seoTitle: z.string().optional(),
         description: z.string(),
         date: z.coerce.date(),
         dateLabel: z.string().optional(),

@@ -1,6 +1,7 @@
 ---
 type: trip
 title: 'Semaphore, take two'
+seoTitle: 'Semaphore Lakes, BC Backpacking, 2026'
 description: 'Back among the granite, alpine lakes, and long views of Semaphore.'
 date: 2026-09-07
 dateLabel: 'September 2026'

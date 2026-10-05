@@ -2,6 +2,8 @@ const emailAddress = 'jackson.ferguson0@gmail.com';
 
 export const site = {
   name: 'Jackson Ferguson',
+  // The homepage <title>; kept near 60 characters so search results don't truncate it.
+  homeTitle: 'Jackson Ferguson — Physics grad, software & systems, Vancouver',
   description:
     'Physics & Astronomy graduate building reliable systems across software, infrastructure, and hardware. Explore Protostar, instrumentation, and projects.',
   github: 'https://github.com/JacksonFergusonDev',
@@ -33,6 +35,8 @@ export const routes = {
   trips: {
     path: '/trips/',
     title: 'Camping Trips',
+    // The <title> for search results; the page heading and nav keep the shorter title.
+    seoTitle: 'Backpacking & Camping Trips, BC & Alberta',
     navLabel: 'Trips',
     exploreLabel: 'Explore camping trips',
     breadcrumb: 'ALL GALLERIES',
@@ -42,6 +46,7 @@ export const routes = {
     path: '/creative/',
     title: 'Creative studio, events & 3D',
     pageTitle: 'Creative & Field Archives',
+    seoTitle: 'Creative Work: DJing, Blender & Python Art',
     navLabel: 'Creative',
     exploreLabel: 'Explore creative studio, events & 3D',
     breadcrumb: 'ALL CREATIVE ARCHIVES',

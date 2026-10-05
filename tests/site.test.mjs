@@ -332,6 +332,15 @@ test('sitemap lists every page with a plausible lastmod', async () => {
     );
   }
 });
+test('page titles are unique and short enough to survive in search results', async () => {
+  const seen = new Map();
+  for (const page of pages.filter((f) => !f.endsWith('404.html'))) {
+    const [, title] = (await read(page)).match(/<title>([^<]+)<\/title>/);
+    assert.ok(title.length <= 70, `Title too long (${title.length}): ${title}`);
+    assert.ok(!seen.has(title), `Duplicate title "${title}" on ${page} and ${seen.get(title)}`);
+    seen.set(title, page);
+  }
+});
 test('buttons and interactive controls use SVG icons instead of raw unicode symbols', async () => {
   const PSEUDO_ICONS = /[→←↑↓↗↖↘↙▶◀▲▼►◄✕✖×✓✔☰⏸⏯⏹]|&(?:rarr|larr|uarr|darr|times|check);/i;
   for (const page of pages) {

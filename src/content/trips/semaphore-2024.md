@@ -1,6 +1,7 @@
 ---
 type: trip
 title: 'Semaphore & the Sea to Sky'
+seoTitle: 'Semaphore Lakes, BC Backpacking, 2024'
 description: 'Granite walls, alpine trails, sudden snowstorms, and long days in the Sea to Sky.'
 date: 2024-08-26
 dateLabel: '2024'

@@ -1,6 +1,7 @@
 ---
 type: trip
 title: 'North Vancouver Island'
+seoTitle: 'North Vancouver Island Backpacking, 2026'
 description: 'Sea caves, empty beaches, rainforest trails, and the Milky Way overhead.'
 date: 2026-08-07
 dateLabel: 'August 2026'
