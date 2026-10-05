@@ -38,6 +38,16 @@ Subpages follow the same system. Index pages (trips, creative) open with a `Page
 
 Journal text uses a second voice: New Computer Modern serif, for detail-page descriptions (`--fs-journal-lead`, 24px / 22px) and long-form `.prose` writing (`--fs-journal-body`, 20px / 19px). The serif runs smaller than DM Sans at the same size, so these tokens are larger than their sans equivalents. Headings inside prose stay in DM Sans on the H3 and journal-lead sizes.
 
+## Photo originals
+
+Photos in [src/assets/](src/assets/) are build inputs, not an archive: Astro generates every served size from them, and the largest is the 2400px photo viewer image. Before committing new photos, run:
+
+```sh
+npm run images:prepare
+```
+
+[scripts/prepare-images.mjs](scripts/prepare-images.mjs) caps the long edge at 3000px, applies the camera orientation, re-encodes JPEGs at quality 85, and removes all metadata, including GPS locations. PNGs stay lossless. Files that are already prepared are skipped, so running it again never re-compresses them. Pass paths to prepare only some files. The pre-commit hook rejects newly added files over 4 MB. Keep full-resolution copies in your own photo library.
+
 ## Remote project assets
 
 [config/remote-assets.json](config/remote-assets.json) is the central manifest for assets sourced from other project repositories. [scripts/fetch-remote-assets.mjs](scripts/fetch-remote-assets.mjs) downloads and validates them, then writes the copies into `public/` for Astro to include in the static site. These generated copies are git-ignored; this repository tracks the fetching process rather than snapshots that can go stale.
