@@ -3,8 +3,29 @@ import * as THREE from 'three';
 const canvas = document.querySelector<HTMLCanvasElement>('#data-canvas');
 const button = document.querySelector<HTMLButtonElement>('.motion-toggle');
 
-if (canvas && button) {
+// Without WebGL the hero keeps its static background and the motion toggle stays hidden.
+function createRenderer(surface: HTMLCanvasElement): THREE.WebGLRenderer | null {
+  try {
+    return new THREE.WebGLRenderer({
+      canvas: surface,
+      alpha: true,
+      antialias: true,
+      powerPreference: 'high-performance',
+    });
+  } catch {
+    return null;
+  }
+}
+
+const webgl = canvas && button ? createRenderer(canvas) : null;
+
+if (canvas && button && webgl) {
   const surface = canvas;
+  const renderer = webgl;
+  const toggle = button;
+  const label = toggle.querySelector<HTMLElement>('.motion-toggle-label')!;
+  const pauseIcon = toggle.querySelector<HTMLElement>('[data-motion-icon="pause"]')!;
+  const playIcon = toggle.querySelector<HTMLElement>('[data-motion-icon="play"]')!;
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
   let paused = reducedMotion.matches;
   let visible = true;
@@ -139,12 +160,6 @@ if (canvas && button) {
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(54, 1, 0.1, 150);
 
-  const renderer = new THREE.WebGLRenderer({
-    canvas: surface,
-    alpha: true,
-    antialias: true,
-    powerPreference: 'high-performance',
-  });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
   const positionAttr = new THREE.BufferAttribute(positions, 3);
@@ -154,6 +169,9 @@ if (canvas && button) {
   const lineMaterial = new THREE.ShaderMaterial({
     uniforms: {
       uTime: { value: 0 },
+    },
+    defines: {
+      NUM_POINTS: NUM_POINTS.toFixed(1),
     },
     vertexShader: `
       attribute float aIndex;
@@ -174,7 +192,7 @@ if (canvas && button) {
         vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
         gl_Position = projectionMatrix * mvPosition;
 
-        float normIdx = aIndex / 18000.0;
+        float normIdx = aIndex / NUM_POINTS;
         float tailAttenuation = exp(-normIdx * 2.2);
 
         // Traveling soliton phase wave
@@ -360,19 +378,10 @@ if (canvas && button) {
   function sync(): void {
     cancelAnimationFrame(frame);
     frame = 0;
-    button!.hidden = false;
-    button!.setAttribute('aria-pressed', String(paused));
-    button!.setAttribute(
-      'aria-label',
-      paused ? 'Play background animation' : 'Pause background animation',
-    );
-    const pauseSvg =
-      '<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4" width="4" height="16" rx="1" /><rect x="14" y="4" width="4" height="16" rx="1" /></svg>';
-    const playSvg =
-      '<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="6 4 20 12 6 20 6 4" /></svg>';
-    button!.innerHTML = paused
-      ? `Play motion <span aria-hidden="true">${playSvg}</span>`
-      : `Pause motion <span aria-hidden="true">${pauseSvg}</span>`;
+    toggle.hidden = false;
+    label.textContent = paused ? 'Play motion' : 'Pause motion';
+    pauseIcon.hidden = paused;
+    playIcon.hidden = !paused;
 
     renderScene(0);
     if (!paused && visible && !document.hidden) {
@@ -389,7 +398,7 @@ if (canvas && button) {
     sync();
   }).observe(surface);
 
-  button.addEventListener('click', () => {
+  toggle.addEventListener('click', () => {
     paused = !paused;
     sync();
   });

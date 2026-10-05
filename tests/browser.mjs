@@ -80,14 +80,10 @@ try {
     'Hero divider should align with the viewport edge',
   );
   await page.screenshot({ path: 'test-results/home-desktop.png', fullPage: true });
-  assert.equal(
-    await page
-      .getByRole('button', { name: 'Play background animation' })
-      .getAttribute('aria-pressed'),
-    'true',
-  );
-  await page.getByRole('button', { name: 'Play background animation' }).click();
-  await page.getByRole('button', { name: 'Pause background animation' }).click();
+  // Reduced motion starts paused; the visible label is the button's whole name.
+  await page.getByRole('button', { name: 'Play motion', exact: true }).click();
+  await page.getByRole('button', { name: 'Pause motion', exact: true }).click();
+  await page.getByRole('button', { name: 'Play motion', exact: true }).waitFor();
   const resumeLink = page.getByRole('link', {
     name: 'Download Software Development resume (PDF)',
   });
