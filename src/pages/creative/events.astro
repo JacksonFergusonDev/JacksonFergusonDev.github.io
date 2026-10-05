@@ -1,6 +1,5 @@
 ---
 import { getEntry, render } from 'astro:content';
-import { getImage } from 'astro:assets';
 import GalleryViewer from '../../components/GalleryViewer.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ArticleHeader from '../../components/ArticleHeader.astro';
@@ -17,10 +16,6 @@ if (!entry || entry.data.type !== 'events') {
 
 const { Content } = await render(entry);
 const { data } = entry;
-
-const coverImage = data.images[0]
-  ? await getImage({ src: data.images[0].src, width: 1200, format: 'jpg', quality: 85 })
-  : undefined;
 
 const enlarged = await Promise.all(data.images.map((image) => getEnlargedImage(image.src)));
 const structuredData = galleryGraph(Astro.site!, {
@@ -41,8 +36,8 @@ const structuredData = galleryGraph(Astro.site!, {
 <BaseLayout
   title={data.title}
   description={data.description}
-  image={coverImage?.src}
-  imageAlt={data.images[0]?.alt}
+  image="/images/og/creative-events.png"
+  imageAlt={`${data.title}: ${data.description}`}
   structuredData={structuredData}
 >
   <ArticleHeader

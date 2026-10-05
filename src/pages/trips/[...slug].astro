@@ -5,7 +5,6 @@ import ArticleHeader from '../../components/ArticleHeader.astro';
 import PhotoGallery from '../../components/PhotoGallery.astro';
 import SubpageNav from '../../components/SubpageNav.astro';
 import { render } from 'astro:content';
-import { getImage } from 'astro:assets';
 import { routes } from '../../lib/site';
 import { getTrips, type TripEntry } from '../../lib/content';
 import { getEnlargedImage } from '../../lib/images';
@@ -25,13 +24,6 @@ interface Props {
 
 const { trip } = Astro.props;
 const { Content } = await render(trip);
-
-const ogImage = await getImage({
-  src: trip.data.images[0].src,
-  width: 1200,
-  format: 'jpg',
-  quality: 85,
-});
 
 const enlarged = await Promise.all(trip.data.images.map((image) => getEnlargedImage(image.src)));
 const structuredData = galleryGraph(Astro.site!, {
@@ -53,8 +45,8 @@ const structuredData = galleryGraph(Astro.site!, {
 <BaseLayout
   title={trip.data.seoTitle ?? trip.data.title}
   description={trip.data.description}
-  image={ogImage.src}
-  imageAlt={trip.data.images[0].alt}
+  image={`/images/og/trips-${trip.id}.png`}
+  imageAlt={`${trip.data.title}: ${trip.data.description}`}
   structuredData={structuredData}
 >
   <ArticleHeader

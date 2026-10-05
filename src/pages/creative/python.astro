@@ -1,7 +1,7 @@
 ---
 import { getEntry, render } from 'astro:content';
 import { Code } from 'astro:components';
-import { Image, getImage } from 'astro:assets';
+import { Image } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import GalleryViewer from '../../components/GalleryViewer.astro';
 import ArticleHeader from '../../components/ArticleHeader.astro';
@@ -25,10 +25,6 @@ const pythonScripts = import.meta.glob<string>('../../assets/python/*.py', {
 });
 
 const enlargedPieces = await Promise.all(data.pieces.map((piece) => getEnlargedImage(piece.image)));
-
-const ogImage = data.pieces[0]
-  ? await getImage({ src: data.pieces[0].image, width: 1200, format: 'jpg', quality: 85 })
-  : undefined;
 
 const pieces = data.pieces.map((piece, i) => {
   const scriptKey = `../../assets/python/${piece.filename}`;
@@ -59,8 +55,8 @@ const structuredData = galleryGraph(Astro.site!, {
 <BaseLayout
   title={data.title}
   description={data.description}
-  image={ogImage?.src}
-  imageAlt={pieces[0]?.alt ?? 'Python generative art'}
+  image="/images/og/creative-python.png"
+  imageAlt={`${data.title}: ${data.description}`}
   structuredData={structuredData}
 >
   <ArticleHeader

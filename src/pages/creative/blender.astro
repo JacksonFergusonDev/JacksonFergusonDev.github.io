@@ -4,7 +4,7 @@ import GalleryViewer from '../../components/GalleryViewer.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ArticleHeader from '../../components/ArticleHeader.astro';
 import SubpageNav from '../../components/SubpageNav.astro';
-import { Image, getImage } from 'astro:assets';
+import { Image } from 'astro:assets';
 import { routes } from '../../lib/site';
 import { getEnlargedImage } from '../../lib/images';
 import { galleryGraph } from '../../lib/structured-data';
@@ -20,10 +20,6 @@ const { data } = entry;
 const enlargedProjects = await Promise.all(
   data.projects.map((proj) => getEnlargedImage(proj.image)),
 );
-
-const ogImage = data.projects[0]
-  ? await getImage({ src: data.projects[0].image, width: 1200, format: 'jpg', quality: 85 })
-  : undefined;
 
 const structuredData = galleryGraph(Astro.site!, {
   path: routes.creative.blender.path,
@@ -44,8 +40,8 @@ const structuredData = galleryGraph(Astro.site!, {
 <BaseLayout
   title={data.title}
   description={data.description}
-  image={ogImage?.src}
-  imageAlt={data.projects[0]?.alt ?? 'Blender 3D project'}
+  image="/images/og/creative-blender.png"
+  imageAlt={`${data.title}: ${data.description}`}
   structuredData={structuredData}
 >
   <ArticleHeader

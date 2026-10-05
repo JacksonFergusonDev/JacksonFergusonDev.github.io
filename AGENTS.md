@@ -58,6 +58,7 @@ npm test
 npm run test:browser
 npm run format:check
 npm run images:prepare
+npm run og:render
 ```
 
 `npm run test:browser` expects a local preview or development server (`npx astro preview --host 127.0.0.1 --port 4322`). Install Chromium with `npx playwright install chromium`
@@ -138,6 +139,8 @@ section. Follow them on every page:
 
 ## Content Rules
 
+- Run `npm run og:render` after changing a trip or creative page's title, description, location, or
+  date, and commit the PNGs in `public/images/og/`; each page's social card is rendered from them.
 - Run `npm run images:prepare` on new photos in `src/assets/` before committing
   them. It caps their size and strips metadata such as GPS locations.
 - Project importance follows the GitHub profile order and description depth:

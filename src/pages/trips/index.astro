@@ -4,7 +4,6 @@ import PageIntro from '../../components/PageIntro.astro';
 import SubpageNav from '../../components/SubpageNav.astro';
 import ThumbnailCard from '../../components/ThumbnailCard.astro';
 import { getEntry } from 'astro:content';
-import { getImage } from 'astro:assets';
 import { routes } from '../../lib/site';
 import { getTrips } from '../../lib/content';
 import { collectionGraph } from '../../lib/structured-data';
@@ -18,11 +17,6 @@ const { intro } = indexEntry.data;
 
 const trips = await getTrips();
 
-const featuredCover = trips[0]?.data.images[0];
-const coverImage = featuredCover
-  ? await getImage({ src: featuredCover.src, width: 1200, format: 'jpg', quality: 85 })
-  : undefined;
-
 const structuredData = collectionGraph(Astro.site!, {
   path: routes.trips.path,
   name: routes.trips.title,
@@ -35,8 +29,8 @@ const structuredData = collectionGraph(Astro.site!, {
 <BaseLayout
   title={routes.trips.seoTitle}
   description={routes.trips.description}
-  image={coverImage?.src}
-  imageAlt={featuredCover?.alt ?? routes.trips.title}
+  image="/images/og/trips.png"
+  imageAlt={`${routes.trips.title}: ${routes.trips.description}`}
   structuredData={structuredData}
 >
   <PageIntro

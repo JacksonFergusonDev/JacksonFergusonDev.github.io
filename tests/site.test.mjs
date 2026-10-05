@@ -341,6 +341,19 @@ test('page titles are unique and short enough to survive in search results', asy
     seen.set(title, page);
   }
 });
+test('trip and creative pages share a branded card rendered by og:render', async () => {
+  const subpages = pages.filter((page) => /[/\\](trips|creative)[/\\]/.test(page));
+  for (const page of subpages) {
+    const html = await read(page);
+    const [, card] = html.match(
+      /property="og:image" content="https:\/\/jacksonferguson\.me([^"]+)"/,
+    );
+    assert.match(card, /^\/images\/og\/(trips|creative)[\w-]*\.png$/, `Unexpected card on ${page}`);
+    assert.ok(await stat(path.join(root, card)).catch(() => false), `Missing ${card}`);
+    assert.match(html, /name="twitter:image" content="[^"]+\/images\/og\//);
+    assert.match(html, /property="og:image:alt" content="[^"]{10,}"/);
+  }
+});
 test('buttons and interactive controls use SVG icons instead of raw unicode symbols', async () => {
   const PSEUDO_ICONS = /[→←↑↓↗↖↘↙▶◀▲▼►◄✕✖×✓✔☰⏸⏯⏹]|&(?:rarr|larr|uarr|darr|times|check);/i;
   for (const page of pages) {

@@ -48,6 +48,16 @@ npm run images:prepare
 
 [scripts/prepare-images.mjs](scripts/prepare-images.mjs) caps the long edge at 3000px, applies the camera orientation, re-encodes JPEGs at quality 85, and removes all metadata, including GPS locations. PNGs stay lossless. Files that are already prepared are skipped, so running it again never re-compresses them. Pass paths to prepare only some files. The pre-commit hook rejects newly added files over 4 MB. Keep full-resolution copies in your own photo library.
 
+## Social share cards
+
+Links shared from the site show a branded card, not a gallery photo: [public/images/og-card.png](public/images/og-card.png) for the homepage, and one card per trip and creative page in [public/images/og/](public/images/og/). The PNGs are committed. After changing a page's title, description, location, or date, or the homepage name or tagline, re-render them:
+
+```sh
+npm run og:render
+```
+
+[scripts/render-og-card.mjs](scripts/render-og-card.mjs) reads the title, description, location, and date from each page's frontmatter and uses the first sentence of the description, so a long description never overflows the card. Re-rendering is byte-stable. Adding a trip needs no code change: render again, then commit the new `trips-<slug>.png`.
+
 ## Remote project assets
 
 [config/remote-assets.json](config/remote-assets.json) is the central manifest for assets sourced from other project repositories. [scripts/fetch-remote-assets.mjs](scripts/fetch-remote-assets.mjs) downloads and validates them, then writes the copies into `public/` for Astro to include in the static site. These generated copies are git-ignored; this repository tracks the fetching process rather than snapshots that can go stale.

@@ -1,11 +1,12 @@
-// Renders the homepage social share card (public/images/og-card.png).
-// Run manually with `npm run og:render` after changing the name or tagline; the PNG is committed.
-import { readFile } from 'node:fs/promises';
+// Renders the social share cards: the homepage (public/images/og-card.png) and one per trip and
+// creative page (public/images/og/). Run manually with `npm run og:render` after changing the name,
+// tagline, or a page's title, description, location, or date; the PNGs are committed.
+import { mkdir, readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { chromium } from '@playwright/test';
 
 const root = path.resolve('.');
-const out = path.join(root, 'public/images/og-card.png');
+const outDir = path.join(root, 'public/images/og');
 const font = (file) =>
   readFile(path.join(root, 'node_modules/house-style/fonts', file)).then((b) =>
     b.toString('base64'),
@@ -29,7 +30,7 @@ const stars = Array.from({ length: 140 }, () => {
   return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(2)}" fill="${cyan ? '#22d3ee' : '#e8edef'}" opacity="${o}"/>`;
 }).join('');
 
-const html = `<!doctype html><html><head><style>
+const styles = `
 @font-face { font-family: 'DM Sans'; font-weight: 400; src: url(data:font/woff2;base64,${sans400}) format('woff2'); }
 @font-face { font-family: 'DM Sans'; font-weight: 700; src: url(data:font/woff2;base64,${sans700}) format('woff2'); }
 @font-face { font-family: 'JetBrains Mono'; font-weight: 400; src: url(data:font/woff2;base64,${mono400}) format('woff2'); }
@@ -47,22 +48,102 @@ p { margin-top: 28px; font-size: 32px; line-height: 1.3; color: #939da6; max-wid
 .rule { margin-top: 44px; height: 1px; background: #252c31; }
 .meta { margin-top: 20px; display: flex; justify-content: space-between; font-family: 'JetBrains Mono'; font-size: 19px; letter-spacing: 0.08em; color: #939da6; }
 .meta .url { color: #22d3ee; }
-</style></head><body>
+
+.eyebrow { font-family: 'JetBrains Mono'; font-size: 21px; letter-spacing: 0.08em; text-transform: uppercase; color: #22d3ee; }
+h1.page { margin-top: 20px; font-size: 76px; line-height: 1.02; max-width: 1000px; }
+p.page { margin-top: 24px; font-size: 28px; max-width: 960px; }
+.spacer { margin-top: auto; }
+`;
+
+const shell = (body) => `<!doctype html><html><head><style>${styles}</style></head><body>
 <svg class="field" viewBox="0 0 1200 630">${stars}</svg>
 <div class="glow"></div>
 <div class="inner">
   <div class="mark">${favicon}</div>
-  <h1>Jackson<br>Ferguson<span class="accent">.</span></h1>
-  <p>I build reliable systems across software, infrastructure, and hardware.</p>
-  <div class="rule"></div>
-  <div class="meta"><span class="url">jacksonferguson.me</span><span>VANCOUVER, BC</span></div>
+${body}
 </div>
 </body></html>`;
 
+// Long descriptions would overflow the card, and the first sentence carries the point.
+const firstSentence = (text) => text.split(/(?<=[.!?])\s/)[0];
+const escape = (text) => text.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+
+const homepage = shell(`  <h1>Jackson<br>Ferguson<span class="accent">.</span></h1>
+  <p>I build reliable systems across software, infrastructure, and hardware.</p>
+  <div class="rule"></div>
+  <div class="meta"><span class="url">jacksonferguson.me</span><span>VANCOUVER, BC</span></div>`);
+
+const pageCard = ({ eyebrow, title, description, url, section }) =>
+  shell(`  <div class="spacer"></div>
+  <div class="eyebrow">${escape(eyebrow)}</div>
+  <h1 class="page">${escape(title)}<span class="accent">.</span></h1>
+  <p class="page">${escape(firstSentence(description))}</p>
+  <div class="rule"></div>
+  <div class="meta"><span class="url">${url}</span><span>${section}</span></div>`);
+
+// Top-level `key: 'value'` lines of a content file's frontmatter; enough for titles and dates.
+async function frontmatter(file) {
+  const text = await readFile(file, 'utf8');
+  const block = text.split(/^---$/m)[1] ?? '';
+  const fields = {};
+  for (const [, key, value] of block.matchAll(/^(\w+): '((?:[^']|'')*)'\s*$/gm))
+    fields[key] = value.replace(/''/g, "'");
+  fields.year = block.match(/^date: (\d{4})/m)?.[1];
+  return fields;
+}
+
+const cards = [
+  {
+    file: 'trips.png',
+    eyebrow: 'Beyond the terminal',
+    title: 'Camping Trips',
+    description: 'Photos from the mountains, coastlines, and campsites beyond the terminal.',
+    url: 'jacksonferguson.me/trips',
+    section: 'TRIPS',
+  },
+  {
+    file: 'creative.png',
+    eyebrow: 'Beyond the codebase',
+    title: 'Creative & Field Archives',
+    description: 'Live event sound, 3D simulations in Blender, and algorithmic art in Python.',
+    url: 'jacksonferguson.me/creative',
+    section: 'CREATIVE',
+  },
+];
+for (const name of (await readdir(path.join(root, 'src/content/trips'))).sort()) {
+  const data = await frontmatter(path.join(root, 'src/content/trips', name));
+  if (data.location === undefined) continue; // the index entry has no location
+  const id = name.replace(/\.md$/, '');
+  cards.push({
+    file: `trips-${id}.png`,
+    eyebrow: `${data.location} / ${data.dateLabel ?? data.year}`,
+    title: data.title,
+    description: data.description,
+    url: `jacksonferguson.me/trips/${id}`,
+    section: 'TRIPS',
+  });
+}
+for (const id of ['events', 'blender', 'python']) {
+  const data = await frontmatter(path.join(root, 'src/content/creative', `${id}.md`));
+  cards.push({
+    file: `creative-${id}.png`,
+    eyebrow: data.eyebrow,
+    title: data.title,
+    description: data.description,
+    url: `jacksonferguson.me/creative/${id}`,
+    section: 'CREATIVE',
+  });
+}
+
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1200, height: 630 } });
-await page.setContent(html);
-await page.evaluate(() => document.fonts.ready);
-await page.screenshot({ path: out });
+async function render(html, out) {
+  await page.setContent(html);
+  await page.evaluate(() => document.fonts.ready);
+  await page.screenshot({ path: out });
+  console.log(`Wrote ${path.relative(root, out)}`);
+}
+await mkdir(outDir, { recursive: true });
+await render(homepage, path.join(root, 'public/images/og-card.png'));
+for (const { file, ...card } of cards) await render(pageCard(card), path.join(outDir, file));
 await browser.close();
-console.log(`Wrote ${path.relative(root, out)}`);
