@@ -57,6 +57,7 @@ npm run build
 npm test
 npm run test:browser
 npm run format:check
+npm run images:prepare
 ```
 
 `npm run test:browser` expects a local preview or development server (`npx astro preview --host 127.0.0.1 --port 4322`). Install Chromium with `npx playwright install chromium`
@@ -137,6 +138,8 @@ section. Follow them on every page:
 
 ## Content Rules
 
+- Run `npm run images:prepare` on new photos in `src/assets/` before committing
+  them. It caps their size and strips metadata such as GPS locations.
 - Project importance follows the GitHub profile order and description depth:
   Protostar first, then Systems Audio Lab, Data Science Portfolio, CI/CD tooling,
   Star Ground, and the smaller/archive projects.
