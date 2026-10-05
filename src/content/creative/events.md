@@ -9,47 +9,47 @@ images:
   # Photo 1
   # ---------------------------------------------------------------------------
   - src: ../../assets/events/1.jpg
-    alt: 'Live Production & DJing Photos (1)'
+    alt: 'Aerial view of swimmers floating in a ring around a sailboat DJ stage just off a crowded beach at dusk'
 
   # ---------------------------------------------------------------------------
   # Photo 2
   # ---------------------------------------------------------------------------
   - src: ../../assets/events/2.jpg
-    alt: 'Live Production & DJing Photos (2)'
+    alt: 'A smiling DJ in headphones and a white shirt mixing at a controller in a warmly lit bar'
 
   # ---------------------------------------------------------------------------
   # Photo 3
   # ---------------------------------------------------------------------------
   - src: ../../assets/events/3.jpg
-    alt: 'Live Production & DJing Photos (3)'
+    alt: 'Dancers with glow sticks cheer on the other side of the DJ booth, with turntables and a mixer in the foreground'
 
   # ---------------------------------------------------------------------------
   # Photo 4
   # ---------------------------------------------------------------------------
   - src: ../../assets/events/4.jpg
-    alt: 'Live Production & DJing Photos (4)'
+    alt: 'A woman in a wide-brimmed hat playing a row of colorful pinball machines, shot on film'
 
   # ---------------------------------------------------------------------------
   # Photo 5
   # ---------------------------------------------------------------------------
   - src: ../../assets/events/5.jpg
-    alt: 'Live Production & DJing Photos (5)'
+    alt: 'A packed, hazy dance floor of costumed partygoers lit by blue and red stage lights'
 
   # ---------------------------------------------------------------------------
   # Photo 6
   # ---------------------------------------------------------------------------
   - src: ../../assets/events/6.jpg
-    alt: 'Live Production & DJing Photos (6)'
+    alt: 'A DJ in a white lab coat with a stethoscope reaches over a mixer, with blurred light trails in front of a retro orange wallpaper'
 
   # ---------------------------------------------------------------------------
   # Photo 7
   # ---------------------------------------------------------------------------
   - src: ../../assets/events/7.jpg
-    alt: 'Live Production & DJing Photos (7)'
+    alt: 'A DJ performing on a sailboat to a crowd wearing glow sticks on a beach at night'
 
   # ---------------------------------------------------------------------------
   # Photo 8
   # ---------------------------------------------------------------------------
   - src: ../../assets/events/8.jpg
-    alt: 'Live Production & DJing Photos (8)'
+    alt: 'A crowd of swimmers gathered around a turquoise sailboat in golden evening light off a beach'
 ---
