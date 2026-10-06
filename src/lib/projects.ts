@@ -51,7 +51,7 @@ export const protostar = {
   score: {
     label: 'Engine mutation score',
     value: protostarMutation.message,
-    href: 'https://protostar.jacksonferguson.me/benchmarks/',
+    href: 'https://protostar.jacksonferguson.me/metrics/',
   },
 } satisfies Project;
 
