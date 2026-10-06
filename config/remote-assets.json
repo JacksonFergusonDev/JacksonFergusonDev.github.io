@@ -20,7 +20,7 @@
     {
       "id": "protostar-mutation-score",
       "description": "Protostar's latest engine mutation score, shown on the flagship project card.",
-      "source": "https://protostar.jacksonferguson.me/benchmarks/mutation-latest.json",
+      "source": "https://protostar.jacksonferguson.me/metrics/mutation-latest.json",
       "target": "public/data/protostar-mutation-score.json",
       "type": "json",
       "shape": {

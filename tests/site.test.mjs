@@ -74,7 +74,7 @@ test('project hierarchy and real downloads are preserved', async () => {
       'utf8',
     ),
   );
-  assert.ok(raw.includes('href="https://protostar.jacksonferguson.me/benchmarks/"'));
+  assert.ok(raw.includes('href="https://protostar.jacksonferguson.me/metrics/"'));
   assert.ok(
     home.includes(`Engine mutation score ${score}`),
     'Protostar card shows its mutation score',
