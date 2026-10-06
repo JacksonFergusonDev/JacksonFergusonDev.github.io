@@ -1,0 +1,62 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":semanticCommits",
+    ":prHourlyLimit2",
+    ":configMigration",
+    "helpers:pinGitHubActionDigests"
+  ],
+  "enabledManagers": ["npm", "github-actions"],
+  "timezone": "America/Vancouver",
+  "schedule": ["before 4am on monday"],
+  "prConcurrentLimit": 5,
+  "internalChecksFilter": "strict",
+  "rebaseWhen": "conflicted",
+  "labels": ["dependencies", "chore"],
+  "automerge": false,
+  "vulnerabilityAlerts": {
+    "schedule": ["at any time"],
+    "minimumReleaseAge": "0 days"
+  },
+  "packageRules": [
+    {
+      "description": "Wait two weeks for npm releases; vulnerability alerts bypass this delay.",
+      "matchDatasources": ["npm"],
+      "minimumReleaseAge": "14 days"
+    },
+    {
+      "description": "Group non-major development tooling updates, keeping Astro tooling with Astro.",
+      "matchManagers": ["npm"],
+      "matchDepTypes": ["devDependencies"],
+      "matchPackageNames": ["!@astrojs/check"],
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+      "groupName": "development tooling"
+    },
+    {
+      "description": "Review Astro and its checker together for non-major updates.",
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["astro", "@astrojs/check"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "Astro"
+    },
+    {
+      "description": "Group non-major GitHub Actions updates and digest pins for manual review.",
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["minor", "patch", "pin", "pinDigest", "digest"],
+      "groupName": "GitHub Actions"
+    },
+    {
+      "description": "Keep house-style release updates separate for visual review and retain tag references.",
+      "matchPackageNames": ["house-style", "JacksonFergusonDev/house-style"],
+      "groupName": null,
+      "rangeStrategy": "replace",
+      "pinDigests": false
+    },
+    {
+      "description": "Review each major upgrade separately, including dependencies grouped by presets.",
+      "matchUpdateTypes": ["major"],
+      "groupName": null
+    }
+  ]
+}
