@@ -30,6 +30,18 @@
       "minBytes": 50
     },
     {
+      "id": "protostar-rollback-faults",
+      "description": "Protostar's latest count of rollback faults injected and restored, shown on the flagship project card.",
+      "source": "https://protostar.jacksonferguson.me/metrics/rollback-latest.json",
+      "target": "public/data/protostar-rollback-faults.json",
+      "type": "json",
+      "shape": {
+        "label": "string",
+        "message": "string"
+      },
+      "minBytes": 50
+    },
+    {
       "id": "systems-audio-analysis",
       "description": "Systems Audio Lab measured analysis topology figure.",
       "source": "https://raw.githubusercontent.com/JacksonFergusonDev/systems-audio-lab/refs/heads/main/docs/figures/fig_analysis_topology.svg",

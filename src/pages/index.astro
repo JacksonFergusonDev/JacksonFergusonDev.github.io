@@ -262,15 +262,19 @@ const skiPhotoEnlarged = await getImage({
                 View on GitHub <Icon size={16} />
               </a>
             </div>
-            <a
-              class="text-link mutation-score"
-              href={protostar.score.href}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {protostar.score.label} <strong>{protostar.score.value}</strong>
-              <Icon size={16} />
-            </a>
+            <div class="project-scores">
+              {protostar.scores.map((score) => (
+                <a
+                  class="text-link project-score"
+                  href={score.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {score.label} <strong>{score.value}</strong>
+                  <Icon size={16} />
+                </a>
+              ))}
+            </div>
           </div>
         </article>
         <article class="project-card audio-card landing-reveal">

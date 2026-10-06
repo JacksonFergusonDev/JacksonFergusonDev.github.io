@@ -68,17 +68,16 @@ test('project hierarchy and real downloads are preserved', async () => {
     assert.ok(raw.includes(`href="${href}"`), `Missing project destination ${href}`);
   }
   assert.ok(raw.includes('data-asciinema="/protostar-demo.cast"'));
-  const { message: score } = JSON.parse(
-    await readFile(
-      path.join(projectRoot, 'public', 'data', 'protostar-mutation-score.json'),
-      'utf8',
-    ),
-  );
-  assert.ok(raw.includes('href="https://protostar.jacksonferguson.me/metrics/"'));
-  assert.ok(
-    home.includes(`Engine mutation score ${score}`),
-    'Protostar card shows its mutation score',
-  );
+  for (const [asset, label] of [
+    ['protostar-mutation-score', 'Engine mutation score'],
+    ['protostar-rollback-faults', 'Rollback faults restored'],
+  ]) {
+    const { message: score } = JSON.parse(
+      await readFile(path.join(projectRoot, 'public', 'data', `${asset}.json`), 'utf8'),
+    );
+    assert.ok(raw.includes('href="https://protostar.jacksonferguson.me/metrics/"'));
+    assert.ok(home.includes(`${label} ${score}`), `Protostar card shows ${label}`);
+  }
   for (const file of [
     'Jackson-Ferguson-Software-Resume.pdf',
     'Jackson-Ferguson-Hardware-Software-Resume.pdf',

@@ -1,6 +1,7 @@
 import { site } from './site';
 // Fetched by scripts/fetch-remote-assets.mjs, which checks its shape, before every build.
 import protostarMutation from '../../public/data/protostar-mutation-score.json';
+import protostarRollback from '../../public/data/protostar-rollback-faults.json';
 
 interface Metric {
   value: string;
@@ -27,7 +28,7 @@ export interface Project {
   /** A self-hosted report from config/remote-assets.json. */
   report?: { href: string; label: string };
   /** A figure fetched through config/remote-assets.json, linked to where it is explained. */
-  score?: { label: string; value: string; href: string };
+  scores?: { label: string; value: string; href: string }[];
 }
 
 export interface ToolProject {
@@ -48,11 +49,18 @@ export const protostar = {
     'Deterministic, transaction-aware scaffolding for modern Python projects. Protostar calculates the intended repository state first, then applies it through a separate execution engine with explicit failure and rollback semantics.',
   extra: 'Flagship project. Docs index for LLMs: https://protostar.jacksonferguson.me/llms.txt.',
   tags: ['Python', 'AST composition', 'Transaction engine'],
-  score: {
-    label: 'Engine mutation score',
-    value: protostarMutation.message,
-    href: 'https://protostar.jacksonferguson.me/metrics/',
-  },
+  scores: [
+    {
+      label: 'Engine mutation score',
+      value: protostarMutation.message,
+      href: 'https://protostar.jacksonferguson.me/metrics/',
+    },
+    {
+      label: 'Rollback faults restored',
+      value: protostarRollback.message,
+      href: 'https://protostar.jacksonferguson.me/metrics/',
+    },
+  ],
 } satisfies Project;
 
 export const systemsAudioLab = {
