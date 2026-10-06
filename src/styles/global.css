@@ -563,7 +563,12 @@ html.landing-js:not(.landing-reduced-motion) .hs-terminal-screen .ap-overlay-sta
   justify-content: space-between;
   gap: 16px 24px;
 }
-.mutation-score strong {
+.project-scores {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+}
+.project-score strong {
   color: var(--accent);
   font-weight: 500;
   font-variant-numeric: tabular-nums;
