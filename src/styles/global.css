@@ -554,16 +554,6 @@ html.landing-js:not(.landing-reduced-motion) .hs-terminal-screen .ap-overlay-sta
   justify-content: space-between;
   gap: 16px 24px;
 }
-.project-scores {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 24px;
-}
-.project-score strong {
-  color: var(--accent);
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-}
 .audio-card,
 .data-science-card {
   display: grid;
@@ -606,6 +596,9 @@ html.landing-js:not(.landing-reduced-motion) .hs-terminal-screen .ap-overlay-sta
   color: #9eacb5;
   display: block;
   margin-top: 6px;
+}
+.metrics .text-link {
+  color: var(--accent);
 }
 .audio-copy .tags,
 .data-science-copy .tags {

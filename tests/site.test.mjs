@@ -76,7 +76,7 @@ test('project hierarchy and real downloads are preserved', async () => {
       await readFile(path.join(projectRoot, 'public', 'data', `${asset}.json`), 'utf8'),
     );
     assert.ok(raw.includes('href="https://protostar.jacksonferguson.me/metrics/"'));
-    assert.ok(home.includes(`${label} ${score}`), `Protostar card shows ${label}`);
+    assert.ok(home.includes(`${score} ${label}`), `Protostar card shows ${label}`);
   }
   for (const file of [
     'Jackson-Ferguson-Software-Resume.pdf',

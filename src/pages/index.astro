@@ -175,6 +175,23 @@ const skiPhotoEnlarged = await getImage({
               </h3>
               <p class="project-subtitle">{protostar.subtitle}</p>
               <p>{protostar.description}</p>
+              <div class="metrics">
+                {protostar.scores.map((score) => (
+                  <div>
+                    <strong>{score.value}</strong>
+                    <span>
+                      <a
+                        class="text-link"
+                        href={score.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {score.label} <Icon size={16} />
+                      </a>
+                    </span>
+                  </div>
+                ))}
+              </div>
               <div class="hs-install-header">
                 <span class="hs-install-label">Install globally</span>
                 <div class="hs-install-toggle" role="tablist" aria-label="Installation method">
@@ -248,19 +265,6 @@ const skiPhotoEnlarged = await getImage({
               <a class="text-link" href={protostar.repo} target="_blank" rel="noopener noreferrer">
                 View on GitHub <Icon size={16} />
               </a>
-            </div>
-            <div class="project-scores">
-              {protostar.scores.map((score) => (
-                <a
-                  class="text-link project-score"
-                  href={score.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {score.label} <strong>{score.value}</strong>
-                  <Icon size={16} />
-                </a>
-              ))}
             </div>
           </div>
         </article>
