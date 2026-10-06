@@ -276,31 +276,22 @@ p {
 .hero-description span {
   color: #d5dce0;
 }
-.typing-caret {
+[data-text-reveal='heading'] {
   display: inline-block;
-  width: 0.08em;
-  height: 0.9em;
-  margin-left: 0.08em;
-  vertical-align: -0.08em;
-  background: var(--accent);
-  animation: typing-caret-blink 0.8s steps(1) infinite;
 }
-@keyframes typing-caret-blink {
-  50% {
-    opacity: 0;
-  }
+[data-text-reveal='lines'] {
+  display: block;
+}
+html.landing-js:not(.landing-reduced-motion)
+  body.landing-page:not(.landing-text-ready)
+  [data-text-reveal] {
+  visibility: hidden;
 }
 .landing-fade,
 .landing-reveal {
   transition:
     opacity 0.7s ease,
     transform 0.7s ease;
-}
-html.landing-js:not(.landing-reduced-motion) body.landing-page [data-typewriter] {
-  visibility: hidden;
-}
-html.landing-js:not(.landing-reduced-motion) body.landing-page [data-typewriter].typewriter-active {
-  visibility: visible;
 }
 html.landing-js:not(.landing-reduced-motion) body.landing-page .landing-fade,
 html.landing-js:not(.landing-reduced-motion) body.landing-page .landing-reveal {

@@ -216,6 +216,46 @@ try {
   assert.equal(await nojs.locator('[data-gallery-image]').count(), 15);
   await nojs.close();
 
+  // Returning home must not paint full text before the deferred reveal script runs.
+  const returnHome = await browser.newPage({ reducedMotion: 'no-preference' });
+  await returnHome.goto(base + '/');
+  await returnHome.waitForFunction(() =>
+    document.body.classList.contains('landing-intro-complete'),
+  );
+  await returnHome.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  let releaseScripts;
+  let notifyBlocked;
+  const scriptsReleased = new Promise((resolve) => {
+    releaseScripts = resolve;
+  });
+  const scriptBlocked = new Promise((resolve) => {
+    notifyBlocked = resolve;
+  });
+  await returnHome.route('**/*.js', async (route) => {
+    notifyBlocked();
+    await scriptsReleased;
+    await route.continue();
+  });
+  try {
+    await returnHome
+      .getByRole('link', { name: 'Jackson Ferguson home' })
+      .click({ noWaitAfter: true });
+    await scriptBlocked;
+    await returnHome.locator('[data-text-reveal]').first().waitFor({ state: 'attached' });
+    assert.deepEqual(
+      await returnHome
+        .locator('[data-text-reveal]')
+        .evaluateAll((elements) => elements.map((element) => getComputedStyle(element).visibility)),
+      ['hidden', 'hidden', 'hidden'],
+      'Hero text must stay hidden until the sweep is prepared, even with delayed scripts',
+    );
+  } finally {
+    releaseScripts();
+  }
+  await returnHome.waitForFunction(() => document.body.classList.contains('landing-text-ready'));
+  await expect(returnHome.locator('[data-text-reveal="lines"]')).toBeVisible();
+  await returnHome.close();
+
   // Check actual content edges so section padding cannot trigger an early reveal.
   for (const viewport of [
     { width: 1440, height: 1000 },
