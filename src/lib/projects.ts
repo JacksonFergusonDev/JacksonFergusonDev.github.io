@@ -89,7 +89,7 @@ export const dataSciencePortfolio = {
   eyebrow: 'ASTROPHYSICS & DATA',
   subtitle: 'Physical modeling from first principles.',
   description:
-    'Python analyses in astrophysics and atmospheric science: estimating a galaxy cluster’s dark matter from the motions of its galaxies, modeling exoplanet atmospheres, and running Monte Carlo transport simulations.',
+    'Python analyses in astrophysics, atmospheric science, and statistics. They estimate the dark matter in galaxy cluster ACO 2670 from SDSS galaxy velocities, reconstruct an exoplanet’s atmosphere from five descent probes’ measurements, and check Monte Carlo simulations against statistical theory.',
   tags: ['Astrophysics', 'Statistical inference', 'Scientific Python'],
   metrics: [
     {
