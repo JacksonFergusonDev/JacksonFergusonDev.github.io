@@ -44,11 +44,11 @@ export const protostar = {
   url: 'https://protostar.jacksonferguson.me/',
   repo: `${site.github}/protostar`,
   eyebrow: 'FEATURED PROJECT',
-  subtitle: 'A plan before a single side effect.',
+  subtitle: 'Python projects that stay up to date.',
   description:
-    'Deterministic, transaction-aware scaffolding for modern Python projects. Protostar calculates the intended repository state first, then applies it through a separate execution engine with explicit failure and rollback semantics.',
+    'Protostar sets up Python projects and keeps them current. You pick the tools, and it writes their configuration, commit hooks, and CI. When the template improves, it merges the update without overwriting your edits, and if a step fails, every file goes back to how it was.',
   extra: 'Flagship project. Docs index for LLMs: https://protostar.jacksonferguson.me/llms.txt.',
-  tags: ['Python', 'AST composition', 'Transaction engine'],
+  tags: ['Python', 'Developer tooling', 'Structured merging'],
   scores: [
     {
       label: 'Engine mutation score',
@@ -68,7 +68,7 @@ export const systemsAudioLab = {
   url: `${site.github}/systems-audio-lab`,
   repo: `${site.github}/systems-audio-lab`,
   eyebrow: 'HARDWARE → SOFTWARE',
-  subtitle: 'Own the entire measurement chain.',
+  subtitle: 'The whole measurement chain, from circuit to analysis.',
   description:
     'Low-noise power, a CMOS overdrive circuit, a custom RP2040 acquisition instrument, and Python signal analysis. Built together to understand how circuit topology becomes sound.',
   tags: ['RP2040', 'Analog electronics', 'Python / DSP'],
@@ -89,7 +89,7 @@ export const dataSciencePortfolio = {
   eyebrow: 'ASTROPHYSICS & DATA',
   subtitle: 'Physical modeling from first principles.',
   description:
-    'Computational pipelines bridging theoretical astrophysics, atmospheric science, and statistical inference. Estimating galaxy cluster dark matter via virial kinematics, exoplanet atmospheres, and Monte Carlo transport.',
+    'Python analyses in astrophysics and atmospheric science: estimating a galaxy cluster’s dark matter from the motions of its galaxies, modeling exoplanet atmospheres, and running Monte Carlo transport simulations.',
   tags: ['Astrophysics', 'Statistical inference', 'Scientific Python'],
   metrics: [
     {
@@ -113,7 +113,7 @@ export const cicdRelease = {
   titleLines: ['CI/CD & Release', 'Infrastructure'],
   subtitle: 'Release policy belongs in one place.',
   description:
-    'Reusable workflows handle pre-flight checks, atomic Git publication, and PyPI-to-Homebrew synchronization across Python projects.',
+    'Reusable GitHub Actions workflows that release my Python projects: checks before each release, publishing to Git and PyPI, and keeping the Homebrew formula in step.',
   tags: ['GitHub Actions', 'Python', 'Homebrew'],
 } satisfies Project;
 
@@ -124,7 +124,7 @@ export const starGround = {
   eyebrow: 'HARDWARE LOGISTICS',
   subtitle: 'Dependency management, made physical.',
   description:
-    'Inconsistent bills of materials become a reproducible procurement pipeline. Exact unit normalization, inventory-aware sourcing, and assembly guides ordered by component height.',
+    'Turns messy bills of materials for electronics builds into a repeatable parts order: units normalized exactly, parts already on hand accounted for, and assembly guides ordered by component height.',
   tags: ['Python', 'Parsing', 'Property-based testing'],
 } satisfies Project;
 
@@ -144,7 +144,7 @@ export const tools: ToolProject[] = [
     repo: 'git-pulsar',
     url: `${site.github}/git-pulsar`,
     description:
-      'Recoverable workspace history, independent of your commits. Immutable state capture and reconciliation across machines, without touching the active Git index.',
+      'Backs up your work in progress separately from your commits, and brings it to another machine, without touching Git’s index.',
   },
   {
     name: 'Dark Matter',
@@ -160,6 +160,6 @@ export const tools: ToolProject[] = [
     repo: 'focal',
     url: `${site.github}/focal`,
     description:
-      'Focused codebase context for LLM-assisted development. Fast UNIX tools for common paths; Python for structured work.',
+      'Gathers the parts of a codebase an LLM needs to see. Fast Unix tools handle the common cases, and Python handles structured work.',
   },
 ];
