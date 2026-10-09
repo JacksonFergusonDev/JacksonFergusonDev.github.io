@@ -75,14 +75,10 @@ The palette, type scale, fonts, icons, section markers, buttons, terminal window
 
 ## Writing
 
-House-style's Writing section sets the voice every site shares: calm, clear, and precise, with the answer first, one claim per sentence, and no selling. On this site:
+Follow house-style's Writing section. On this site:
 
-- **Write as "I".** It's a personal site.
-- **The homepage and project cards are for a General audience:** hiring managers, coworkers, and engineers on a first look. Say what a project does and why it matters before how it's built, and link to its repository or docs for the rest.
-- **A project card describes the project the way its own docs do.** Protostar's card uses Protostar's own description, not a different pitch.
-- **Taglines are plain.** A card subtitle says what the project is for, in ordinary words, rather than a slogan.
-- **Journal and creative pages keep the serif journal voice:** first person, concrete, and calm, describing what was there and what I did.
-- **Never hard-wrap Markdown prose.** Each paragraph and list item is one line.
+- **The homepage and project cards are General:** say what a project does and why it matters before how it's built, as its own docs describe it.
+- **Journal and creative pages keep the serif journal voice:** first person, concrete, and calm.
 
 ## Visual System Rules
 
