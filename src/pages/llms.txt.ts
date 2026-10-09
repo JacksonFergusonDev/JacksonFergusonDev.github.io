@@ -14,7 +14,7 @@ export async function GET({ site: origin }: APIContext) {
     '',
     `> ${site.description}`,
     '',
-    'Physics & Astronomy graduate (University of Victoria, 2026) based in Vancouver, BC. Builds reliable systems across Python tooling, release infrastructure, analog circuits, and embedded data acquisition. Next areas of exploration: DevOps, robotics, and physical AI.',
+    'Physics & Astronomy graduate (University of Victoria, 2026) based in Vancouver, BC. Builds reliable systems across Python tooling, release infrastructure, analog circuits, and embedded data acquisition. Looking next for work where software meets physical systems: measurement, inspection, robotics, and the infrastructure that keeps them running.',
     '',
     `Contact: ${site.emailAddress} · GitHub: ${site.github} · LinkedIn: ${site.linkedin}`,
     '',
