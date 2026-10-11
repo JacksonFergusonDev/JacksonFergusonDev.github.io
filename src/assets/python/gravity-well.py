@@ -1,10 +1,11 @@
 # -----------------------------------------------------------------------------
 # Spacetime Gravity Well
 #
-# I built this script to visualize a synthetic gravity well deformed by
-# chaotic surface ripples. It projects a curved 3D coordinate mesh onto a
-# 2D plane using an oblique perspective, capturing the look of general-
-# relativistic spacetime illustrations on a dark obsidian substrate.
+# Draws a wireframe grid bent by a central dip and sine ripples, in the style
+# of spacetime-curvature diagrams. At the current settings the ripples dominate
+# and the dip is shallow, so the result reads as a rippled surface more than a
+# funnel. The surface is projected onto the page at a 60 degree tilt and drawn
+# as pink lines on a dark background. Output is an 8x10 inch JPEG at 300 DPI.
 # -----------------------------------------------------------------------------
 
 import matplotlib.pyplot as plt
@@ -14,13 +15,13 @@ import numpy as np
 # Aesthetics and Canvas Geometry
 # -----------------------------------------------------------------------------
 
-# I use high-contrast electric neon pink on a deep obsidian violet substrate.
+# Pink lines on a near-black violet background.
 PALETTE = {
     "enclosure": "#08020F",
     "design": "#FF2A9D",
 }
 
-# I sized the canvas for an 8x10 inch print at 300 DPI (2400 x 3000 px).
+# 8x10 inches at 300 DPI (2400 x 3000 px).
 CANVAS_WIDTH = 8.0
 CANVAS_HEIGHT = 10.0
 FIGSIZE = (CANVAS_WIDTH, CANVAS_HEIGHT)
@@ -29,9 +30,10 @@ LINE_WIDTH = 0.95
 DPI = 300
 OUTPUT_FILENAME = "gravity-well.jpg"
 
-# Simulation controls:
-# I tuned the depth and chaos factor to balance smooth gravitational curvature
-# against turbulent surface perturbation.
+# Surface controls:
+# WELL_DEPTH sets the depth of the dip, CHAOS_FACTOR how strongly the ripples
+# distort it, FRAME_SIZE how much of the grid the dip covers, and
+# GRID_DENSITY_X how many grid lines run across the width.
 WELL_DEPTH = 0.35
 CHAOS_FACTOR = 0.5
 FRAME_SIZE = 0.7
@@ -51,15 +53,17 @@ def get_bezel_well(
     well_scale=0.65,
 ):
     """
-    I generate the 3D wireframe mesh and project it into 2D screen coordinates.
-    The well profile combines a steep super-Gaussian depression with multi-scale
-    trigonometric noise.
+    Build the wireframe and return (lines, limit_x), where each line is an
+    (x, y) pair of arrays in projected 2D coordinates and limit_x is the half-
+    width of the grid. The well is a super-Gaussian dip modulated by sine
+    ripples at two scales.
     """
     lines = []
 
-    # Coordinate limits and perspective correction:
-    # Tilting the grid by 60 degrees compresses vertical dimension by cos(60 deg) = 0.5.
-    # To preserve the target 4:5 aspect ratio on screen, I stretch the y-domain by sec(60 deg).
+    # Grid limits:
+    # Tilting the grid by 60 degrees shrinks its vertical extent by
+    # cos(60 deg) = 0.5. The y range is stretched by 1 / cos(60 deg) so the
+    # projected grid still has the 4:5 aspect ratio of the page.
     limit_x = 2.0
     tilt_angle = np.radians(60.0)
     perspective_correction = 1.0 / np.cos(tilt_angle)
@@ -70,9 +74,9 @@ def get_bezel_well(
     rect_width = limit_x * well_scale
     rect_height = limit_y * well_scale
 
-    # Grid domain discretization:
-    # I set spacing uniformly along both axes and sample curves densely enough
-    # to avoid polygonal artifacts around the steep rim of the depression.
+    # Grid spacing:
+    # Spacing is the same along both axes. Each line has 200 samples, enough to
+    # look smooth where the dip curves.
     x_span = limit_x * 2.0
     y_span = limit_y * 2.0
     spacing = x_span / grid_density_x
@@ -81,32 +85,32 @@ def get_bezel_well(
 
     raw_lines = []
 
-    # Longitudinal grid lines
+    # Lines running along y.
     for x in np.linspace(-limit_x, limit_x, grid_density_x):
         y = np.linspace(-limit_y, limit_y, resolution)
         raw_lines.append((np.full_like(y, x), y))
 
-    # Transverse grid lines
+    # Lines running along x.
     for y in np.linspace(-limit_y, limit_y, grid_density_y):
         x = np.linspace(-limit_x, limit_x, resolution)
         raw_lines.append((x, np.full_like(x, y)))
 
-    # Surface deformation and projection:
-    # I use a 6th-order super-Gaussian envelope to keep the surrounding mesh flat
-    # while concentrating curvature tightly around the center.
+    # Depth and projection:
+    # A 6th-order super-Gaussian envelope keeps the grid flat outside the dip,
+    # with a steep edge.
     for x_arr, y_arr in raw_lines:
         norm_x = x_arr / rect_width
         norm_y = y_arr / rect_height
         envelope = np.exp(-(norm_x**6 + norm_y**6))
 
-        # Modulate the funnel with interference noise.
+        # Ripples: two sine products at different scales.
         noise = np.sin(3.0 * x_arr) * np.cos(2.5 * y_arr) + 0.4 * np.sin(
             7.0 * x_arr + 1.2
         ) * np.cos(6.0 * y_arr)
 
         z = -depth * envelope * (1.0 + (noise * irregularity))
 
-        # I apply an affine oblique projection to collapse 3D (x, y, z) into 2D.
+        # Project (x, y, z) to 2D: depth z shifts the line along screen y.
         x_proj = x_arr
         y_proj = (y_arr * np.cos(tilt_angle)) + (z * np.sin(tilt_angle))
 
@@ -116,11 +120,11 @@ def get_bezel_well(
 
 
 # -----------------------------------------------------------------------------
-# Main Render Pipeline
+# Render
 # -----------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    # Generate the projected wireframe geometry.
+    # Build the projected lines.
     gravity_lines, sim_limit_x = get_bezel_well(
         target_w=CANVAS_WIDTH,
         target_h=CANVAS_HEIGHT,
@@ -130,18 +134,18 @@ if __name__ == "__main__":
         well_scale=FRAME_SIZE,
     )
 
-    # I map simulation coordinates directly into physical canvas inches.
+    # Convert grid units to canvas inches, centered on the page.
     scale_factor = CANVAS_WIDTH / (sim_limit_x * 2.0)
     center_x = CANVAS_WIDTH / 2.0
     center_y = CANVAS_HEIGHT / 2.0
 
-    # Canvas setup: 8x10 inches at 300 DPI.
+    # Canvas: 8x10 inches at 300 DPI.
     fig, ax = plt.subplots(figsize=FIGSIZE, dpi=DPI, facecolor=PALETTE["enclosure"])
     ax.set_facecolor(PALETTE["enclosure"])
     ax.set_aspect("equal")
     ax.axis("off")
 
-    # Draw wireframe traces with rounded caps for clean node junctions.
+    # Draw each line with round caps so crossings look clean.
     for x_raw, y_raw in gravity_lines:
         x_phys = (x_raw * scale_factor) + center_x
         y_phys = (y_raw * scale_factor) + center_y
@@ -156,7 +160,7 @@ if __name__ == "__main__":
     ax.set_xlim(0, CANVAS_WIDTH)
     ax.set_ylim(0, CANVAS_HEIGHT)
 
-    # High-quality export with tight padding.
+    # Save as a JPEG, cropped to the drawing with 0.2 inch padding.
     plt.savefig(
         OUTPUT_FILENAME,
         format="jpg",

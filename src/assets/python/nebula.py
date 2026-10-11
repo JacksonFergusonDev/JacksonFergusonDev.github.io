@@ -1,11 +1,12 @@
 # -----------------------------------------------------------------------------
 # Domain-Warped Cosmic Nebula
 #
-# I built this script to synthesize deep-space emission nebulae using pure
-# NumPy. Rather than relying on external image libraries for noise, I
-# implement vectorized 2D gradient noise and stack two stages of domain-
-# warped fractional Brownian motion to sculpt realistic gas filaments and
-# turbulent eddies.
+# Renders a nebula-like image as a 1920x1080 JPEG using NumPy for the noise.
+# It generates a density field from layered value noise (fractional Brownian
+# motion, fBM) whose sample coordinates are warped twice by more noise, which
+# produces filaments and swirls. The field is then lit as a heightfield,
+# colored with a palette, and finished with a vignette, film grain, and a
+# slight blur. A fixed seed makes every run identical.
 # -----------------------------------------------------------------------------
 
 import matplotlib.colors as mcolors
@@ -14,20 +15,21 @@ import numpy as np
 from scipy.ndimage import gaussian_filter
 
 # -----------------------------------------------------------------------------
-# Simulation Parameters and Knobs
+# Parameters
 # -----------------------------------------------------------------------------
 
 # Canvas and resolution:
-# I target full-HD (1920x1080) at 100 DPI with a fixed seed for reproducible runs.
+# Full HD at 100 DPI, with a fixed seed.
 WIDTH, HEIGHT = 1920, 1080
 DPI = 100
 SEED = 42
 OUTPUT_FILENAME = "nebula.jpg"
 JPEG_QUALITY = 95
 
-# Domain warping - Layer 1 (Macro drift and large-scale eddies):
-# I displace the coordinate space with low-frequency, high-amplitude noise
-# to create broad directional currents across the nebula.
+# First warp (large scale):
+# Low-frequency, high-amplitude noise shifts the sample coordinates, which
+# bends the cloud into broad currents. The Y_OFFSET pair shifts the second
+# axis's noise so it differs from the first.
 WARP1_OCTAVES = 4
 WARP1_PERSISTENCE = 0.5
 WARP1_LACUNARITY = 2.0
@@ -35,9 +37,9 @@ WARP1_BASE_SCALE = 500.0
 WARP1_AMPLITUDE = 320.0
 WARP1_Y_OFFSET = (73.1, 127.3)
 
-# Domain warping - Layer 2 (Filament shear and vorticity):
-# Feeding the warped coordinates into a second noise pass produces tight,
-# curling tendrils and turbulent shear boundaries.
+# Second warp (small scale):
+# A second noise pass, sampled at the already-warped coordinates, adds tight
+# curls and sharp boundaries.
 WARP2_OCTAVES = 5
 WARP2_PERSISTENCE = 0.55
 WARP2_LACUNARITY = 2.1
@@ -45,18 +47,19 @@ WARP2_BASE_SCALE = 180.0
 WARP2_AMPLITUDE = 140.0
 WARP2_Y_OFFSET = (-41.5, 91.2)
 
-# High-frequency gas density field:
-# I sample seven octaves of fractional Brownian motion for fine wisps,
-# then apply log dynamic-range compression so dense shocks don't blow out.
+# Density field:
+# Seven octaves of fBM give the fine detail. A log curve (LOG_DYNAMIC_RANGE
+# sets its strength) keeps the densest areas from saturating.
 GAS_OCTAVES = 7
 GAS_PERSISTENCE = 0.6
 GAS_LACUNARITY = 2.2
 GAS_BASE_SCALE = 80.0
 LOG_DYNAMIC_RANGE = 10.0
 
-# Spatial envelope:
-# I apply an elliptical Gaussian falloff to shape the cloud. An envelope floor
-# keeps faint background haze from fading to absolute black at the periphery.
+# Envelope:
+# An elliptical Gaussian falloff confines the cloud near the center.
+# ENVELOPE_FLOOR keeps a little density at the edges so they don't go fully
+# black.
 ENVELOPE_ASPECT = 1.6
 ENVELOPE_SCALE_FACTOR = 0.55
 ENVELOPE_RATE = 1.2
@@ -64,13 +67,13 @@ ENVELOPE_POWER = 2.0
 ENVELOPE_FLOOR = 0.08
 
 # Edge vignette:
-# I introduce subtle edge darkening to frame the composition without clipping.
+# Darkens the edges slightly. Brightness never drops below EDGE_MIN_BRIGHTNESS.
 EDGE_MIN_BRIGHTNESS = 0.65
 EDGE_VIGNETTE_POWER = 2.0
 
-# Shading and grazing illumination:
-# I treat the 2D density map as a topological heightfield, calculating surface
-# normals to cast directional diffuse light and subtle specular highlights.
+# Lighting:
+# The density map is treated as a heightfield. Surface normals from its
+# gradient give diffuse and specular lighting from LIGHT_DIRECTION.
 SURFACE_GRADIENT_STEP = 2.0
 LIGHT_DIRECTION = np.array([0.5, 0.5, 0.707], dtype=np.float32)
 DIFFUSE_BASE = 0.88
@@ -78,43 +81,45 @@ DIFFUSE_BOOST = 0.30
 SPECULAR_POWER = 28.0
 SPECULAR_STRENGTH = 0.30
 
-# Optical post-processing:
+# Post-processing:
 GRAIN_INTENSITY = 0.06
 GLOW_SIGMA = 0.6
 
 # Color stops:
-# I mapped these hues to astrophysical emission spectra: ambient violet,
-# H-alpha crimson, shock-front orange, and ionized oxygen cyan.
+# Palette from low to high density, modeled on emission-nebula colors:
+# violet, H-alpha red, orange, oxygen-blue cyan, then white.
 COLOR_STOPS = [
-    (0.00, "#150428"),  # Deep ambient purple base
-    (0.10, "#28074d"),  # Mid-deep violet
-    (0.25, "#4d0e6b"),  # Magenta-tinged purple
-    (0.42, "#b8164a"),  # Crimson / H-alpha ridge
-    (0.58, "#e86517"),  # Warm shock front orange
-    (0.72, "#1ea4e6"),  # Ionized oxygen cyan
-    (0.90, "#e8f4fc"),  # Core stellar highlight
-    (1.00, "#ffffff"),  # Peak saturation
+    (0.00, "#150428"),  # Dark purple
+    (0.10, "#28074d"),  # Violet
+    (0.25, "#4d0e6b"),  # Magenta-purple
+    (0.42, "#b8164a"),  # Crimson (H-alpha)
+    (0.58, "#e86517"),  # Orange
+    (0.72, "#1ea4e6"),  # Cyan (ionized oxygen)
+    (0.90, "#e8f4fc"),  # Near-white
+    (1.00, "#ffffff"),  # White
 ]
 
 np.random.seed(SEED)
 
 
 # -----------------------------------------------------------------------------
-# Vectorized Noise Engine
+# Noise
 # -----------------------------------------------------------------------------
 
 def smoothstep(t):
     """
-    I use a quintic polynomial for C2-continuous Hermite interpolation.
-    This eliminates grid-line derivative discontinuities in the noise field.
+    Quintic ease curve, 6t^5 - 15t^4 + 10t^3. Its first and second derivatives
+    are zero at t = 0 and 1, so the noise has no visible seams at grid lines.
     """
     return t * t * t * (t * (t * 6.0 - 15.0) + 10.0)
 
 
 def numpy_noise_2d(X, Y, grid_size=64):
     """
-    I vectorized a 2D integer-hash value noise generator directly in NumPy.
-    This avoids external compiled C dependencies while maintaining high throughput.
+    2D value noise in [0, 1], computed on whole arrays at once. Each integer
+    grid corner gets a pseudo-random value from an integer hash, and points
+    between corners are blended with smoothstep. grid_size is the cell width in
+    pixels.
     """
     gx = X / grid_size
     gy = Y / grid_size
@@ -144,8 +149,9 @@ def numpy_noise_2d(X, Y, grid_size=64):
 
 def fbm_2d(X, Y, octaves=6, persistence=0.5, lacunarity=2.0, base_scale=200.0):
     """
-    I sum successive octaves of noise, scaling frequency by lacunarity and
-    diminishing amplitude by persistence to build self-similar fractal textures.
+    Fractional Brownian motion: the sum of `octaves` noise layers. Each layer's
+    cells are `lacunarity` times smaller than the last, and its amplitude is
+    `persistence` times the last.
     """
     total = np.zeros_like(X, dtype=np.float32)
     amplitude = 1.0
@@ -160,20 +166,20 @@ def fbm_2d(X, Y, octaves=6, persistence=0.5, lacunarity=2.0, base_scale=200.0):
 
 
 # -----------------------------------------------------------------------------
-# Density Field Synthesis
+# Density Field
 # -----------------------------------------------------------------------------
 
 def generate_density_field(w, h):
     """
-    I synthesize the gas cloud by chaining two domain-warping passes into
-    a high-octave fBM evaluation, then shaping the result with an elliptical envelope.
+    Return an h x w density array scaled to [0, 1]. Two warp passes displace
+    the coordinates, the final fBM is sampled there, and the elliptical
+    envelope is applied last.
     """
     x = np.linspace(-w / 2.0, w / 2.0, w, dtype=np.float32)
     y = np.linspace(-h / 2.0, h / 2.0, h, dtype=np.float32)
     X, Y = np.meshgrid(x, y)
 
-    # 1. Macro coordinate deformation:
-    # I sample large-scale vector offsets to pull the grid into broad drift patterns.
+    # 1. First warp: large-scale offsets for each coordinate.
     q_x = fbm_2d(
         X,
         Y,
@@ -194,8 +200,7 @@ def generate_density_field(w, h):
     q_x = (q_x - 0.5) * WARP1_AMPLITUDE
     q_y = (q_y - 0.5) * WARP1_AMPLITUDE
 
-    # 2. Filament shear and vorticity:
-    # I evaluate an intermediate noise field on top of the first displacement.
+    # 2. Second warp: noise sampled at the first-warped coordinates.
     r_x = fbm_2d(
         X + q_x,
         Y + q_y,
@@ -216,8 +221,7 @@ def generate_density_field(w, h):
     r_x = (r_x - 0.5) * WARP2_AMPLITUDE
     r_y = (r_y - 0.5) * WARP2_AMPLITUDE
 
-    # 3. Turbulent gas evaluation:
-    # I sample the high-frequency density texture using the warped coordinate field.
+    # 3. Density: the detailed fBM, sampled at the twice-warped coordinates.
     density = fbm_2d(
         X + r_x,
         Y + r_y,
@@ -228,9 +232,7 @@ def generate_density_field(w, h):
     )
     density = np.log1p(density * LOG_DYNAMIC_RANGE)
 
-    # 4. Spatial envelope:
-    # I constrain the nebula within an elliptical boundary while preserving
-    # an ambient density floor so outer gas remains visible.
+    # 4. Envelope: elliptical falloff plus the density floor.
     radius = np.sqrt((X / ENVELOPE_ASPECT) ** 2 + Y**2)
     normalized_r = radius / (min(w, h) * ENVELOPE_SCALE_FACTOR)
     shape_falloff = np.exp(-ENVELOPE_RATE * (normalized_r**ENVELOPE_POWER))
@@ -242,15 +244,15 @@ def generate_density_field(w, h):
 
 
 # -----------------------------------------------------------------------------
-# Shading, Colormapping, and Post-Processing
+# Shading and Color
 # -----------------------------------------------------------------------------
 
 def apply_color_mapping(density, w, h):
     """
-    I compute surface gradients across the density field to estimate 3D normals,
-    apply Blinn-Phong lighting, and map densities onto the color palette.
+    Return an h x w x 3 RGB array in [0, 1]. Colors come from the palette,
+    then get diffuse and specular lighting, a vignette, and grain.
     """
-    # Numerical surface normal estimation from density gradients.
+    # Surface normals from the density gradient.
     dz_dy, dz_dx = np.gradient(density, SURFACE_GRADIENT_STEP, SURFACE_GRADIENT_STEP)
     norm = np.sqrt(dz_dx**2 + dz_dy**2 + 1.0)
     nx, ny, nz = -dz_dx / norm, -dz_dy / norm, 1.0 / norm
@@ -259,19 +261,19 @@ def apply_color_mapping(density, w, h):
     dot = np.clip(nx * light[0] + ny * light[1] + nz * light[2], 0.0, 1.0)
     specular = dot**SPECULAR_POWER
 
-    # Colormap interpolation.
+    # Palette as a colormap.
     positions = [c[0] for c in COLOR_STOPS]
     values = [mcolors.hex2color(c[1]) for c in COLOR_STOPS]
     nebula_cmap = mcolors.LinearSegmentedColormap.from_list(
         "nebula", list(zip(positions, values))
     )
 
-    # Apply diffuse shading and grazing specular highlights.
+    # Diffuse shading, then add the specular highlight.
     rgb = nebula_cmap(density)[..., :3]
     rgb *= np.clip((DIFFUSE_BASE + DIFFUSE_BOOST * dot)[..., np.newaxis], 0.0, 1.0)
     rgb = np.clip(rgb + specular[..., np.newaxis] * SPECULAR_STRENGTH, 0.0, 1.0)
 
-    # Radial vignette to gently darken outer margins.
+    # Vignette: darken with distance from the center.
     x = np.linspace(-1.0, 1.0, w, dtype=np.float32)
     y = np.linspace(-1.0, 1.0, h, dtype=np.float32)
     X, Y = np.meshgrid(x, y)
@@ -282,7 +284,7 @@ def apply_color_mapping(density, w, h):
     )
     rgb *= vignette[..., np.newaxis]
 
-    # Star dust grain overlay.
+    # Film grain: multiply by Gaussian noise centered on 1.
     if GRAIN_INTENSITY > 0.0:
         grain = np.random.normal(1.0, GRAIN_INTENSITY, size=rgb.shape).astype(
             np.float32
@@ -293,27 +295,27 @@ def apply_color_mapping(density, w, h):
 
 
 # -----------------------------------------------------------------------------
-# Main Render Pipeline
+# Render
 # -----------------------------------------------------------------------------
 
 if __name__ == "__main__":
     density = generate_density_field(WIDTH, HEIGHT)
     rgb = apply_color_mapping(density, WIDTH, HEIGHT)
 
-    # A subtle Gaussian blur softens single-pixel high-frequency noise.
+    # Light Gaussian blur to soften single-pixel noise.
     if GLOW_SIGMA > 0.0:
         rgb = gaussian_filter(rgb, sigma=GLOW_SIGMA, axes=(0, 1))
 
     bg_color = COLOR_STOPS[0][1]
 
-    # Render directly to a borderless 1080p canvas.
+    # Draw onto a borderless canvas that fills the figure.
     fig = plt.figure(figsize=(WIDTH / DPI, HEIGHT / DPI), dpi=DPI, facecolor=bg_color)
     ax = fig.add_axes([0, 0, 1, 1], frameon=False)
     ax.axis("off")
 
     ax.imshow(rgb, origin="lower", aspect="auto", interpolation="bicubic")
 
-    # High-quality JPEG export with Pillow subsampling disabled.
+    # Save as a JPEG with 4:4:4 chroma subsampling (no color detail lost).
     plt.savefig(
         OUTPUT_FILENAME,
         format="jpg",

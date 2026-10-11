@@ -1,10 +1,10 @@
 # -----------------------------------------------------------------------------
 # Clifford Strange Attractor
 #
-# I use this script to integrate and render a 2D Clifford strange attractor.
-# By tracking millions of iterations across a dense Monte Carlo sample and
-# accumulating visits into a 2D histogram, the folded manifold emerges
-# naturally from chaotic orbit density.
+# Renders a 2D Clifford strange attractor as a 1920x1080 JPEG. It iterates
+# three million random starting points through the Clifford map, counts how
+# often orbits land in each pixel with a 2D histogram, and colors the pixels by
+# that count. The folded shape appears where orbits pile up.
 # -----------------------------------------------------------------------------
 
 import matplotlib.colors as mcolors
@@ -15,34 +15,34 @@ import numpy as np
 # Parameters and Output Settings
 # -----------------------------------------------------------------------------
 
-# I target a standard 1080p canvas with a 16:9 aspect ratio.
+# 1080p canvas, 16:9.
 WIDTH, HEIGHT = 1920, 1080
 DPI = 100
 OUTPUT_FILENAME = "clifford-attractor.jpg"
 JPEG_QUALITY = 95
 
-# I chose this parameter set because it produces an asymmetrical, tightly
-# folded ribbon with both delicate outer filaments and dense interior loops.
+# This parameter set gives an asymmetrical, tightly folded ribbon with thin
+# outer filaments and dense interior loops.
 A, B, C, D = 1.4, 1.7, 1.2, 1.8
 
-# Monte Carlo integration parameters:
-# I sample 3 million starting positions and iterate them simultaneously.
-# The burn-in period lets trajectories converge onto the attractor manifold
-# before I begin recording coordinates.
+# Integration:
+# All starting positions are iterated together. The first BURN_IN iterations
+# are discarded so the recorded points lie on the attractor, not on the
+# transient path toward it.
 NUM_POINTS = 3_000_000
 ITERATIONS = 60
 BURN_IN = 25
 
-# Color and exposure shaping:
-# I tune color distribution and brightness separately. A slightly lower color
-# gamma pushes cooler teal and cyan tones farther into mid-density regions,
-# while a higher brightness gamma maintains contrast across the brightest cores.
+# Color and exposure:
+# Color and brightness use separate gamma curves. A color gamma below 1 moves
+# the teal and cyan tones into mid-density regions. A brightness gamma above 1
+# keeps contrast in the brightest cores.
 COLOR_GAMMA = 0.90
 BRIGHTNESS_GAMMA = 1.50
 EXPOSURE = 2.30
 
-# I mix in a small square-root density term to keep faint outer filaments
-# visible without flattening the dense core structures.
+# Weight of a square-root density term that keeps faint outer filaments
+# visible without flattening the dense core.
 FAINT_DETAIL_STRENGTH = 0.01
 
 
@@ -59,13 +59,12 @@ def clifford_attractor(
     iterations=ITERATIONS,
 ):
     """
-    I integrate multiple chaotic orbits in parallel using NumPy.
-    Discarding initial iterations ensures the collected points belong to
-    the attractor manifold rather than transient starting states.
+    Iterate many orbits in parallel with NumPy and return the recorded x and y
+    coordinates as flat arrays. Iterations before BURN_IN are not recorded.
     """
     print(f"Integrating Clifford orbit for a={a}, b={b}, c={c}, d={d}...")
 
-    # I initialize uniformly across the bounding box [-2, 2].
+    # Start uniformly inside the box [-2, 2] on both axes.
     x = np.random.uniform(-2.0, 2.0, num_points).astype(np.float32)
     y = np.random.uniform(-2.0, 2.0, num_points).astype(np.float32)
 
@@ -73,13 +72,13 @@ def clifford_attractor(
     history_y = []
 
     for i in range(iterations):
-        # Coupled sinusoidal recurrence relation defining the Clifford map.
+        # The Clifford map.
         x_new = np.sin(a * y) + c * np.cos(a * x)
         y_new = np.sin(b * x) + d * np.cos(b * y)
 
         x, y = x_new, y_new
 
-        # I only record coordinates once the trajectory has settled.
+        # Record only after the burn-in.
         if i >= BURN_IN:
             history_x.append(x)
             history_y.append(y)
@@ -93,25 +92,26 @@ def clifford_attractor(
 
 def create_colormap():
     """
-    I designed this palette to mirror an astrophysical emission spectrum:
-    starting in deep midnight violet, advancing through ultraviolet and magenta,
-    and peaking in ionized cyan, acid lime, and incandescent core gold.
+    Build the palette: black through violet and magenta, then blue, cyan, and
+    lime, ending in gold and near-white. The hues are modeled on emission-
+    nebula colors. At the current gamma and exposure the render only reaches
+    cyan, so the image is magenta and cyan on black.
     """
     colors = [
-        (0.00, "#000000"),  # Void
-        (0.06, "#080018"),  # Midnight violet
-        (0.14, "#16003d"),  # Deep indigo
-        (0.24, "#350078"),  # Ultraviolet
-        (0.34, "#7200b8"),  # Electric purple
-        (0.44, "#cf00c8"),  # Psychedelic magenta
-        (0.53, "#ff2a9d"),  # Hot pink
-        (0.61, "#8b5cff"),  # Electric lavender
-        (0.68, "#26bfff"),  # Electric blue
-        (0.77, "#20ead5"),  # Neon cyan
-        (0.86, "#55ffbd"),  # Aqua / mint
-        (0.93, "#d8ff78"),  # Acid lime
-        (0.98, "#ffe56b"),  # Solar gold
-        (1.00, "#fff8e7"),  # Incandescent core
+        (0.00, "#000000"),  # Black
+        (0.06, "#080018"),  # Near-black violet
+        (0.14, "#16003d"),  # Indigo
+        (0.24, "#350078"),  # Dark violet
+        (0.34, "#7200b8"),  # Purple
+        (0.44, "#cf00c8"),  # Magenta
+        (0.53, "#ff2a9d"),  # Pink
+        (0.61, "#8b5cff"),  # Lavender
+        (0.68, "#26bfff"),  # Blue
+        (0.77, "#20ead5"),  # Cyan
+        (0.86, "#55ffbd"),  # Mint
+        (0.93, "#d8ff78"),  # Lime
+        (0.98, "#ffe56b"),  # Gold
+        (1.00, "#fff8e7"),  # Near-white
     ]
 
     return mcolors.LinearSegmentedColormap.from_list(
@@ -122,14 +122,13 @@ def create_colormap():
 
 
 # -----------------------------------------------------------------------------
-# Main Render Pipeline
+# Render
 # -----------------------------------------------------------------------------
 
 if __name__ == "__main__":
     x, y = clifford_attractor(A, B, C, D)
 
-    # I match histogram bounds to the 16:9 canvas aspect ratio so the
-    # geometry fills the frame without non-uniform stretching.
+    # Give the histogram the canvas aspect ratio so the image is not stretched.
     aspect_ratio = WIDTH / HEIGHT
     y_lim = 3.2
     x_lim = y_lim * aspect_ratio
@@ -144,31 +143,31 @@ if __name__ == "__main__":
         ],
     )
 
-    # Point counts span multiple orders of magnitude. I apply log1p
-    # compression to reveal faint filament paths alongside dense ridges.
+    # Counts span several orders of magnitude. log1p compresses them so faint
+    # filaments and dense ridges are both visible.
     density = np.log1p(hist.astype(np.float32))
     density /= density.max() + 1e-8
 
-    # I decouple color density from luminance so I can distribute palette
-    # hues across the midtones without overexposing the image.
+    # Color and brightness come from separate curves, so the palette spreads
+    # across the midtones without overexposing the image.
     color_density = np.power(density, COLOR_GAMMA)
     brightness = np.power(density, BRIGHTNESS_GAMMA)
 
-    # Blend faint filament visibility.
+    # Blend in the square-root term to lift faint filaments.
     faint_detail = np.sqrt(density)
     brightness = (
         FAINT_DETAIL_STRENGTH * faint_detail
         + (1.0 - FAINT_DETAIL_STRENGTH) * brightness
     )
 
-    # Map colors and modulate by luminance.
+    # Look up colors, then scale by brightness and exposure.
     cm = create_colormap()
     rgb = cm(color_density)[..., :3].astype(np.float32)
     rgb *= brightness[..., None]
     rgb *= EXPOSURE
     rgb = np.clip(rgb, 0.0, 1.0)
 
-    # Render directly to a borderless Matplotlib canvas.
+    # Draw onto a borderless canvas that fills the figure.
     fig = plt.figure(
         figsize=(WIDTH / DPI, HEIGHT / DPI),
         dpi=DPI,
@@ -185,7 +184,7 @@ if __name__ == "__main__":
         interpolation="bicubic",
     )
 
-    # Export to high-quality JPEG with 4:4:4 chroma subsampling.
+    # Save as a JPEG with 4:4:4 chroma subsampling (no color detail lost).
     plt.savefig(
         OUTPUT_FILENAME,
         format="jpg",
