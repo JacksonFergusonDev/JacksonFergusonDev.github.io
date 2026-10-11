@@ -377,7 +377,7 @@ body.landing-page .landing-reveal.is-visible {
 }
 .about-grid {
   display: grid;
-  grid-template-columns: minmax(380px, 490px) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
   gap: 72px;
 }
 .about-copy .lead {
