@@ -85,7 +85,7 @@ try {
   await page.getByRole('button', { name: 'Pause motion', exact: true }).click();
   await page.getByRole('button', { name: 'Play motion', exact: true }).waitFor();
   const resumeLink = page.getByRole('link', {
-    name: 'Download Software Development resume (PDF)',
+    name: 'View Software Development resume (PDF, opens in a new tab)',
   });
   assert.equal(await resumeLink.getAttribute('target'), '_blank');
   assert.equal(await resumeLink.getAttribute('rel'), 'noopener noreferrer');
@@ -98,7 +98,7 @@ try {
   assert.ok(resumePopup);
   await resumePopup.close();
   const hwResumeLink = page.getByRole('link', {
-    name: 'Download Hardware–Software Systems resume (PDF)',
+    name: 'View Hardware–Software Systems resume (PDF, opens in a new tab)',
   });
   assert.equal(await hwResumeLink.getAttribute('target'), '_blank');
   assert.equal(await hwResumeLink.getAttribute('rel'), 'noopener noreferrer');
