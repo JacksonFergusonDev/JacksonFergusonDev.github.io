@@ -34,6 +34,8 @@ Each major section opens with a short numbered marker (`01 / ABOUT`, `02 / PROJE
 
 Content inside a section is grouped into cards with the same anatomy: eyebrow, H3 title, optional lead, body, supporting content (demo, metrics, figures, or a thumbnail grid), then actions. Thumbnails inside a card have no panel of their own, so cards are never nested inside cards.
 
+Project tags leave a consistent 20px gap above the actions below them. In paired secondary cards, the tag row and action link sit together at the bottom, with flexible space above the tags so both cards align regardless of description length.
+
 Subpages follow the same system. Index pages (trips, creative) open with a `PageIntro`, and detail pages (a trip, a creative collection) open with an `ArticleHeader` that adds a breadcrumb; both use the H1 token. Collection links on the homepage and on the index pages are the same `ThumbnailCard` component. Blender and Python entries are `.project-card` cards with H3 titles. Subpages are not numbered, and neither are entry categories.
 
 Journal text uses a second voice: New Computer Modern serif, for detail-page descriptions (`--fs-journal-lead`, 24px / 22px) and long-form `.prose` writing (`--fs-journal-body`, 20px / 19px). The serif runs smaller than DM Sans at the same size, so these tokens are larger than their sans equivalents. Headings inside prose stay in DM Sans on the H3 and journal-lead sizes.

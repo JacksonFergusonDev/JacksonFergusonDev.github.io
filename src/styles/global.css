@@ -508,7 +508,7 @@ body.landing-page .landing-reveal.is-visible {
   display: flex;
   gap: 7px;
   flex-wrap: wrap;
-  margin: 25px 0;
+  margin: 25px 0 20px;
 }
 .tags span {
   border: 1px solid #2c373d;
@@ -651,8 +651,9 @@ html.landing-js:not(.landing-reduced-motion) .hs-terminal-screen .ap-overlay-sta
   display: flex;
   flex-direction: column;
 }
-.secondary .text-link {
+.secondary .tags {
   margin-top: auto;
+  padding-top: 25px;
 }
 .other-projects {
   margin-top: 35px;
