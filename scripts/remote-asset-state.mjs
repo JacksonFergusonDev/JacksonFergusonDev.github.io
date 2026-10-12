@@ -1,6 +1,11 @@
+import { retryDelays, withRetries } from './retry.mjs';
+
 function canonicalState(state) {
   if (state?.version !== 1 || !Array.isArray(state.assets)) {
     throw new Error('Invalid remote asset state: expected version 1 and an assets array');
+  }
+  if (state.commit != null && !/^[a-f0-9]{40}$/.test(state.commit)) {
+    throw new Error('Invalid remote asset state commit');
   }
   const ids = new Set();
   const entries = state.assets.map((asset) => {
@@ -20,15 +25,32 @@ function canonicalState(state) {
   return JSON.stringify(entries.sort(([a], [b]) => a.localeCompare(b)));
 }
 
-export async function assetsChanged(current, url, fetchImpl = fetch) {
+export async function assetsChanged(
+  current,
+  url,
+  { fetchImpl = fetch, delays = retryDelays } = {},
+) {
   const currentState = canonicalState(current);
-  const response = await fetchImpl(url, {
-    signal: AbortSignal.timeout(15000),
-    cache: 'no-store',
-    headers: { 'cache-control': 'no-cache' },
-  });
+  const response = await withRetries(
+    'Deployed asset state',
+    async () => {
+      const response = await fetchImpl(url, {
+        signal: AbortSignal.timeout(15000),
+        cache: 'no-store',
+        headers: { 'cache-control': 'no-cache' },
+      });
+      if (!response.ok && response.status !== 404) {
+        throw new Error(`Deployed asset state: HTTP ${response.status}`);
+      }
+      return response;
+    },
+    delays,
+  );
   // The first deployment of this feature has no snapshot yet.
   if (response.status === 404) return true;
-  if (!response.ok) throw new Error(`Deployed asset state: HTTP ${response.status}`);
-  return currentState !== canonicalState(await response.json());
+  const deployed = await response.json();
+  const deployedState = canonicalState(deployed);
+  // A newer main commit means its own deployment failed or was cancelled while queued.
+  if (current.commit && current.commit !== deployed.commit) return true;
+  return currentState !== deployedState;
 }

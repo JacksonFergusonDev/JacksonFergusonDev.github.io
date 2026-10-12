@@ -23,6 +23,8 @@ jobs:
   check-remote-assets:
     if: github.event_name == 'schedule'
     runs-on: ubuntu-latest
+    # Retries back off for about four minutes; anything longer is stuck, not recovering.
+    timeout-minutes: 15
     outputs:
       changed: ${{ steps.assets.outputs.changed }}
     steps:

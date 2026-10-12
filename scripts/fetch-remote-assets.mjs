@@ -2,11 +2,11 @@ import { createHash } from 'node:crypto';
 import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
+import { withRetries } from './retry.mjs';
 
 const root = process.cwd();
 const manifestPath = path.join(root, 'config', 'remote-assets.json');
 const timeoutMs = 15000;
-const attempts = 3;
 // CI starts without any fetched copies, so a failed download must fail the build there.
 const allowLocalFallback = !process.env.CI;
 
@@ -138,34 +138,23 @@ async function fetchWithTimeout(url) {
 }
 
 async function fetchAsset(asset) {
-  let lastError;
+  return withRetries(`${asset.id} download`, async () => {
+    const response = await fetchWithTimeout(asset.source);
 
-  for (let attempt = 1; attempt <= attempts; attempt += 1) {
-    try {
-      const response = await fetchWithTimeout(asset.source);
-
-      if (!response.ok) {
-        throw new Error(`${asset.id}: ${response.status} ${response.statusText}`);
-      }
-
-      const bytes = new Uint8Array(await response.arrayBuffer());
-      if (bytes.byteLength < asset.minBytes) {
-        throw new Error(
-          `${asset.id}: fetched ${bytes.byteLength} bytes, expected at least ${asset.minBytes}`,
-        );
-      }
-
-      validateAsset(asset, bytes);
-
-      return bytes;
-    } catch (error) {
-      lastError = error;
-      if (attempt < attempts) await new Promise((resolve) => setTimeout(resolve, attempt * 500));
+    if (!response.ok) {
+      throw new Error(`${asset.id}: ${response.status} ${response.statusText}`);
     }
-  }
 
-  throw new Error(`${asset.id}: no valid download after ${attempts} attempts`, {
-    cause: lastError,
+    const bytes = new Uint8Array(await response.arrayBuffer());
+    if (bytes.byteLength < asset.minBytes) {
+      throw new Error(
+        `${asset.id}: fetched ${bytes.byteLength} bytes, expected at least ${asset.minBytes}`,
+      );
+    }
+
+    validateAsset(asset, bytes);
+
+    return bytes;
   });
 }
 
@@ -205,34 +194,37 @@ async function readFallback(asset, targetPath, error) {
 assertManifest(Array.isArray(manifest.assets), 'assets must be an array');
 manifest.assets.forEach(validateManifestAsset);
 
-const results = [];
+// Assets download in parallel, so an outage costs one retry window rather than one per asset.
+const results = await Promise.all(
+  manifest.assets.map(async (asset) => {
+    const targetPath = path.join(root, asset.target);
+    let bytes;
+    let status;
 
-for (const asset of manifest.assets) {
-  const targetPath = path.join(root, asset.target);
-  let bytes;
-  let status;
+    try {
+      bytes = await fetchAsset(asset);
+      status = (await writeIfChanged(targetPath, bytes)) ? 'updated' : 'current';
+    } catch (error) {
+      bytes = await readFallback(asset, targetPath, error);
+      status = 'kept';
+    }
 
-  try {
-    bytes = await fetchAsset(asset);
-    status = (await writeIfChanged(targetPath, bytes)) ? 'updated' : 'current';
-  } catch (error) {
-    bytes = await readFallback(asset, targetPath, error);
-    status = 'kept';
-  }
-
-  results.push({
-    id: asset.id,
-    source: asset.source,
-    target: asset.target,
-    size: bytes.byteLength,
-    sha256: createHash('sha256').update(bytes).digest('hex'),
-    status,
-  });
-}
+    return {
+      id: asset.id,
+      source: asset.source,
+      target: asset.target,
+      size: bytes.byteLength,
+      sha256: createHash('sha256').update(bytes).digest('hex'),
+      status,
+    };
+  }),
+);
 
 // Astro copies this alongside the assets, so the live site records its own snapshot.
+// The commit lets the daily check redeploy a main commit whose own deployment never finished.
 const snapshot = {
   version: 1,
+  commit: process.env.GITHUB_SHA ?? null,
   assets: results.map(({ id, source, target, sha256 }) => ({ id, source, target, sha256 })),
 };
 await writeIfChanged(

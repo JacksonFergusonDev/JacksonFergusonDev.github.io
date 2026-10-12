@@ -2,7 +2,8 @@ import { appendFile, readFile } from 'node:fs/promises';
 import { assetsChanged } from './remote-asset-state.mjs';
 
 const current = JSON.parse(await readFile('public/remote-assets-state.json', 'utf8'));
-const url = new URL('https://jacksonferguson.me/remote-assets-state.json');
+const domain = (await readFile('public/CNAME', 'utf8')).trim();
+const url = new URL(`https://${domain}/remote-assets-state.json`);
 // Avoid comparing against a cached snapshot from an earlier deployment.
 url.searchParams.set('check', Date.now().toString());
 const changed = await assetsChanged(current, url);
