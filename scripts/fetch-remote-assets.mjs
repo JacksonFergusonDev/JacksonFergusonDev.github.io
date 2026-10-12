@@ -221,12 +221,24 @@ for (const asset of manifest.assets) {
   }
 
   results.push({
+    id: asset.id,
+    source: asset.source,
     target: asset.target,
     size: bytes.byteLength,
     sha256: createHash('sha256').update(bytes).digest('hex'),
     status,
   });
 }
+
+// Astro copies this alongside the assets, so the live site records its own snapshot.
+const snapshot = {
+  version: 1,
+  assets: results.map(({ id, source, target, sha256 }) => ({ id, source, target, sha256 })),
+};
+await writeIfChanged(
+  path.join(root, 'public', 'remote-assets-state.json'),
+  Buffer.from(`${JSON.stringify(snapshot, null, 2)}\n`),
+);
 
 for (const result of results) {
   console.log(`${result.status} ${result.target} ${result.size} bytes sha256:${result.sha256}`);

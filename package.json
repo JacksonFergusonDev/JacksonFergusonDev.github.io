@@ -8,6 +8,7 @@
   },
   "scripts": {
     "assets:fetch": "node scripts/fetch-remote-assets.mjs",
+    "assets:check": "npm run assets:fetch && node scripts/check-remote-assets.mjs",
     "predev": "npm run assets:fetch",
     "dev": "astro dev",
     "prebuild": "npm run assets:fetch",
@@ -16,7 +17,7 @@
     "preview": "astro preview",
     "precheck": "npm run assets:fetch",
     "check": "astro check",
-    "test": "node --test tests/site.test.mjs",
+    "test": "node --test tests/site.test.mjs tests/remote-assets.test.mjs",
     "test:browser": "node tests/browser.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

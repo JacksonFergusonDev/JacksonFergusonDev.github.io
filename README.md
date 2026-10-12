@@ -79,7 +79,7 @@ npm run og:render
 
 Embedding these files directly from upstream would allow a live page to change without this repository's build, tests, or accessibility checks running. Fetching them first keeps the project repositories authoritative while making the deployed site a checked snapshot. Visitors load these assets, including the full technical reports, from the site's own origin, where they open in the browser instead of downloading as `raw.githubusercontent.com` files do. Links to source repositories remain external.
 
-The current sources follow upstream `main` branches, so rebuilding a portfolio commit can pick up newer assets. The fetcher logs SHA-256 hashes for the downloaded files; those hashes describe the fetched content rather than pinning its version.
+The current sources follow upstream `main` branches, so rebuilding a portfolio commit can pick up newer assets. The fetcher logs SHA-256 hashes for the downloaded files and writes `public/remote-assets-state.json`, which Astro includes in the deployed site. This generated, git-ignored snapshot records each asset's ID, source, target, and content hash; it describes the fetched content rather than pinning its version.
 
 ### Fetching and validation
 
@@ -91,7 +91,11 @@ Pages reference the generated local paths. The project catalog reads Protostar's
 
 ### Refreshes from source repositories
 
-The [GitHub Actions workflow](.github/workflows/deploy.yml) refreshes remote assets on pushes and pull requests to `main`, manual `workflow_dispatch` runs, weekly scheduled builds, and `repository_dispatch` events named `remote-assets-updated`. The weekly build picks up upstream changes; the dispatch hook allows a source repository to request a rebuild immediately after changing an asset.
+The [GitHub Actions workflow](.github/workflows/deploy.yml) builds on pushes and pull requests to `main`, manual `workflow_dispatch` runs, and `repository_dispatch` events named `remote-assets-updated`. Pull requests run the checks without deploying. The dispatch hook allows a source repository to request a rebuild immediately after changing an asset.
+
+Every day at 11:17 UTC, a scheduled job runs `npm run assets:check` without installing dependencies. It downloads and validates all remote assets, then compares their hashes, sources, and destinations with `https://jacksonferguson.me/remote-assets-state.json`. If they match, the workflow skips the build, tests, and deployment. A changed, added, or removed asset triggers the normal build and deployment. Scheduled Actions runs may start later than their requested time.
+
+The live snapshot is the baseline, so it advances only when a deployment succeeds. Failed builds remain eligible for retry the following day. A missing snapshot (HTTP 404) triggers a build to bootstrap this feature; other HTTP errors, network failures, and invalid snapshots fail the check instead of reporting the assets unchanged. Requests bypass caches and include a unique query parameter. The build fetches assets again and publishes the snapshot for the files it actually includes, even if upstream changes between the daily check and the build. Website pushes, manual runs, and dispatch events always build regardless of the daily comparison.
 
 The source-side integration uses a GitHub Actions step like this:
 

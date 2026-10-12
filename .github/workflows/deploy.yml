@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [main]
   schedule:
-    - cron: '17 11 * * 1'
+    - cron: '17 11 * * *'
   repository_dispatch:
     types: [remote-assets-updated]
   workflow_dispatch:
@@ -20,7 +20,27 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  check-remote-assets:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.assets.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      # The fetcher uses only Node built-ins; unchanged days need no npm install.
+      - name: Compare remote assets with the deployed snapshot
+        id: assets
+        run: npm run assets:check
+
   build:
+    needs: check-remote-assets
+    if: >-
+      always() && !cancelled() &&
+      (github.event_name != 'schedule' ||
+      (needs.check-remote-assets.result == 'success' && needs.check-remote-assets.outputs.changed == 'true'))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -70,7 +90,9 @@ jobs:
           path: dist
 
   deploy:
-    if: github.event_name != 'pull_request'
+    if: >-
+      always() && !cancelled() && needs.build.result == 'success' &&
+      github.event_name != 'pull_request'
     needs: build
     runs-on: ubuntu-latest
     permissions:
