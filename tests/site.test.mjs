@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 import sharp from 'sharp';
+import { digest, lockPath, ogCards } from '../scripts/og-cards.mjs';
 const root = path.resolve('dist');
 const projectRoot = path.resolve('.');
 const site = new URL('https://jacksonferguson.me/');
@@ -388,6 +389,11 @@ test('trip and creative pages share a branded card rendered by og:render', async
     assert.match(html, /name="twitter:image" content="[^"]+\/images\/og\//);
     assert.match(html, /property="og:image:alt" content="[^"]{10,}"/);
   }
+});
+test('share cards were re-rendered after their inputs changed', async () => {
+  const lock = JSON.parse(await readFile(lockPath, 'utf8'));
+  const expected = Object.fromEntries(ogCards.map(({ file, html }) => [file, digest(html)]));
+  assert.deepEqual(lock, expected, 'Share cards are stale; run npm run og:render and commit them');
 });
 test('buttons and interactive controls use SVG icons instead of raw unicode symbols', async () => {
   const PSEUDO_ICONS = /[→←↑↓↗↖↘↙▶◀▲▼►◄✕✖×✓✔☰⏸⏯⏹]|&(?:rarr|larr|uarr|darr|times|check);/i;
