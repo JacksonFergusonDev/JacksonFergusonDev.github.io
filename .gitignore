@@ -11,6 +11,7 @@ public/images/audio-analysis.svg
 public/images/gmm-redshift-distribution.svg
 public/data/protostar-mutation-score.json
 public/reports/
+public/remote-assets-state.json
 .rumdl_cache/
 .claude/
 
