@@ -63,22 +63,9 @@ jobs:
       - run: npm test
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
+      # Playwright serves dist/ with astro preview and waits for it before testing.
       - name: Run browser and accessibility tests
-        run: |
-          npx astro preview --background --host 127.0.0.1 --port 4322
-          trap 'npx astro preview stop || true' EXIT
-          for _ in $(seq 1 30); do
-            if curl -sf http://127.0.0.1:4322/ > /dev/null; then
-              break
-            fi
-            sleep 1
-          done
-          if ! curl -sf http://127.0.0.1:4322/ > /dev/null; then
-            npx astro preview logs || true
-            echo "::error::astro preview did not respond on port 4322 within 30 seconds"
-            exit 1
-          fi
-          npm run test:browser
+        run: npm run test:browser
       - name: Upload browser test results
         uses: actions/upload-artifact@v4
         if: always()
