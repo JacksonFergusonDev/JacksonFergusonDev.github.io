@@ -54,8 +54,21 @@ function validateManifestAsset(asset) {
         Object.values(asset.shape).every((kind) => jsonKinds.includes(kind)),
       `${asset.id} shape must map each required key to one of ${jsonKinds.join(', ')}`,
     );
+    // `match` pins a string value's format, so a placeholder such as "unknown" or "N/A" fails.
+    for (const [key, pattern] of Object.entries(asset.match ?? {})) {
+      assertManifest(
+        asset.shape[key] === 'string',
+        `${asset.id} match key "${key}" needs a string shape`,
+      );
+      assertManifest(
+        typeof pattern === 'string',
+        `${asset.id} match for "${key}" must be a regex string`,
+      );
+      new RegExp(pattern); // throws on an invalid pattern
+    }
   } else {
     assertManifest(asset.shape === undefined, `${asset.id} shape applies only to json assets`);
+    assertManifest(asset.match === undefined, `${asset.id} match applies only to json assets`);
   }
   assertManifest(
     Number.isInteger(asset.minBytes) && asset.minBytes > 0,
@@ -99,6 +112,13 @@ function validateJson(asset, text) {
   for (const [key, kind] of Object.entries(asset.shape)) {
     if (typeof document[key] !== kind) {
       throw new Error(`${asset.id}: expected "${key}" to be a ${kind} in ${asset.source}`);
+    }
+  }
+  for (const [key, pattern] of Object.entries(asset.match ?? {})) {
+    if (!new RegExp(pattern).test(document[key])) {
+      throw new Error(
+        `${asset.id}: "${key}" is ${JSON.stringify(document[key])}, not /${pattern}/`,
+      );
     }
   }
 }
