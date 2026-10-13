@@ -72,6 +72,15 @@ test('photos ship without camera metadata and within size budgets', async () => 
     );
   }
 });
+// CI stamps each page with its commit; without the stamp the post-deploy check could never pass.
+test('CI builds stamp every page with the commit', { skip: !process.env.GITHUB_SHA }, async () => {
+  for (const page of pages) {
+    assert.ok(
+      (await read(page)).includes(`<meta name="build-commit" content="${process.env.GITHUB_SHA}">`),
+      `${page} is missing its build-commit stamp`,
+    );
+  }
+});
 test('project hierarchy and real downloads are preserved', async () => {
   const raw = await read(path.join(root, 'index.html'));
   const home = raw

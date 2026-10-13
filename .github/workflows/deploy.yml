@@ -96,3 +96,25 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  # Confirms visitors get the new build, then checks the live site end to end. On scheduled runs
+  # that deploy nothing, it still checks the site daily for certificate, DNS, or hosting problems.
+  verify-live:
+    needs: deploy
+    if: >-
+      always() && !cancelled() &&
+      (needs.deploy.result == 'success' ||
+      (github.event_name == 'schedule' && needs.deploy.result == 'skipped'))
+    runs-on: ubuntu-latest
+    # The CDN caches pages for ten minutes; the wait gives up after fifteen.
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      # The checker uses only Node built-ins, so no npm install.
+      - name: Check the live site
+        run: node scripts/verify-live.mjs
+        env:
+          EXPECTED_COMMIT: ${{ needs.deploy.result == 'success' && github.sha || '' }}

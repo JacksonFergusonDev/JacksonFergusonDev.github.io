@@ -121,6 +121,8 @@ The workflow uses Node.js 24 and installs dependencies from the npm lockfile. It
 
 GitHub Pages receives the static `dist/` artifact, with the custom domain recorded in `public/CNAME`.
 
+A finished deployment is not yet what visitors see: GitHub Pages serves the site through a CDN that caches each page for up to ten minutes (`cache-control: max-age=600`), and a hard refresh only bypasses the browser's cache, not the CDN's. CI builds stamp every page with `<meta name="build-commit">`, and after each deployment the `verify-live` job runs [scripts/verify-live.mjs](scripts/verify-live.mjs). It polls the live homepage, then every page in the sitemap, every 30 seconds until each serves the deployed commit, and fails if any page still serves an earlier build after 15 minutes. It then checks that the HTTPS certificate is valid for at least 14 more days, that HTTP redirects to HTTPS, that every page and every file those pages reference returns successfully (stylesheets, scripts, and PDFs with the right content type), and that a missing URL gets the site's own 404 page. Scheduled runs that deploy nothing still run these checks without waiting for a commit, so certificate, DNS, or Pages configuration problems surface within a day. Run it locally with `node scripts/verify-live.mjs`; set `EXPECTED_COMMIT` to wait for a build.
+
 ## Repository map
 
 | Path                                                     | Purpose                                                  |
