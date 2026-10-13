@@ -48,7 +48,7 @@ Photos in [src/assets/](src/assets/) are build inputs, not an archive: Astro gen
 npm run images:prepare
 ```
 
-[scripts/prepare-images.mjs](scripts/prepare-images.mjs) caps the long edge at 3000px, applies the camera orientation, re-encodes JPEGs at quality 85, and removes all metadata, including GPS locations. PNGs stay lossless. Files that are already prepared are skipped, so running it again never re-compresses them. Pass paths to prepare only some files. The pre-commit hook rejects newly added files over 4 MB. Keep full-resolution copies in your own photo library.
+[scripts/prepare-images.mjs](scripts/prepare-images.mjs) caps the long edge at 3000px, applies the camera orientation, re-encodes JPEGs at quality 85, and removes all metadata, including GPS locations. PNGs stay lossless. Files that are already prepared are skipped, so running it again never re-compresses them. Pass paths to prepare only some files. The pre-commit hook rejects newly added files over 4 MB, and the site tests fail if an original still carries metadata or is over 3000px, or if any served image carries metadata or is over 3.5 MB. Keep full-resolution copies in your own photo library.
 
 ## Social share cards
 
@@ -115,7 +115,7 @@ The source-side integration uses a GitHub Actions step like this:
 
 ## Build checks and hosting
 
-The workflow uses Node.js 24 and installs dependencies from the npm lockfile. It runs a dependency audit, Prettier, ESLint, Stylelint, Astro's type checks, the production build, and tests against the generated site. Playwright and Axe check navigation, responsive layouts, gallery behavior, and accessibility on selected pages. Browser test artifacts are retained for seven days.
+The workflow uses Node.js 24 and installs dependencies from the npm lockfile. It runs a dependency audit, Prettier, ESLint, Stylelint, Astro's type checks, the production build, and tests against the generated site, which check every internal link, `srcset` candidate, and cross-page anchor. Playwright and Axe check navigation, responsive layouts, gallery behavior, and accessibility on selected pages. Browser test artifacts are retained for seven days.
 
 GitHub Pages receives the static `dist/` artifact, with the custom domain recorded in `public/CNAME`.
 

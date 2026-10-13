@@ -2,8 +2,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
+import sharp from 'sharp';
 const root = path.resolve('dist');
 const projectRoot = path.resolve('.');
+const site = new URL('https://jacksonferguson.me/');
+// The URL path a built file is served at: dist/trips/index.html is /trips/.
+const pagePath = (file) => `/${path.relative(root, file).replace(/index\.html$/, '')}`;
 async function walk(dir) {
   const entries = await readdir(dir, { withFileTypes: true });
   return (
@@ -23,16 +27,48 @@ test('every generated page has metadata and valid local navigation/assets', asyn
     assert.match(html, /<html lang="en"/);
     assert.match(html, /<title>[^<]+<\/title>/);
     assert.match(html, /name="description"/);
-    assert.match(html, /rel="canonical"/);
-    for (const [, value] of html.matchAll(/(?:href|src)="([^"#]+)"/g)) {
-      if (!value.startsWith('/') || value.startsWith('//')) continue;
-      const clean = decodeURIComponent(value.split(/[?#]/)[0]);
-      let target = path.join(root, clean);
-      if (clean.endsWith('/')) target = path.join(target, 'index.html');
+    if (!html.includes('name="robots" content="noindex"')) assert.match(html, /rel="canonical"/);
+    const base = new URL(pagePath(page), site);
+    const links = [...html.matchAll(/(?:href|src)="([^"]+)"/g)].map(([, value]) => value);
+    // Phones request the larger srcset candidates, which no `src` attribute names.
+    for (const [, srcset] of html.matchAll(/srcset="([^"]+)"/g))
+      links.push(...srcset.split(',').map((candidate) => candidate.trim().split(/\s+/)[0]));
+    for (const value of links) {
+      const url = new URL(value.replace(/&amp;/g, '&'), base);
+      if (url.origin !== site.origin) continue;
+      const file = path.join(root, decodeURIComponent(url.pathname));
+      const target = url.pathname.endsWith('/') ? path.join(file, 'index.html') : file;
       assert.ok(await stat(target).catch(() => false), `Missing ${value} linked from ${page}`);
+      // Links such as the header's /#projects must land on an anchor that exists.
+      const id = decodeURIComponent(url.hash.slice(1));
+      if (id)
+        assert.ok(
+          (await read(target)).includes(`id="${id}"`),
+          `Missing anchor ${value} linked from ${page}`,
+        );
     }
-    for (const [, id] of html.matchAll(/href="#([^"]+)"/g))
-      assert.ok(html.includes(`id="${id}"`), `Missing anchor #${id} on ${page}`);
+  }
+});
+test('photos ship without camera metadata and within size budgets', async () => {
+  const images = (dir) =>
+    walk(dir).then((all) => all.filter((file) => /\.(jpe?g|png|webp|avif)$/i.test(file)));
+  // `npm run images:prepare` caps originals and strips GPS; this catches a photo committed without it.
+  for (const file of await images(path.join(projectRoot, 'src', 'assets'))) {
+    const meta = await sharp(file).metadata();
+    assert.ok(!meta.exif && !meta.xmp && !meta.iptc, `${file} has metadata; run images:prepare`);
+    assert.ok(
+      Math.max(meta.width, meta.height) <= 3000,
+      `${file} is too large; run images:prepare`,
+    );
+  }
+  for (const file of await images(root)) {
+    const meta = await sharp(file).metadata();
+    assert.ok(!meta.exif && !meta.xmp && !meta.iptc, `${file} is served with metadata`);
+    // The largest served photo, a full-size gallery view, is about 2.7 MB.
+    assert.ok(
+      (await stat(file)).size <= 3_500_000,
+      `${file} is over the 3.5 MB page-weight budget`,
+    );
   }
 });
 test('project hierarchy and real downloads are preserved', async () => {
