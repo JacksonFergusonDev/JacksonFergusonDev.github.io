@@ -1,29 +1,38 @@
 import { test as base, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { readdirSync } from 'node:fs';
 
 export { expect };
 
-export const routes = [
-  '/',
-  '/trips/',
-  '/trips/semaphore-2026/',
-  '/creative/',
-  '/creative/blender/',
-  '/creative/python/',
-  '/creative/events/',
-];
+// Every built page, so a new trip or collection is tested without editing this list.
+export const routes = readdirSync('dist', { recursive: true })
+  .filter((file) => file.endsWith('.html'))
+  .map((file) => `/${file.replaceAll('\\', '/').replace(/index\.html$/, '')}`)
+  .sort();
 
 // Screenshot names: '/' is home, '/trips/semaphore-2026/' is trips-semaphore-2026.
 export const routeName = (route) =>
   route === '/' ? 'home' : route.split('/').filter(Boolean).join('-');
 
 export const test = base.extend({
-  // An uncaught exception on the page fails the test that triggered it.
+  // An uncaught exception, a console error, or a failed request fails the test that caused it.
   page: async ({ page }, use) => {
     const errors = [];
-    page.on('pageerror', (error) => errors.push(error.message));
+    page.on('pageerror', (error) => errors.push(`uncaught: ${error.message}`));
+    page.on('console', (message) => {
+      if (message.type() === 'error') errors.push(`console: ${message.text()}`);
+    });
+    page.on('response', (response) => {
+      if (response.status() >= 400) errors.push(`HTTP ${response.status()}: ${response.url()}`);
+    });
+    page.on('requestfailed', (request) => {
+      const reason = request.failure()?.errorText ?? '';
+      // Navigating away cancels requests still in flight; that is not a broken resource.
+      if (!/ERR_ABORTED|NS_BINDING_ABORTED|cancelled/i.test(reason))
+        errors.push(`failed: ${request.url()} (${reason})`);
+    });
     await use(page);
-    expect(errors, 'Uncaught page errors').toEqual([]);
+    expect(errors, 'Page errors and failed requests').toEqual([]);
   },
 });
 
@@ -60,4 +69,82 @@ export async function loadVisibleImages(page) {
     expect(await image.evaluate((el) => el.naturalWidth)).toBeGreaterThan(0);
   }
   await page.evaluate(() => window.scrollTo(0, 0));
+}
+
+// Breakage that renders without errors: text covered by another element or pushed off-screen,
+// overlapping cards, stretched images, and text drawn in a fallback font.
+export async function expectSoundLayout(page, message) {
+  const problems = await page.evaluate(async () => {
+    const found = [];
+    const describe = (el) =>
+      `<${el.tagName.toLowerCase()}${el.className ? ` class="${el.className}"` : ''}> "${el.textContent.trim().slice(0, 40)}"`;
+    const shown = (el) => {
+      const r = el.getBoundingClientRect();
+      const style = getComputedStyle(el);
+      return r.width > 0 && r.height > 0 && style.visibility !== 'hidden' && style.opacity !== '0';
+    };
+
+    const text = [...document.querySelectorAll('main :is(h1, h2, h3, h4, p)')].filter(
+      (el) => shown(el) && el.textContent.trim() && !el.closest('dialog, [hidden]'),
+    );
+    for (const el of text) {
+      el.scrollIntoView({ block: 'center', behavior: 'instant' });
+      const r = el.getBoundingClientRect();
+      if (r.left < -1 || r.right > innerWidth + 1) found.push(`off-screen: ${describe(el)}`);
+      // Hit testing skips text under `pointer-events: none` (the hero copy), so restore it.
+      const pointerEvents = el.style.pointerEvents;
+      el.style.pointerEvents = 'auto';
+      // Decorative layers such as the hero canvas are masked to transparency where text sits.
+      const hit = document
+        .elementsFromPoint(
+          Math.min(Math.max(r.left + r.width / 2, 0), innerWidth - 1),
+          r.top + r.height / 2,
+        )
+        .find((candidate) => !candidate.closest('[aria-hidden="true"]'));
+      el.style.pointerEvents = pointerEvents;
+      if (hit && !el.contains(hit)) {
+        found.push(`covered: ${describe(el)} is under ${describe(hit)}`);
+      }
+    }
+    window.scrollTo(0, 0);
+
+    const cards = [
+      ...document.querySelectorAll('.project-card, .thumb-card, .blender-card, .gallery-item'),
+    ].filter(shown);
+    for (const [i, a] of cards.entries()) {
+      for (const b of cards.slice(i + 1)) {
+        if (a.contains(b) || b.contains(a)) continue;
+        const ra = a.getBoundingClientRect();
+        const rb = b.getBoundingClientRect();
+        const overlapX = Math.min(ra.right, rb.right) - Math.max(ra.left, rb.left);
+        const overlapY = Math.min(ra.bottom, rb.bottom) - Math.max(ra.top, rb.top);
+        if (overlapX > 1 && overlapY > 1) {
+          found.push(`overlap: ${describe(a)} and ${describe(b)}`);
+        }
+      }
+    }
+
+    for (const img of document.querySelectorAll('main img')) {
+      if (!shown(img) || !img.naturalWidth || getComputedStyle(img).objectFit !== 'fill') continue;
+      const rendered = img.clientWidth / img.clientHeight;
+      const natural = img.naturalWidth / img.naturalHeight;
+      if (Math.abs(rendered / natural - 1) > 0.02) found.push(`stretched: ${img.currentSrc}`);
+    }
+
+    await document.fonts.ready;
+    const loadedFamilies = new Set(
+      [...document.fonts]
+        .filter((f) => f.status === 'loaded')
+        .map((f) => f.family.replace(/"/g, '')),
+    );
+    const generic = new Set(['serif', 'sans-serif', 'monospace', 'system-ui', 'ui-monospace']);
+    for (const el of [...text, ...document.querySelectorAll('main code')].filter(shown)) {
+      const family = getComputedStyle(el).fontFamily.split(',')[0].trim().replace(/"/g, '');
+      // A generic family such as monospace is a deliberate choice, not a missing web font.
+      if (generic.has(family)) continue;
+      if (!loadedFamilies.has(family)) found.push(`fallback font: ${describe(el)} wants ${family}`);
+    }
+    return [...new Set(found)];
+  });
+  expect(problems, message).toEqual([]);
 }

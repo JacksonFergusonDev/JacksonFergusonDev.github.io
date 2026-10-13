@@ -117,7 +117,7 @@ The source-side integration uses a GitHub Actions step like this:
 
 ## Build checks and hosting
 
-The workflow uses Node.js 24 and installs dependencies from the npm lockfile. It runs a dependency audit, Prettier, ESLint, Stylelint, Astro's type checks, the production build, and tests against the generated site, which check every internal link, `srcset` candidate, and cross-page anchor. Playwright and Axe check navigation, responsive layouts, gallery behavior, and accessibility on selected pages; the specs live in [tests/browser/](tests/browser/), and [playwright.config.mjs](playwright.config.mjs) serves the build for them. Browser test screenshots and failure traces are retained for seven days.
+The workflow uses Node.js 24 and installs dependencies from the npm lockfile. It runs a dependency audit, Prettier, ESLint, Stylelint, Astro's type checks, the production build, and tests against the generated site, which check every internal link, `srcset` candidate, and cross-page anchor. Playwright and Axe check every built page for accessibility, broken images, failed requests, console errors, and layout breakage that throws no error: text covered by another element or pushed off-screen, overlapping cards, stretched images, text in a fallback font, and grids collapsed to one column. They also check responsive widths, gallery behavior, and that the hero canvas draws and pauses while off-screen; the specs live in [tests/browser/](tests/browser/), and [playwright.config.mjs](playwright.config.mjs) serves the build for them. Browser test screenshots and failure traces are retained for seven days.
 
 GitHub Pages receives the static `dist/` artifact, with the custom domain recorded in `public/CNAME`.
 

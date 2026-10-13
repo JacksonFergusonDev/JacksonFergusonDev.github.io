@@ -127,3 +127,50 @@ test('the Protostar player is ready on a #projects deep link', async ({ page }) 
     'Protostar player should be ready when the projects deep link finishes loading',
   ).toHaveCount(1);
 });
+
+test('the hero canvas draws, and stops drawing while offscreen', async ({ page }) => {
+  await page.addInitScript(() => {
+    // Count WebGL draw calls; the hero canvas is the page's only WebGL context.
+    window.heroDraws = 0;
+    const drawArrays = WebGLRenderingContext.prototype.drawArrays;
+    WebGLRenderingContext.prototype.drawArrays = function (...args) {
+      window.heroDraws += 1;
+      return drawArrays.apply(this, args);
+    };
+    // Keep the last frame readable so the test can inspect its pixels.
+    const getContext = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function (type, options) {
+      return getContext.call(this, type, { ...options, preserveDrawingBuffer: true });
+    };
+  });
+  const draws = () => page.evaluate(() => window.heroDraws);
+  await page.goto('/');
+  await expect.poll(draws, { message: 'The hero should animate on load' }).toBeGreaterThan(0);
+  const animating = await draws();
+  await expect.poll(draws).toBeGreaterThan(animating);
+
+  // A shader that compiles but outputs nothing throws no error, so read the frame itself.
+  const painted = await page.evaluate(() => {
+    const source = document.querySelector('#data-canvas');
+    const copy = document.createElement('canvas');
+    copy.width = source.width;
+    copy.height = source.height;
+    const context = copy.getContext('2d');
+    context.drawImage(source, 0, 0);
+    const { data } = context.getImageData(0, 0, copy.width, copy.height);
+    let opaque = 0;
+    for (let i = 3; i < data.length; i += 4) if (data[i] > 20) opaque += 1;
+    return opaque / (copy.width * copy.height);
+  });
+  expect(painted, 'The canvas should draw visible strands').toBeGreaterThan(0.02);
+
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  await page.waitForTimeout(300);
+  const offscreen = await draws();
+  await page.waitForTimeout(700);
+  expect(await draws(), 'The canvas must not draw while scrolled out of view').toBe(offscreen);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await expect
+    .poll(draws, { message: 'The canvas should resume in view' })
+    .toBeGreaterThan(offscreen);
+});

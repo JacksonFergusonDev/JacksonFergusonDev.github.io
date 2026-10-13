@@ -2,6 +2,7 @@ import {
   expect,
   expectHeroFillsViewport,
   expectNoHorizontalOverflow,
+  expectSoundLayout,
   loadVisibleImages,
   routeName,
   routes,
@@ -29,6 +30,7 @@ for (const width of [320, 390, 560, 600, 768, 820, 1024]) {
             .map((link) => link.textContent.trim()),
         );
         expect(clippedLinks, `Header links clipped at ${width}px on ${route}`).toEqual([]);
+        await expectSoundLayout(page, `${route} layout at ${width}px`);
 
         if (route === '/') {
           for (const manager of ['brew', 'uv']) {
