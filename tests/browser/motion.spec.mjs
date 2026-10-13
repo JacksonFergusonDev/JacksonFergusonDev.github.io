@@ -103,13 +103,16 @@ for (const viewport of [
 
 test('landing reveals transition opacity and transform', async ({ page }) => {
   await page.goto('/');
-  for (const element of await page.locator('.landing-reveal').all()) {
-    const transition = await element.evaluate((el) => window.getComputedStyle(el).transition);
-    expect(
-      transition.includes('opacity') && transition.includes('transform'),
-      `Landing reveal element (${await element.evaluate((el) => el.className)}) missing reveal transitions: ${transition}`,
-    ).toBe(true);
-  }
+  // One round trip: the animating hero keeps the page busy, so per-element calls add up.
+  const missing = await page.locator('.landing-reveal').evaluateAll((elements) =>
+    elements
+      .map((el) => [el.className, getComputedStyle(el).transition])
+      .filter(
+        ([, transition]) => !transition.includes('opacity') || !transition.includes('transform'),
+      )
+      .map(([className, transition]) => `${className}: ${transition}`),
+  );
+  expect(missing, 'Landing reveal elements missing reveal transitions').toEqual([]);
 });
 
 test('the Protostar demo waits until it scrolls into view', async ({ page }) => {
