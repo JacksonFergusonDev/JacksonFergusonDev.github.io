@@ -17,7 +17,7 @@
     "preview": "astro preview",
     "precheck": "npm run assets:fetch",
     "check": "astro check",
-    "test": "node --test tests/site.test.mjs tests/remote-assets.test.mjs",
+    "test": "node --test tests/site.test.mjs tests/remote-assets.test.mjs tests/verify-live.test.mjs",
     "test:browser": "playwright test",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

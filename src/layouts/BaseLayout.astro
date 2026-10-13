@@ -8,6 +8,7 @@ import '../styles/global.css';
 import ServiceIcon from '../components/ServiceIcon.astro';
 import Icon from '../components/Icon.astro';
 import { site, routes } from '../lib/site';
+import { buildCommit } from '../lib/build.mjs';
 interface Props {
   title?: string;
   description?: string;
@@ -37,6 +38,7 @@ const path = Astro.url.pathname;
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#0a0c0e" />
+    {buildCommit && <meta name="build-commit" content={buildCommit} />}
     <meta name="description" content={description} />
     <title>{pageTitle}</title>
     {/* A noindex page such as the 404 is served at many URLs and has no canonical one. */}
