@@ -1,10 +1,4 @@
-import {
-  expect,
-  expectHeroFillsViewport,
-  expectStaticHeroWithoutWebGL,
-  loadVisibleImages,
-  test,
-} from './fixtures.mjs';
+import { expect, expectHeroFillsViewport, loadVisibleImages, test } from './fixtures.mjs';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
@@ -37,7 +31,6 @@ test('fonts, images, and the hero render from the production build', async ({ pa
 });
 
 test('the motion toggle starts paused under reduced motion', async ({ page }) => {
-  if (await expectStaticHeroWithoutWebGL(page)) return;
   // The visible label is the button's whole name.
   await page.getByRole('button', { name: 'Play motion', exact: true }).click();
   await page.getByRole('button', { name: 'Pause motion', exact: true }).click();
@@ -64,4 +57,22 @@ test('resumes open as PDFs in a new tab', async ({ page }) => {
       .click(),
   ]);
   await popup.close();
+});
+
+test.describe('without WebGL', () => {
+  // Older devices, blocked GPUs, and some privacy settings get no WebGL context.
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      const getContext = HTMLCanvasElement.prototype.getContext;
+      HTMLCanvasElement.prototype.getContext = function (type, ...args) {
+        return /webgl/.test(type) ? null : getContext.call(this, type, ...args);
+      };
+    });
+    await page.goto('/');
+  });
+
+  test('the hero stays static, with no motion toggle and no errors', async ({ page }) => {
+    await expect(page.getByRole('heading', { name: 'Jackson Ferguson.' })).toBeVisible();
+    await expect(page.locator('.motion-toggle')).toBeHidden();
+  });
 });

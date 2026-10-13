@@ -23,26 +23,21 @@ export function onlyIn(projects, reason) {
   test.skip(!projects.includes(test.info().project.name), reason);
 }
 
-// Headless Firefox on a GPU-less Linux runner has no WebGL; the hero then stays static.
-const hasWebGL = (page) =>
-  page.evaluate(() => !!document.createElement('canvas').getContext('webgl'));
-
-// Without WebGL the hero must fall back quietly: no motion toggle, and no errors (checked by the
-// page fixture). Returns true when the caller should skip its WebGL-only checks.
-export async function expectStaticHeroWithoutWebGL(page) {
-  if (await hasWebGL(page)) return false;
-  await expect(page.locator('.motion-toggle')).toBeHidden();
-  test.info().annotations.push({ type: 'no-webgl', description: 'Checked the static fallback' });
-  return true;
-}
-
 export const test = base.extend({
   // An uncaught exception, a console error, or a failed request fails the test that caused it.
   page: async ({ page }, use) => {
     const errors = [];
-    page.on('pageerror', (error) => errors.push(`uncaught: ${error.message}`));
+    page.on('pageerror', (error) => {
+      // A ResizeObserver whose callback changes layout defers the rest to the next frame, and
+      // WebKit reports that as an error; nothing is lost.
+      if (!error.message.startsWith('ResizeObserver loop'))
+        errors.push(`uncaught: ${error.message}`);
+    });
     page.on('console', (message) => {
-      if (message.type() === 'error') errors.push(`console: ${message.text()}`);
+      // Firefox logs a font download cancelled by the test ending (NS_BINDING_ABORTED) as an
+      // error; a font that is actually missing still fails through its HTTP status.
+      if (message.type() === 'error' && !message.text().includes('status=2152398850'))
+        errors.push(`console: ${message.text()}`);
     });
     page.on('response', (response) => {
       if (response.status() >= 400) errors.push(`HTTP ${response.status()}: ${response.url()}`);

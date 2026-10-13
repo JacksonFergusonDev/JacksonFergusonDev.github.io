@@ -1,4 +1,4 @@
-import { expect, expectStaticHeroWithoutWebGL, onlyIn, test } from './fixtures.mjs';
+import { expect, onlyIn, test } from './fixtures.mjs';
 
 test.use({ reducedMotion: 'no-preference' });
 
@@ -117,15 +117,23 @@ test('landing reveals transition opacity and transform', async ({ page }) => {
 
 test('the Protostar demo waits until it scrolls into view', async ({ page }) => {
   await page.goto('/');
-  expect(
-    (await page.locator('#protostar-demo').textContent()) || '',
-    'Protostar demo should be paused on the initial frame before scrolling down into view',
-  ).not.toContain('protostar init');
+  const demo = page.locator('#protostar-demo');
+  // The player's clock moves only during playback, unlike the screen, which draws its first
+  // frame after mounting.
+  const elapsed = demo.locator('.ap-time-elapsed');
+  await expect(elapsed).toHaveText('00:00');
+  await page.waitForTimeout(1000);
+  await expect(elapsed, 'Protostar demo should stay paused until scrolled into view').toHaveText(
+    '00:00',
+  );
+  expect(await demo.textContent(), 'Protostar demo should not have typed yet').not.toContain(
+    'protostar init',
+  );
   await page.locator('.flagship').scrollIntoViewIfNeeded();
   await expect(
-    page.locator('#protostar-demo'),
-    'Protostar demo should begin typing after reveal animation completes',
-  ).toContainText('protostar init', { timeout: 10_000 });
+    elapsed,
+    'Protostar demo should start playing after the reveal animation completes',
+  ).not.toHaveText('00:00', { timeout: 10_000 });
 });
 
 test('the Protostar player is ready on a #projects deep link', async ({ page }) => {
@@ -153,7 +161,6 @@ test('the hero canvas draws, and stops drawing while offscreen', async ({ page }
   });
   const draws = () => page.evaluate(() => window.heroDraws);
   await page.goto('/');
-  if (await expectStaticHeroWithoutWebGL(page)) return;
   await expect.poll(draws, { message: 'The hero should animate on load' }).toBeGreaterThan(0);
   const animating = await draws();
   await expect.poll(draws).toBeGreaterThan(animating);
@@ -174,9 +181,21 @@ test('the hero canvas draws, and stops drawing while offscreen', async ({ page }
   expect(painted, 'The canvas should draw visible strands').toBeGreaterThan(0.02);
 
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-  await page.waitForTimeout(300);
+  // The browser reports the canvas offscreen after a frame or two, later under software
+  // rendering, so wait for drawing to stop rather than for a fixed time.
+  const drawsOver = async (ms) => {
+    const before = await draws();
+    await page.waitForTimeout(ms);
+    return (await draws()) - before;
+  };
+  await expect
+    .poll(() => drawsOver(500), {
+      message: 'The canvas should stop drawing once scrolled out of view',
+      timeout: 10_000,
+    })
+    .toBe(0);
   const offscreen = await draws();
-  await page.waitForTimeout(700);
+  await page.waitForTimeout(1000);
   expect(await draws(), 'The canvas must not draw while scrolled out of view').toBe(offscreen);
   await page.evaluate(() => window.scrollTo(0, 0));
   await expect

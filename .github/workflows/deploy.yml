@@ -63,9 +63,11 @@ jobs:
       - run: npm test
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium firefox webkit
-      # Playwright serves dist/ with astro preview and waits for it before testing.
+      # Playwright serves dist/ with astro preview and waits for it before testing. Firefox on
+      # Linux creates a WebGL context only with an X display, so a virtual one lets the hero canvas
+      # tests run in every engine (rendered in software by Mesa's llvmpipe).
       - name: Run browser and accessibility tests
-        run: npm run test:browser
+        run: xvfb-run --auto-servernum npm run test:browser
       - name: Upload browser test results
         uses: actions/upload-artifact@v4
         if: always()
