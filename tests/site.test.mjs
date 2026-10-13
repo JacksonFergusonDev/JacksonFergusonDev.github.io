@@ -183,6 +183,8 @@ test('remote build asset manifest feeds generated public assets', async () => {
       const document = JSON.parse(text);
       for (const [key, kind] of Object.entries(asset.shape))
         assert.equal(typeof document[key], kind, `${asset.id} has no ${kind} "${key}"`);
+      for (const [key, pattern] of Object.entries(asset.match ?? {}))
+        assert.match(document[key], new RegExp(pattern), `${asset.id} "${key}" is malformed`);
     }
     if (asset.type === 'pdf') {
       assert.equal(output.subarray(0, 5).toString(), '%PDF-', `${asset.id} is not a PDF`);

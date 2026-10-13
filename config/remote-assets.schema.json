@@ -39,6 +39,14 @@
               "enum": ["string", "number", "boolean"]
             }
           },
+          "match": {
+            "type": "object",
+            "minProperties": 1,
+            "additionalProperties": {
+              "type": "string",
+              "format": "regex"
+            }
+          },
           "minBytes": {
             "type": "integer",
             "minimum": 1
@@ -51,7 +59,7 @@
           "required": ["shape"]
         },
         "else": {
-          "not": { "required": ["shape"] }
+          "not": { "anyOf": [{ "required": ["shape"] }, { "required": ["match"] }] }
         }
       }
     }

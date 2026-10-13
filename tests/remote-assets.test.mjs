@@ -173,6 +173,46 @@ test('check command emits GitHub outputs and fails without an output on a bad ba
   }
 });
 
+test('fetcher rejects a metric whose value is a placeholder', async () => {
+  const directory = await mkdtemp(path.join(tmpdir(), 'remote-assets-fetch-'));
+  const scriptUrl = pathToFileURL(path.resolve('scripts/fetch-remote-assets.mjs')).href;
+  const metric = {
+    id: 'metric',
+    description: 'A metric',
+    source: 'https://example.test/metric.json',
+    target: 'public/data/metric.json',
+    type: 'json',
+    shape: { message: 'string' },
+    match: { message: '^\\d+(\\.\\d+)?%$' },
+    minBytes: 10,
+  };
+  const fetchWith = (message) =>
+    promisify(execFile)(
+      process.execPath,
+      [
+        '--input-type=module',
+        '-e',
+        `globalThis.fetch = async () => Response.json({ message: ${JSON.stringify(message)}, padding: 'x' });
+        await import(${JSON.stringify(scriptUrl)});`,
+      ],
+      // Short local retries; no earlier copy exists to fall back on.
+      { cwd: directory, env: { ...process.env, CI: '' } },
+    );
+  try {
+    await mkdir(path.join(directory, 'config'));
+    await writeFile(
+      path.join(directory, 'config/remote-assets.json'),
+      JSON.stringify({ assets: [metric] }),
+    );
+    await assert.rejects(fetchWith('unknown'), /"message" is "unknown"/);
+    await fetchWith('99.9%');
+    const fetched = JSON.parse(await readFile(path.join(directory, metric.target), 'utf8'));
+    assert.equal(fetched.message, '99.9%');
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
 // CI always builds first; a local run without a build skips rather than failing.
 const builtSnapshot = 'dist/remote-assets-state.json';
 const skipBuilt = !process.env.CI && !existsSync(builtSnapshot) && 'run npm run build first';
