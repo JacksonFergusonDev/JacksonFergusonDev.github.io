@@ -60,6 +60,8 @@ npm run og:render
 
 [scripts/render-og-card.mjs](scripts/render-og-card.mjs) reads the title, description, location, and date from each page's frontmatter and uses the first sentence of the description, so a long description never overflows the card. Re-rendering is byte-stable. Adding a trip needs no code change: render again, then commit the new `trips-<slug>.png`.
 
+The card HTML is built in [scripts/og-cards.mjs](scripts/og-cards.mjs). Rendering records a hash of each card's HTML, including its embedded fonts, in [config/og-cards.lock.json](config/og-cards.lock.json), and the site tests fail when a card's current HTML no longer matches, so a stale card cannot ship.
+
 ## Remote project assets
 
 [config/remote-assets.json](config/remote-assets.json) is the central manifest for assets sourced from other project repositories. [scripts/fetch-remote-assets.mjs](scripts/fetch-remote-assets.mjs) downloads and validates them, then writes the copies into `public/` for Astro to include in the static site. These generated copies are git-ignored; this repository tracks the fetching process rather than snapshots that can go stale.
