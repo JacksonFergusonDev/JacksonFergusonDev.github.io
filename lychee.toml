@@ -1,0 +1,24 @@
+# External link check (https://lychee.cli.rs), run daily against the live site and on pull
+# requests against the build. The site's own pages and files are checked by tests/site.test.mjs
+# and scripts/verify-live.mjs, so only links leaving the site matter here.
+
+# Only links leaving the site; local files are already checked, and mail addresses are not links.
+scheme = ["https", "http"]
+
+exclude = [
+  # The site itself.
+  '^https://jacksonferguson\.me/',
+  # LinkedIn answers automated requests with HTTP 999 whether or not the profile exists.
+  '^https://(www\.)?linkedin\.com/',
+]
+
+# Several attempts ride out a slow or briefly unavailable host before a link counts as broken.
+max_retries = 3
+retry_wait_time = 5
+timeout = 20
+
+# GitHub rate-limits unauthenticated checks (429); CI passes a token, and a rate limit that still
+# happens means the link could not be checked, not that it is broken.
+accept = ["200..=299", "429"]
+
+user_agent = "Mozilla/5.0 (compatible; jacksonferguson.me link check; +https://jacksonferguson.me/)"
