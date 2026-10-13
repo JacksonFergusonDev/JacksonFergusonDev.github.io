@@ -1,8 +1,9 @@
-import { expect, test } from './fixtures.mjs';
+import { expect, expectStaticHeroWithoutWebGL, onlyIn, test } from './fixtures.mjs';
 
 test.use({ reducedMotion: 'no-preference' });
 
 test('returning home keeps hero text hidden until the reveal script runs', async ({ page }) => {
+  onlyIn(['chromium'], 'Holds scripts mid-navigation, which only Chromium times reliably');
   await page.goto('/');
   await page.waitForFunction(() => document.body.classList.contains('landing-intro-complete'));
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
@@ -46,6 +47,10 @@ for (const viewport of [
     test.use({ viewport });
 
     test('sections reveal when their content reaches the boundary', async ({ page }) => {
+      onlyIn(
+        ['chromium'],
+        'Scrolls to within 40px of the observer boundary, too tight across engines',
+      );
       await page.goto('/');
       await page.evaluate(() => document.fonts.ready);
       for (const selector of [
@@ -117,7 +122,7 @@ test('the Protostar demo waits until it scrolls into view', async ({ page }) => 
   await expect(
     page.locator('#protostar-demo'),
     'Protostar demo should begin typing after reveal animation completes',
-  ).toContainText('protostar init', { timeout: 4000 });
+  ).toContainText('protostar init', { timeout: 10_000 });
 });
 
 test('the Protostar player is ready on a #projects deep link', async ({ page }) => {
@@ -145,6 +150,7 @@ test('the hero canvas draws, and stops drawing while offscreen', async ({ page }
   });
   const draws = () => page.evaluate(() => window.heroDraws);
   await page.goto('/');
+  if (await expectStaticHeroWithoutWebGL(page)) return;
   await expect.poll(draws, { message: 'The hero should animate on load' }).toBeGreaterThan(0);
   const animating = await draws();
   await expect.poll(draws).toBeGreaterThan(animating);

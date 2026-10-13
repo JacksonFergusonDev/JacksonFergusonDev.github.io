@@ -1,4 +1,10 @@
-import { expect, expectHeroFillsViewport, loadVisibleImages, test } from './fixtures.mjs';
+import {
+  expect,
+  expectHeroFillsViewport,
+  expectStaticHeroWithoutWebGL,
+  loadVisibleImages,
+  test,
+} from './fixtures.mjs';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
@@ -23,10 +29,15 @@ test('fonts, images, and the hero render from the production build', async ({ pa
   }
   await loadVisibleImages(page);
   await expectHeroFillsViewport(page, 'Hero divider should align with the viewport edge');
-  await page.screenshot({ path: test.info().outputPath('home-desktop.png'), fullPage: true });
+  await page.screenshot({
+    path: test.info().outputPath('home-desktop.png'),
+    fullPage: true,
+    scale: 'css',
+  });
 });
 
 test('the motion toggle starts paused under reduced motion', async ({ page }) => {
+  if (await expectStaticHeroWithoutWebGL(page)) return;
   // The visible label is the button's whole name.
   await page.getByRole('button', { name: 'Play motion', exact: true }).click();
   await page.getByRole('button', { name: 'Pause motion', exact: true }).click();

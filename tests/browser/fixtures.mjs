@@ -14,6 +14,28 @@ export const routes = readdirSync('dist', { recursive: true })
 export const routeName = (route) =>
   route === '/' ? 'home' : route.split('/').filter(Boolean).join('-');
 
+// Phone projects are named *-mobile; the rest run at a desktop size.
+export const isMobileProject = () => test.info().project.name.endsWith('-mobile');
+
+// Skips the current test outside the named projects, for checks whose result does not depend
+// on the engine (axe) or whose timing is only reliable in one engine.
+export function onlyIn(projects, reason) {
+  test.skip(!projects.includes(test.info().project.name), reason);
+}
+
+// Headless Firefox on a GPU-less Linux runner has no WebGL; the hero then stays static.
+const hasWebGL = (page) =>
+  page.evaluate(() => !!document.createElement('canvas').getContext('webgl'));
+
+// Without WebGL the hero must fall back quietly: no motion toggle, and no errors (checked by the
+// page fixture). Returns true when the caller should skip its WebGL-only checks.
+export async function expectStaticHeroWithoutWebGL(page) {
+  if (await hasWebGL(page)) return false;
+  await expect(page.locator('.motion-toggle')).toBeHidden();
+  test.info().annotations.push({ type: 'no-webgl', description: 'Checked the static fallback' });
+  return true;
+}
+
 export const test = base.extend({
   // An uncaught exception, a console error, or a failed request fails the test that caused it.
   page: async ({ page }, use) => {
@@ -65,8 +87,19 @@ export async function expectHeroFillsViewport(page, message) {
 export async function loadVisibleImages(page) {
   for (const image of await page.locator('main img:not(.viewer-photo)').all()) {
     await image.scrollIntoViewIfNeeded();
+    // Firefox rejects decode() on a lazy image whose request has not started, so wait for it.
+    await image.evaluate(
+      (el) =>
+        el.complete ||
+        new Promise((resolve) => {
+          el.addEventListener('load', resolve, { once: true });
+          el.addEventListener('error', resolve, { once: true });
+        }),
+    );
+    expect(await image.evaluate((el) => el.naturalWidth), 'Image failed to load').toBeGreaterThan(
+      0,
+    );
     await image.evaluate((el) => el.decode());
-    expect(await image.evaluate((el) => el.naturalWidth)).toBeGreaterThan(0);
   }
   await page.evaluate(() => window.scrollTo(0, 0));
 }

@@ -57,6 +57,7 @@ for (const width of [320, 390, 560, 600, 768, 820, 1024]) {
           await page.screenshot({
             path: test.info().outputPath(`${routeName(route)}-mobile.png`),
             fullPage: true,
+            scale: 'css',
           });
         }
       });

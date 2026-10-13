@@ -46,7 +46,7 @@ npm run images:prepare
 npm run og:render
 ```
 
-`npm run test:browser` runs the Playwright specs in `tests/browser/` against `dist/`: build first, and it starts `astro preview` on port 4322 itself (reusing one already running there). Set `SITE_URL` to test another running site instead. Install Chromium with `npx playwright install chromium` if the browser binary is missing.
+`npm run test:browser` runs the Playwright specs in `tests/browser/` against `dist/`: build first, and it starts `astro preview` on port 4322 itself (reusing one already running there). Set `SITE_URL` to test another running site instead. It runs in Chromium, Firefox, and WebKit, each at desktop and phone sizes; install them with `npx playwright install chromium firefox webkit`, and pass `--project=chromium` for a quick single-browser run.
 
 ## Verification Expectations
 

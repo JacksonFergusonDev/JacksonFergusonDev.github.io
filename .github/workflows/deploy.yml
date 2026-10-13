@@ -61,8 +61,8 @@ jobs:
       - run: npm run check
       - run: npm run build
       - run: npm test
-      - name: Install Playwright Chromium
-        run: npx playwright install --with-deps chromium
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium firefox webkit
       # Playwright serves dist/ with astro preview and waits for it before testing.
       - name: Run browser and accessibility tests
         run: npm run test:browser
