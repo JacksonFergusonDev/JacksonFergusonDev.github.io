@@ -23,5 +23,9 @@ test('the photo viewer opens, pages by keyboard and button, and returns focus', 
 test('the trips index renders every thumbnail', async ({ page }) => {
   await page.goto('/trips/');
   await loadVisibleImages(page);
-  await page.screenshot({ path: test.info().outputPath('trips-desktop.png'), fullPage: true });
+  await page.screenshot({
+    path: test.info().outputPath('trips-desktop.png'),
+    fullPage: true,
+    scale: 'css',
+  });
 });

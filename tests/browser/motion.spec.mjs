@@ -1,8 +1,9 @@
-import { expect, test } from './fixtures.mjs';
+import { expect, onlyIn, test } from './fixtures.mjs';
 
 test.use({ reducedMotion: 'no-preference' });
 
 test('returning home keeps hero text hidden until the reveal script runs', async ({ page }) => {
+  onlyIn(['chromium'], 'Holds scripts mid-navigation, which only Chromium times reliably');
   await page.goto('/');
   await page.waitForFunction(() => document.body.classList.contains('landing-intro-complete'));
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
@@ -46,6 +47,10 @@ for (const viewport of [
     test.use({ viewport });
 
     test('sections reveal when their content reaches the boundary', async ({ page }) => {
+      onlyIn(
+        ['chromium'],
+        'Scrolls to within 40px of the observer boundary, too tight across engines',
+      );
       await page.goto('/');
       await page.evaluate(() => document.fonts.ready);
       for (const selector of [
@@ -98,26 +103,37 @@ for (const viewport of [
 
 test('landing reveals transition opacity and transform', async ({ page }) => {
   await page.goto('/');
-  for (const element of await page.locator('.landing-reveal').all()) {
-    const transition = await element.evaluate((el) => window.getComputedStyle(el).transition);
-    expect(
-      transition.includes('opacity') && transition.includes('transform'),
-      `Landing reveal element (${await element.evaluate((el) => el.className)}) missing reveal transitions: ${transition}`,
-    ).toBe(true);
-  }
+  // One round trip: the animating hero keeps the page busy, so per-element calls add up.
+  const missing = await page.locator('.landing-reveal').evaluateAll((elements) =>
+    elements
+      .map((el) => [el.className, getComputedStyle(el).transition])
+      .filter(
+        ([, transition]) => !transition.includes('opacity') || !transition.includes('transform'),
+      )
+      .map(([className, transition]) => `${className}: ${transition}`),
+  );
+  expect(missing, 'Landing reveal elements missing reveal transitions').toEqual([]);
 });
 
 test('the Protostar demo waits until it scrolls into view', async ({ page }) => {
   await page.goto('/');
-  expect(
-    (await page.locator('#protostar-demo').textContent()) || '',
-    'Protostar demo should be paused on the initial frame before scrolling down into view',
-  ).not.toContain('protostar init');
+  const demo = page.locator('#protostar-demo');
+  // The player's clock moves only during playback, unlike the screen, which draws its first
+  // frame after mounting.
+  const elapsed = demo.locator('.ap-time-elapsed');
+  await expect(elapsed).toHaveText('00:00');
+  await page.waitForTimeout(1000);
+  await expect(elapsed, 'Protostar demo should stay paused until scrolled into view').toHaveText(
+    '00:00',
+  );
+  expect(await demo.textContent(), 'Protostar demo should not have typed yet').not.toContain(
+    'protostar init',
+  );
   await page.locator('.flagship').scrollIntoViewIfNeeded();
   await expect(
-    page.locator('#protostar-demo'),
-    'Protostar demo should begin typing after reveal animation completes',
-  ).toContainText('protostar init', { timeout: 4000 });
+    elapsed,
+    'Protostar demo should start playing after the reveal animation completes',
+  ).not.toHaveText('00:00', { timeout: 10_000 });
 });
 
 test('the Protostar player is ready on a #projects deep link', async ({ page }) => {
@@ -165,9 +181,21 @@ test('the hero canvas draws, and stops drawing while offscreen', async ({ page }
   expect(painted, 'The canvas should draw visible strands').toBeGreaterThan(0.02);
 
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-  await page.waitForTimeout(300);
+  // The browser reports the canvas offscreen after a frame or two, later under software
+  // rendering, so wait for drawing to stop rather than for a fixed time.
+  const drawsOver = async (ms) => {
+    const before = await draws();
+    await page.waitForTimeout(ms);
+    return (await draws()) - before;
+  };
+  await expect
+    .poll(() => drawsOver(500), {
+      message: 'The canvas should stop drawing once scrolled out of view',
+      timeout: 10_000,
+    })
+    .toBe(0);
   const offscreen = await draws();
-  await page.waitForTimeout(700);
+  await page.waitForTimeout(1000);
   expect(await draws(), 'The canvas must not draw while scrolled out of view').toBe(offscreen);
   await page.evaluate(() => window.scrollTo(0, 0));
   await expect

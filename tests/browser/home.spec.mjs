@@ -23,7 +23,11 @@ test('fonts, images, and the hero render from the production build', async ({ pa
   }
   await loadVisibleImages(page);
   await expectHeroFillsViewport(page, 'Hero divider should align with the viewport edge');
-  await page.screenshot({ path: test.info().outputPath('home-desktop.png'), fullPage: true });
+  await page.screenshot({
+    path: test.info().outputPath('home-desktop.png'),
+    fullPage: true,
+    scale: 'css',
+  });
 });
 
 test('the motion toggle starts paused under reduced motion', async ({ page }) => {
@@ -53,4 +57,22 @@ test('resumes open as PDFs in a new tab', async ({ page }) => {
       .click(),
   ]);
   await popup.close();
+});
+
+test.describe('without WebGL', () => {
+  // Older devices, blocked GPUs, and some privacy settings get no WebGL context.
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      const getContext = HTMLCanvasElement.prototype.getContext;
+      HTMLCanvasElement.prototype.getContext = function (type, ...args) {
+        return /webgl/.test(type) ? null : getContext.call(this, type, ...args);
+      };
+    });
+    await page.goto('/');
+  });
+
+  test('the hero stays static, with no motion toggle and no errors', async ({ page }) => {
+    await expect(page.getByRole('heading', { name: 'Jackson Ferguson.' })).toBeVisible();
+    await expect(page.locator('.motion-toggle')).toBeHidden();
+  });
 });

@@ -14,13 +14,30 @@ export const routes = readdirSync('dist', { recursive: true })
 export const routeName = (route) =>
   route === '/' ? 'home' : route.split('/').filter(Boolean).join('-');
 
+// Phone projects are named *-mobile; the rest run at a desktop size.
+export const isMobileProject = () => test.info().project.name.endsWith('-mobile');
+
+// Skips the current test outside the named projects, for checks whose result does not depend
+// on the engine (axe) or whose timing is only reliable in one engine.
+export function onlyIn(projects, reason) {
+  test.skip(!projects.includes(test.info().project.name), reason);
+}
+
 export const test = base.extend({
   // An uncaught exception, a console error, or a failed request fails the test that caused it.
   page: async ({ page }, use) => {
     const errors = [];
-    page.on('pageerror', (error) => errors.push(`uncaught: ${error.message}`));
+    page.on('pageerror', (error) => {
+      // A ResizeObserver whose callback changes layout defers the rest to the next frame, and
+      // WebKit reports that as an error; nothing is lost.
+      if (!error.message.startsWith('ResizeObserver loop'))
+        errors.push(`uncaught: ${error.message}`);
+    });
     page.on('console', (message) => {
-      if (message.type() === 'error') errors.push(`console: ${message.text()}`);
+      // Firefox logs a font download cancelled by the test ending (NS_BINDING_ABORTED) as an
+      // error; a font that is actually missing still fails through its HTTP status.
+      if (message.type() === 'error' && !message.text().includes('status=2152398850'))
+        errors.push(`console: ${message.text()}`);
     });
     page.on('response', (response) => {
       if (response.status() >= 400) errors.push(`HTTP ${response.status()}: ${response.url()}`);
@@ -65,8 +82,19 @@ export async function expectHeroFillsViewport(page, message) {
 export async function loadVisibleImages(page) {
   for (const image of await page.locator('main img:not(.viewer-photo)').all()) {
     await image.scrollIntoViewIfNeeded();
+    // Firefox rejects decode() on a lazy image whose request has not started, so wait for it.
+    await image.evaluate(
+      (el) =>
+        el.complete ||
+        new Promise((resolve) => {
+          el.addEventListener('load', resolve, { once: true });
+          el.addEventListener('error', resolve, { once: true });
+        }),
+    );
+    expect(await image.evaluate((el) => el.naturalWidth), 'Image failed to load').toBeGreaterThan(
+      0,
+    );
     await image.evaluate((el) => el.decode());
-    expect(await image.evaluate((el) => el.naturalWidth)).toBeGreaterThan(0);
   }
   await page.evaluate(() => window.scrollTo(0, 0));
 }

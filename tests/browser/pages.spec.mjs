@@ -3,6 +3,7 @@ import {
   expectAccessible,
   expectNoHorizontalOverflow,
   expectSoundLayout,
+  isMobileProject,
   loadVisibleImages,
   routes,
   test,
@@ -15,12 +16,15 @@ for (const route of routes) {
     const response = await page.goto(route);
     expect(response.status()).toBe(200);
     await page.evaluate(() => document.fonts.ready);
-    await expectAccessible(page);
+    // Axe results do not depend on the engine, so one engine covers desktop and phone layouts.
+    if (['chromium', 'chromium-mobile'].includes(test.info().project.name))
+      await expectAccessible(page);
     await expect(page.locator('h1')).toHaveCount(1);
     // Lazy images load only when scrolled to; decoding each one requests and checks it.
     await loadVisibleImages(page);
-    await expectNoHorizontalOverflow(page, `${route} overflows desktop`);
-    await expectSoundLayout(page, `${route} layout at desktop width`);
+    await expectNoHorizontalOverflow(page, `${route} overflows`);
+    await expectSoundLayout(page, `${route} layout`);
+    if (isMobileProject()) return;
     // Multi-column grids must not collapse to a single column on a desktop screen.
     const collapsed = await page
       .locator('main :is(.thumb-grid, .about-grid, .flagship-grid, .resume-grid)')
