@@ -61,6 +61,15 @@ jobs:
       - run: npm run check
       - run: npm run build
       - run: npm test
+      # Flags a dead external link a pull request adds, without blocking it; the daily links
+      # workflow tracks breakage on the live site.
+      - name: Check external links
+        if: github.event_name == 'pull_request'
+        uses: lycheeverse/lychee-action@v2.9.0
+        continue-on-error: true
+        with:
+          args: --no-progress --config lychee.toml --root-dir ${{ github.workspace }}/dist 'dist/**/*.html'
+          checkbox: false
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium firefox webkit
       # Playwright serves dist/ with astro preview and waits for it before testing. Firefox on

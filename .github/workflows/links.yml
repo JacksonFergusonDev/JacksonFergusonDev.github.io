@@ -1,0 +1,81 @@
+name: Check external links
+
+# Links to GitHub repositories, release downloads, and project sites can break without any
+# change here. A daily check keeps one open issue listing what is broken, updated while links
+# stay broken and closed once they all pass. A broken link never blocks a deployment.
+on:
+  schedule:
+    # Alongside the daily remote asset check in deploy.yml.
+    - cron: '17 11 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: links
+  cancel-in-progress: false
+
+jobs:
+  links:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      # Check what visitors see: the live pages, not a build that may not be deployed.
+      - name: List live pages
+        id: pages
+        run: |
+          domain=$(cat public/CNAME)
+          pages=$(curl -sf --retry 3 "https://$domain/sitemap.xml" | grep -oE '<loc>[^<]+' | sed 's/<loc>//' | tr '\n' ' ')
+          if [ -z "$pages" ]; then
+            echo "::error::https://$domain/sitemap.xml lists no pages"
+            exit 1
+          fi
+          echo "pages=$pages" >> "$GITHUB_OUTPUT"
+      - name: Check links
+        id: lychee
+        uses: lycheeverse/lychee-action@v2.9.0
+        with:
+          # Settings, including exclusions, are in lychee.toml.
+          args: --no-progress --config lychee.toml ${{ steps.pages.outputs.pages }}
+          fail: false
+          checkbox: false
+      - name: Track broken links in an issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          EXIT_CODE: ${{ steps.lychee.outputs.exit_code }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          label=broken-links
+          issue=$(gh issue list --state open --label "$label" --json number --jq '.[0].number // empty')
+          # The broken URLs alone, so a changed count of working links is not a change.
+          broken() { grep -oE '^\* \[[^]]+\] <[^>]+>' | sort; }
+          case "$EXIT_CODE" in
+            0)
+              if [ -n "$issue" ]; then
+                gh issue close "$issue" --comment "Every external link passes as of [this run]($RUN_URL)."
+              fi
+              ;;
+            2)
+              {
+                echo 'The daily link check found external links on the live site that no longer resolve. This issue is updated each day while they stay broken and closes itself once every link passes.'
+                echo
+                cat lychee/out.md
+              } > issue.md
+              if [ -z "$issue" ]; then
+                gh label create "$label" --color d73a4a --description 'External links on the live site that no longer resolve' --force
+                gh issue create --title 'Broken external links' --label "$label" --body-file issue.md
+              elif [ "$(gh issue view "$issue" --json body --jq .body | broken)" != "$(broken < issue.md)" ]; then
+                gh issue edit "$issue" --body-file issue.md
+                # Editing the body notifies no one; a comment does, and only when the list changes.
+                gh issue comment "$issue" --body "The set of broken links changed; see the updated list above ([run]($RUN_URL))."
+              fi
+              ;;
+            *)
+              echo "::error::lychee exited with code $EXIT_CODE, so the links could not be checked"
+              exit 1
+              ;;
+          esac
