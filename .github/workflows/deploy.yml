@@ -54,6 +54,17 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      # Optimizing the photos is nearly all of the build. Astro keys each cached image by its
+      # source and transform, so a stale cache is safe and a partial match still saves most of it.
+      # Restored after npm ci, which deletes node_modules.
+      - name: Restore optimized images
+        uses: actions/cache@v4
+        with:
+          path: node_modules/.astro/assets
+          key: astro-images-${{ hashFiles('package-lock.json') }}-${{ hashFiles('src/assets/**') }}
+          restore-keys: |
+            astro-images-${{ hashFiles('package-lock.json') }}-
+            astro-images-
       # Dev tooling never reaches visitors, so only shipped dependencies gate the build.
       - run: npm audit --omit=dev --audit-level=high
       - run: npm run format:check
