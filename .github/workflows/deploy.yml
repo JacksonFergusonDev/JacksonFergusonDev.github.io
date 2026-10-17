@@ -81,30 +81,65 @@ jobs:
         with:
           args: --no-progress --config lychee.toml --root-dir ${{ github.workspace }}/dist 'dist/**/*.html'
           checkbox: false
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium firefox webkit
-      # Playwright serves dist/ with astro preview and waits for it before testing. Firefox on
-      # Linux creates a WebGL context only with an X display, so a virtual one lets the hero canvas
-      # tests run in every engine (rendered in software by Mesa's llvmpipe).
-      - name: Run browser and accessibility tests
-        run: xvfb-run --auto-servernum npm run test:browser
-      - name: Upload browser test results
+      # The browser jobs test this exact build. Photos are already compressed, so zipping them
+      # again would only slow the upload.
+      - name: Upload the build for browser tests
         uses: actions/upload-artifact@v4
-        if: always()
         with:
-          name: browser-test-results
-          path: test-results/
-          retention-days: 7
+          name: site
+          path: dist/
+          compression-level: 0
+          retention-days: 1
       - uses: actions/upload-pages-artifact@v3
         if: github.event_name != 'pull_request'
         with:
           path: dist
 
+  # One job per engine, in parallel: each installs only its own browser and system packages.
+  browser:
+    needs: build
+    # The build job can follow a skipped asset check, which would skip this job by default.
+    if: always() && !cancelled() && needs.build.result == 'success'
+    runs-on: ubuntu-latest
+    strategy:
+      # A failure in one engine still lets the others report theirs.
+      fail-fast: false
+      matrix:
+        engine: [chromium, firefox, webkit]
+    name: browser (${{ matrix.engine }})
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          name: site
+          path: dist
+      - name: Install ${{ matrix.engine }}
+        run: npx playwright install --with-deps ${{ matrix.engine }}
+      # Playwright serves dist/ with astro preview and waits for it before testing. Firefox on
+      # Linux creates a WebGL context only with an X display, so a virtual one lets the hero canvas
+      # tests run in every engine (rendered in software by Mesa's llvmpipe).
+      - name: Run browser and accessibility tests
+        run: >-
+          xvfb-run --auto-servernum npm run test:browser --
+          --project=${{ matrix.engine }} --project=${{ matrix.engine }}-mobile
+      - name: Upload browser test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-test-results-${{ matrix.engine }}
+          path: test-results/
+          retention-days: 7
+
   deploy:
     if: >-
       always() && !cancelled() && needs.build.result == 'success' &&
-      github.event_name != 'pull_request'
-    needs: build
+      needs.browser.result == 'success' && github.event_name != 'pull_request'
+    needs: [build, browser]
     runs-on: ubuntu-latest
     permissions:
       pages: write
