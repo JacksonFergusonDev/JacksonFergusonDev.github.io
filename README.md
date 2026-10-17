@@ -93,7 +93,7 @@ Pages reference the generated local paths. The project catalog reads Protostar's
 
 ### Refreshes from source repositories
 
-The [GitHub Actions workflow](.github/workflows/deploy.yml) builds on pushes and pull requests to `main`, manual `workflow_dispatch` runs, and `repository_dispatch` events named `remote-assets-updated`. Pull requests run the checks without deploying. The dispatch hook allows a source repository to request a rebuild immediately after changing an asset.
+The [GitHub Actions workflow](.github/workflows/deploy.yml) builds on pushes and pull requests to `main`, manual `workflow_dispatch` runs, and `repository_dispatch` events named `remote-assets-updated`. Pull requests run the checks without deploying. One job builds the site and runs the static checks, then Chromium, Firefox, and WebKit each run the browser tests against that build in their own parallel job; a deployment waits for all three. The dispatch hook allows a source repository to request a rebuild immediately after changing an asset.
 
 Every day at 11:17 UTC, a scheduled job runs `npm run assets:check` without installing dependencies. It downloads and validates all remote assets, then compares their hashes, sources, and destinations, and the current `main` commit, with the live `remote-assets-state.json` on the domain in `public/CNAME`. If they match, the workflow skips the build, tests, and deployment. A changed, added, or removed asset triggers the normal build and deployment, as does a `main` commit that never deployed because its own build failed or its queued run was replaced by a newer one. Scheduled Actions runs may start later than their requested time.
 
