@@ -34,7 +34,10 @@ build:
 browser-test:
     npm run test:browser
 
-ci: lint build test
+zizmor:
+    uvx zizmor==1.31.1 --offline --no-progress --strict-collection .
+
+ci: zizmor lint build test
     @printf "{{ green }}✔ Local CI passed{{ nc }}\n"
 
 ci-full: ci browser-test
