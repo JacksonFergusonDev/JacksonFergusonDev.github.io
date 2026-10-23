@@ -1,0 +1,6 @@
+rules:
+  unpinned-images:
+    ignore:
+      # The build job resolves the lockfile's Playwright version to a sha256 digest,
+      # validates it, and passes the pinned image through this output.
+      - deploy.yml:132
