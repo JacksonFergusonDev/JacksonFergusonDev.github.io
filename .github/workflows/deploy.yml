@@ -95,12 +95,16 @@ jobs:
         with:
           path: dist
 
-  # One job per engine, in parallel: each installs only its own browser and system packages.
+  # One job per engine, in parallel, with browsers and system packages preinstalled.
   browser:
     needs: build
     # The build job can follow a skipped asset check, which would skip this job by default.
     if: always() && !cancelled() && needs.build.result == 'success'
     runs-on: ubuntu-latest
+    container:
+      # Match the @playwright/test version resolved in package-lock.json.
+      image: mcr.microsoft.com/playwright:v1.63.0-noble@sha256:eff16c30e6f3f4af0a03fa4b706120d5e9b0891c344a27d64559aff5900a4a27
+      options: --init --ipc=host
     strategy:
       # A failure in one engine still lets the others report theirs.
       fail-fast: false
@@ -118,8 +122,10 @@ jobs:
         with:
           name: site
           path: dist
-      - name: Install ${{ matrix.engine }}
-        run: npx playwright install --with-deps ${{ matrix.engine }}
+      - name: Prepare Firefox home directory
+        if: matrix.engine == 'firefox'
+        # GitHub mounts this directory with a different owner than the container user.
+        run: chown "$(id -u):$(id -g)" "$HOME"
       # Playwright serves dist/ with astro preview and waits for it before testing. Firefox on
       # Linux creates a WebGL context only with an X display, so a virtual one lets the hero canvas
       # tests run in every engine (rendered in software by Mesa's llvmpipe).
