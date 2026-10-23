@@ -44,6 +44,8 @@ jobs:
       (github.event_name != 'schedule' ||
       (needs.check-remote-assets.result == 'success' && needs.check-remote-assets.outputs.changed == 'true'))
     runs-on: ubuntu-latest
+    outputs:
+      playwright-image: ${{ steps.playwright-image.outputs.image }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -53,6 +55,20 @@ jobs:
         with:
           node-version: 24
           cache: npm
+      - name: Resolve the locked Playwright image
+        id: playwright-image
+        run: |
+          version=$(node -p "require('./package-lock.json').packages['node_modules/@playwright/test'].version")
+          tag="v${version}-noble"
+          digest=$(curl --fail --silent --show-error --retry 3 --max-time 30 --head \
+            --header 'Accept: application/vnd.docker.distribution.manifest.list.v2+json' \
+            --output /dev/null --write-out '%header{docker-content-digest}' \
+            "https://mcr.microsoft.com/v2/playwright/manifests/${tag}")
+          if [[ ! "$digest" =~ ^sha256:[a-f0-9]{64}$ ]]; then
+            echo "::error::No valid Playwright image digest found for ${tag}"
+            exit 1
+          fi
+          echo "image=mcr.microsoft.com/playwright:${tag}@${digest}" >> "$GITHUB_OUTPUT"
       - run: npm ci
       # Optimizing the photos is nearly all of the build. Astro keys each cached image by its
       # source and transform, so a stale cache is safe and a partial match still saves most of it.
@@ -95,12 +111,15 @@ jobs:
         with:
           path: dist
 
-  # One job per engine, in parallel: each installs only its own browser and system packages.
+  # One job per engine, in parallel, with browsers and system packages preinstalled.
   browser:
     needs: build
     # The build job can follow a skipped asset check, which would skip this job by default.
     if: always() && !cancelled() && needs.build.result == 'success'
     runs-on: ubuntu-latest
+    container:
+      image: ${{ needs.build.outputs.playwright-image }}
+      options: --init --ipc=host
     strategy:
       # A failure in one engine still lets the others report theirs.
       fail-fast: false
@@ -118,8 +137,10 @@ jobs:
         with:
           name: site
           path: dist
-      - name: Install ${{ matrix.engine }}
-        run: npx playwright install --with-deps ${{ matrix.engine }}
+      - name: Prepare Firefox home directory
+        if: matrix.engine == 'firefox'
+        # GitHub mounts this directory with a different owner than the container user.
+        run: chown "$(id -u):$(id -g)" "$HOME"
       # Playwright serves dist/ with astro preview and waits for it before testing. Firefox on
       # Linux creates a WebGL context only with an X display, so a virtual one lets the hero canvas
       # tests run in every engine (rendered in software by Mesa's llvmpipe).
