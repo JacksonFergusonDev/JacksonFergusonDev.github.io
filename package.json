@@ -33,7 +33,7 @@
   "dependencies": {
     "asciinema-player": "^3.17.0",
     "astro": "^7.3.2",
-    "house-style": "github:JacksonFergusonDev/house-style#v1.6.0"
+    "house-style": "github:JacksonFergusonDev/house-style#v3.0.0"
   },
   "overrides": {
     "seroval": "^1.6.8"
