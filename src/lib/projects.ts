@@ -1,4 +1,5 @@
 import { site } from './site';
+import { rollbackMetric } from './rollback-metric.mjs';
 // Fetched by scripts/fetch-remote-assets.mjs, which checks its shape, before every build.
 import protostarMutation from '../../public/data/protostar-mutation-score.json';
 import protostarRollback from '../../public/data/protostar-rollback-faults.json';
@@ -56,8 +57,7 @@ export const protostar = {
       href: 'https://protostar.jacksonferguson.me/metrics/',
     },
     {
-      label: 'Rollback faults restored',
-      value: protostarRollback.message,
+      ...rollbackMetric(protostarRollback.message),
       href: 'https://protostar.jacksonferguson.me/metrics/',
     },
   ],
