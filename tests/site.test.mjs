@@ -114,16 +114,19 @@ test('project hierarchy and real downloads are preserved', async () => {
     assert.ok(raw.includes(`href="${href}"`), `Missing project destination ${href}`);
   }
   assert.ok(raw.includes('data-asciinema="/protostar-demo.cast"'));
-  for (const [asset, label] of [
-    ['protostar-mutation-score', 'Engine mutation score'],
-    ['protostar-rollback-faults', 'Rollback faults restored'],
-  ]) {
+  for (const [asset, label] of [['protostar-mutation-score', 'Engine mutation score']]) {
     const { message: score } = JSON.parse(
       await readFile(path.join(projectRoot, 'public', 'data', `${asset}.json`), 'utf8'),
     );
     assert.ok(raw.includes('href="https://protostar.jacksonferguson.me/metrics/"'));
     assert.ok(home.includes(`${score} ${label}`), `Protostar card shows ${label}`);
   }
+  const rollback = JSON.parse(
+    await readFile(path.join(projectRoot, 'public/data/protostar-rollback-faults.json'), 'utf8'),
+  );
+  const failing = rollback.message.endsWith(' failing');
+  const count = rollback.message.replace(/ failing$/, '');
+  assert.ok(home.includes(`${count} Rollback faults ${failing ? 'failing' : 'restored'}`));
   for (const file of [
     'Jackson-Ferguson-Software-Resume.pdf',
     'Jackson-Ferguson-Hardware-Software-Resume.pdf',

@@ -9,6 +9,7 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { promisify } from 'node:util';
 import { assetsChanged } from '../scripts/remote-asset-state.mjs';
+import { rollbackMetric } from '../src/lib/rollback-metric.mjs';
 
 const asset = {
   id: 'report',
@@ -168,6 +169,44 @@ test('check command emits GitHub outputs and fails without an output on a bad ba
       ),
     );
     assert.equal(await readFile(output, 'utf8'), '');
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
+test('rollback feed accepts restored and failing counts with honest homepage labels', async () => {
+  const directory = await mkdtemp(path.join(tmpdir(), 'rollback-metric-'));
+  const scriptUrl = pathToFileURL(path.resolve('scripts/fetch-remote-assets.mjs')).href;
+  const manifest = JSON.parse(await readFile('config/remote-assets.json', 'utf8'));
+  const metric = manifest.assets.find(({ id }) => id === 'protostar-rollback-faults');
+  try {
+    await mkdir(path.join(directory, 'config'));
+    await writeFile(
+      path.join(directory, 'config/remote-assets.json'),
+      JSON.stringify({ assets: [metric] }),
+    );
+    for (const [message, label, value] of [
+      ['1,234', 'Rollback faults restored', '1,234'],
+      ['89 failing', 'Rollback faults failing', '89'],
+      ['0', 'Rollback faults restored', '0'],
+    ]) {
+      await promisify(execFile)(
+        process.execPath,
+        [
+          '--input-type=module',
+          '-e',
+          `globalThis.fetch = async () => Response.json({ label: 'rollback faults restored', message: ${JSON.stringify(message)} });
+          await import(${JSON.stringify(scriptUrl)});`,
+        ],
+        { cwd: directory, env: { ...process.env, CI: 'true' } },
+      );
+      const fetched = JSON.parse(await readFile(path.join(directory, metric.target), 'utf8'));
+      assert.equal(fetched.message, message);
+      assert.deepEqual(rollbackMetric(fetched.message), { label, value });
+    }
+    for (const message of ['unknown', 'N/A', 'failing', '89 failing extra', '-1']) {
+      assert.equal(new RegExp(metric.match.message).test(message), false, message);
+    }
   } finally {
     await rm(directory, { recursive: true, force: true });
   }
