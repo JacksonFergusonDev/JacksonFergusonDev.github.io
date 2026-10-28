@@ -37,6 +37,35 @@ test('the motion toggle starts paused under reduced motion', async ({ page }) =>
   await page.getByRole('button', { name: 'Play motion', exact: true }).waitFor();
 });
 
+test('the field survives a lost WebGL context', async ({ page }) => {
+  // A GPU reset or a phone reclaiming memory drops the context; house-style's
+  // runField asks for it back, and the scene rebuilds its shaders and buffers.
+  const motion = page.getByRole('button', { name: 'Play motion', exact: true });
+  await motion.waitFor();
+  const restored = await page.evaluate(async () => {
+    const canvas = document.querySelector('#data-canvas');
+    const lose = canvas.getContext('webgl').getExtension('WEBGL_lose_context');
+    if (!lose) return 'unsupported';
+    const event = (name) =>
+      new Promise((resolve) => canvas.addEventListener(name, resolve, { once: true }));
+    // restoreContext() does nothing until the loss has been delivered and its
+    // listeners, runField's among them, have finished.
+    const lost = event('webglcontextlost');
+    lose.loseContext();
+    await lost;
+    await new Promise((resolve) => setTimeout(resolve));
+    const back = event('webglcontextrestored');
+    lose.restoreContext();
+    await back;
+    return canvas.getContext('webgl').isContextLost() ? 'lost' : 'restored';
+  });
+  test.skip(restored === 'unsupported', 'This engine has no WEBGL_lose_context');
+  expect(restored).toBe('restored');
+  // The button still drives the field, and nothing logged an error.
+  await motion.click();
+  await page.getByRole('button', { name: 'Pause motion', exact: true }).waitFor();
+});
+
 test('resumes open as PDFs in a new tab', async ({ page }) => {
   for (const [name, file] of [
     ['Software Development', 'Jackson-Ferguson-Software-Resume.pdf'],

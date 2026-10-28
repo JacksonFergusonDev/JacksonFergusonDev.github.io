@@ -18,9 +18,9 @@ Guidelines for AI agents working on this Astro portfolio, journal, and photograp
 - `src/content/creative/`: creative collections and Markdown write-ups.
 - `src/content/config.ts`: Astro content collection schemas.
 - `src/content.config.ts`: Astro content configuration re-export.
-- `src/components/`: reusable Astro components, including the hero canvas, Asciinema demo, service icons, and gallery viewer.
+- `src/components/`: reusable Astro components, including the hero canvas, Asciinema demo, and gallery viewer. Icons and section markers come from house-style's `astro/` components.
 - `src/layouts/`: base HTML document structure, shared header navigation, structured data, and footer.
-- `src/scripts/data-field.ts`: homepage canvas interaction. It must respect reduced motion and pause work when offscreen.
+- `src/scripts/data-field.ts`: the homepage canvas's simulation and drawing. house-style's `runField` runs it, which handles reduced motion, pausing offscreen, the motion button, and a lost WebGL context.
 - `src/styles/global.css`: global design system, responsive layout, and component styling.
 - `src/lib/`: site metadata (`site.ts`), project catalog (`projects.ts`), and schema.org structured data (`structured-data.ts`).
 - `public/`: static files copied through unchanged, including resumes, CNAME, fonts, and the site favicon. Some generated remote asset outputs are written here during development and build.
@@ -71,7 +71,7 @@ The palette, type scale, fonts, icons, section markers, buttons, terminal window
 
 - Follow `node_modules/house-style/GUIDELINES.md`. It holds the design and writing rules every site follows, including which arrow icon a link takes and who each page is written for.
 - Change a shared style in house-style, tag a release, then move this site to the new tag. Never override a shared rule here to work around it.
-- Draw icons only with `Icon` and `ServiceIcon`, which inline house-style's `icons/`. A missing icon is added to house-style first.
+- Draw icons only with house-style's `astro/Icon.astro`, which inlines its `icons/`; brand marks use the `brand-*` names. A missing icon is added to house-style first.
 
 ## Writing
 

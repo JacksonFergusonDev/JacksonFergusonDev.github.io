@@ -4,9 +4,9 @@ import 'house-style/css/tokens.css';
 import 'house-style/css/components.css';
 import 'house-style/css/terminal.css';
 import 'house-style/css/install.css';
+import 'house-style/css/site.css';
 import '../styles/global.css';
-import ServiceIcon from '../components/ServiceIcon.astro';
-import Icon from '../components/Icon.astro';
+import Icon from 'house-style/astro/Icon.astro';
 import { site, routes } from '../lib/site';
 import { buildCommit } from '../lib/build.mjs';
 interface Props {
@@ -78,7 +78,7 @@ const path = Astro.url.pathname;
     </script>
   </head>
   <body class:list={{ 'landing-page': path === '/' }}>
-    <a class="skip-link" href="#main">
+    <a class="hs-skip-link" href="#main">
       Skip to content
     </a>
     <header class="site-header">
@@ -98,15 +98,18 @@ const path = Astro.url.pathname;
           <a href={routes.beyond.path}>{routes.beyond.title}</a>
           <a href={routes.contact.path}>{routes.contact.title}</a>
         </nav>
-        <nav aria-label="Social links" class="social-nav">
-          <a href={site.github} target="_blank" rel="me noopener noreferrer">
-            GitHub <ServiceIcon name="github" size={13} />
+        <nav aria-label="Social links" class="social-nav hs-bar-end">
+          <a class="hs-bar-link" href={site.github} target="_blank" rel="me noopener noreferrer">
+            <Icon name="brand-github" />
+            GitHub
           </a>
-          <a href={site.linkedin} target="_blank" rel="me noopener noreferrer">
-            LinkedIn <ServiceIcon name="linkedin" size={13} />
+          <a class="hs-bar-link" href={site.linkedin} target="_blank" rel="me noopener noreferrer">
+            <Icon name="brand-linkedin" />
+            LinkedIn
           </a>
-          <a href={site.email} class="nav-email">
-            Email <ServiceIcon name="email" size={13} />
+          <a class="hs-bar-link nav-email" href={site.email}>
+            <Icon name="brand-email" />
+            Email
           </a>
         </nav>
       </div>

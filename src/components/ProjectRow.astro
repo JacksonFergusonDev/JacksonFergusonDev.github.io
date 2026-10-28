@@ -1,5 +1,5 @@
 ---
-import Icon from './Icon.astro';
+import Icon from 'house-style/astro/Icon.astro';
 
 interface Props {
   name: string;
@@ -16,7 +16,7 @@ const { name, repoUrl, description, kind } = Astro.props;
     <h3>
       <a href={repoUrl} target="_blank" rel="noopener noreferrer">
         {name}
-        <Icon size={19} />
+        <Icon name="arrow-up-right" size={19} />
       </a>
     </h3>
     <p>{description}</p>

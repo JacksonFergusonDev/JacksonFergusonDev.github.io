@@ -1,3 +1,5 @@
+import { afterLoad, runField, type Field } from 'house-style/js/field.js';
+
 const canvas = document.querySelector<HTMLCanvasElement>('#data-canvas');
 const button = document.querySelector<HTMLButtonElement>('.motion-toggle');
 
@@ -177,20 +179,15 @@ function lookAtOrigin(
   out[15] = 1;
 }
 
+// house-style's runField decides when to draw: still for reduced motion, paused
+// off screen and in a hidden tab, the pause button, and a lost WebGL context.
+// This file only simulates and draws.
 if (canvas && button && webgl) {
   const surface = canvas;
   const gl = webgl;
   const toggle = button;
-  const label = toggle.querySelector<HTMLElement>('.motion-toggle-label')!;
-  const pauseIcon = toggle.querySelector<HTMLElement>('[data-motion-icon="pause"]')!;
-  const playIcon = toggle.querySelector<HTMLElement>('[data-motion-icon="play"]')!;
-  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
-  let paused = reducedMotion.matches;
-  let visible = true;
   let broken = false;
-  let frame = 0;
-  let last = 0;
-  let time = 0;
+  let field: Field | undefined;
 
   // ========================================================================
   // 1. SYSTEM PARAMETERS & ENSEMBLE CONFIGURATION
@@ -482,27 +479,24 @@ void main() {
   let shotTime = 0;
   let shotYaw = SHOTS[0].baseYaw;
 
+  // Stops the field for good and hides its button.
   function fail(error: unknown): void {
     broken = true;
-    cancelAnimationFrame(frame);
-    frame = 0;
+    field?.dispose();
     toggle.hidden = true;
     report(surface, error);
   }
 
-  function resize(): void {
-    const width = surface.clientWidth || 800;
-    const height = surface.clientHeight || 600;
+  // runField redraws after each resize, which clears the canvas.
+  function resize(width: number, height: number): void {
     const pixelRatio = Math.min(window.devicePixelRatio, 2);
     surface.width = Math.floor(width * pixelRatio);
     surface.height = Math.floor(height * pixelRatio);
     gl.viewport(0, 0, surface.width, surface.height);
     perspective(projection, 54, width / height, 0.1, 150);
-    // Resizing clears the canvas, so redraw in case the loop is paused.
-    renderScene(0);
   }
 
-  function renderScene(dt: number): void {
+  function renderScene(dt: number, time: number): void {
     if (!gpu || broken) return;
 
     shotTime += dt;
@@ -551,18 +545,10 @@ void main() {
   }
 
   // ========================================================================
-  // 6. ANIMATION LOOP & LIFECYCLE CONTROLS
+  // 6. SIMULATION STEP & FIELD LIFECYCLE
   // ========================================================================
 
-  function tick(now: number): void {
-    frame = 0;
-    if (!visible || document.hidden || paused || !gpu || broken) return;
-
-    if (!last) last = now;
-    const delta = Math.min((now - last) / 1000, 0.08);
-    last = now;
-    time += delta;
-
+  function step(): void {
     for (let sub = 0; sub < SUB_STEPS; sub++) {
       for (let s = 0; s < NUM_STRANDS; s++) {
         const state = strandStates[s];
@@ -585,64 +571,34 @@ void main() {
     centroidX = sumX / TOTAL_VERTICES;
     centroidY = sumY / TOTAL_VERTICES;
     centroidZ = sumZ / TOTAL_VERTICES;
-
-    renderScene(delta);
-    if (!broken) frame = requestAnimationFrame(tick);
   }
 
-  function sync(): void {
-    cancelAnimationFrame(frame);
-    frame = 0;
-    if (!gpu || broken) return;
-    toggle.hidden = false;
-    label.textContent = paused ? 'Play motion' : 'Pause motion';
-    pauseIcon.hidden = paused;
-    playIcon.hidden = !paused;
-
-    renderScene(0);
-    if (!paused && visible && !document.hidden) {
-      last = performance.now();
-      frame = requestAnimationFrame(tick);
-    }
-  }
-
-  function start(): void {
+  // Builds the GPU resources, at startup and when a lost context comes back.
+  function build(): void {
     try {
       gpu = createGpu();
     } catch (error) {
       fail(error);
-      return;
     }
-    resize();
-    sync();
   }
 
-  // The browser may drop the context (GPU reset, too many contexts). Wait for
-  // it to come back, then rebuild the GPU resources.
-  surface.addEventListener('webglcontextlost', (event) => {
-    event.preventDefault();
-    gpu = null;
-    sync();
+  // Start after load, so the first screen paints as text.
+  afterLoad(() => {
+    build();
+    if (broken) return;
+    field = runField(surface, toggle, {
+      resize,
+      // delta is 0 for a still redraw (paused, resized), so the attractor only steps while moving.
+      draw(time, delta) {
+        if (delta > 0) step();
+        renderScene(delta, time);
+      },
+      restore: build,
+    });
+    // A failure while drawing the first frame happens before runField returns.
+    if (broken) {
+      field?.dispose();
+      toggle.hidden = true;
+    }
   });
-  surface.addEventListener('webglcontextrestored', start);
-
-  new ResizeObserver(resize).observe(surface);
-
-  new IntersectionObserver(([entry]) => {
-    visible = entry.isIntersecting;
-    sync();
-  }).observe(surface);
-
-  toggle.addEventListener('click', () => {
-    paused = !paused;
-    sync();
-  });
-
-  reducedMotion.addEventListener('change', () => {
-    paused = reducedMotion.matches;
-    sync();
-  });
-
-  document.addEventListener('visibilitychange', sync);
-  start();
 }
