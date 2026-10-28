@@ -138,7 +138,7 @@ Links leaving the site, to GitHub repositories, release downloads, and project s
 | [`src/components/`](src/components/)                     | Shared interface components and interactive media        |
 | [`src/layouts/`](src/layouts/)                           | Shared page structure, navigation, and metadata          |
 | [`src/lib/`](src/lib/)                                   | Project descriptions, site metadata, and structured data |
-| [`src/scripts/data-field.ts`](src/scripts/data-field.ts) | WebGL hero animation and motion controls                 |
+| [`src/scripts/data-field.ts`](src/scripts/data-field.ts) | WebGL hero animation, run by house-style's `runField`    |
 | [`src/styles/global.css`](src/styles/global.css)         | Typography, colour, spacing, and responsive layout       |
 | [`src/assets/`](src/assets/)                             | Source photography, artwork, and creative code           |
 | [`public/`](public/)                                     | Static downloads, fonts, favicon, and custom-domain file |

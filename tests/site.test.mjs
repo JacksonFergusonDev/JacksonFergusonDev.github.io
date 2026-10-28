@@ -291,8 +291,8 @@ test('external links except Blender downloads show the diagonal arrow', async ()
       if (!/target="_blank"/i.test(attrs)) continue;
       // Download buttons name the archive directly and do not use an external-link icon.
       if (/class="[^"]*\bdownload-btn\b/.test(attrs)) continue;
-      // Header social navigation uses dedicated service brand icons
-      if (content.includes('class="service-icon"')) continue;
+      // Header bar links carry their brand icon instead (house-style GUIDELINES).
+      if (/class="[^"]*\bhs-bar-link\b/.test(attrs)) continue;
       // Pure media preview / diagram links wrapping an image
       if (/<img\b/.test(content)) continue;
       // Card heading titles for featured projects (which have explicit CTA action buttons below)

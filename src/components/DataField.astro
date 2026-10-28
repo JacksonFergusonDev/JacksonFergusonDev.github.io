@@ -1,16 +1,18 @@
 ---
-import Icon from './Icon.astro';
+import Icon from 'house-style/astro/Icon.astro';
 ---
 
 <div class="data-field" aria-hidden="true">
   <canvas id="data-canvas"></canvas>
 </div>
 <button class="motion-toggle" type="button" hidden>
-  <span class="motion-toggle-label">Pause motion</span>
+  <span class="motion-toggle-label" data-hs-motion-label>
+    Pause motion
+  </span>
   <span class="motion-toggle-icon" data-motion-icon="pause" aria-hidden="true">
     <Icon name="pause" size={10} />
   </span>
-  <span class="motion-toggle-icon" data-motion-icon="play" aria-hidden="true" hidden>
+  <span class="motion-toggle-icon" data-motion-icon="play" aria-hidden="true">
     <Icon name="play" size={10} />
   </span>
 </button>
