@@ -2,6 +2,12 @@
 
 The source for [jacksonferguson.me](https://jacksonferguson.me): my technical portfolio, photo journals, and creative archive. It brings together projects across software, infrastructure, hardware, and applied physics, alongside camping trips, live event sound, Blender scenes, and Python generative art.
 
+## Local previews
+
+Run `just dev` or `npm run dev` to open the development site at <http://127.0.0.1:4300/>. After `npm run build`, `npm run preview` serves the build on port 4301. Browser tests start their own server on port 4302; set `SITE_URL` to test an existing server instead.
+
+These ports belong to the personal site. Protostar uses 4400–4401 and Star Ground uses 4500–4504. Astro exits if its port is occupied instead of moving to another port. Stop the existing server with `Ctrl+C` before starting another, or pass an unused port with `npm run dev -- --port 4310` for a second worktree.
+
 ## How it's made
 
 The site is built with **Astro, TypeScript, and CSS**, with static HTML generated at build time. GitHub Actions builds and checks the site for GitHub Pages, using `jacksonferguson.me` as the canonical domain. There is no application server or database to run.

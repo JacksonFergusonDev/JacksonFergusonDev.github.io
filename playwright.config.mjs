@@ -2,7 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 // SITE_URL points the browser tests at an already-running site; otherwise they serve the build.
 const siteUrl = process.env.SITE_URL;
-const baseURL = siteUrl ?? 'http://127.0.0.1:4322';
+const baseURL = siteUrl ?? 'http://127.0.0.1:4302';
 const desktop = { viewport: { width: 1440, height: 1000 } };
 // Desktop projects step through every breakpoint; phones keep their own device viewport.
 const phoneIgnores = /responsive\.spec/;
@@ -43,9 +43,9 @@ export default defineConfig({
   webServer: siteUrl
     ? undefined
     : {
-        command: 'npx astro preview --host 127.0.0.1 --port 4322',
+        command: 'npx astro preview --ignore-lock --host 127.0.0.1 --port 4302',
         url: baseURL,
-        reuseExistingServer: !process.env.CI,
+        reuseExistingServer: false,
         timeout: 30_000,
       },
 });
