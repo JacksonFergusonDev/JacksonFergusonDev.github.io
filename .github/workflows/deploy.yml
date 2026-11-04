@@ -14,10 +14,10 @@ on:
 permissions:
   contents: read
 
-# A new push to a pull request cancels the run it replaces; a deployment from
-# main finishes before the next run starts.
+# PR updates cancel the run they replace. Main runs prepare builds independently;
+# the publication job holds the lock through deployment and CDN verification.
 concurrency:
-  group: pages-${{ github.ref }}
+  group: pages-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 # Source checks run alongside the build. Each browser tests the same build;
@@ -181,16 +181,6 @@ jobs:
       - name: Test the generated site
         run: pnpm test
 
-      # Broken links do not block a pull request. The daily links workflow
-      # tracks failures on the live site.
-      - name: Check external links
-        if: github.event_name == 'pull_request'
-        uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
-        continue-on-error: true
-        with:
-          args: --no-progress --config lychee.toml --root-dir ${{ github.workspace }}/dist 'dist/**/*.html'
-          checkbox: false
-
       # Photos are already compressed; compressing the artifact saves little.
       - name: Upload the build for browser tests
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -205,6 +195,35 @@ jobs:
         if: github.event_name != 'pull_request'
         with:
           path: dist
+
+  external-links:
+    needs: build
+    if: >-
+      always() && !cancelled() && github.event_name == 'pull_request' &&
+      needs.build.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    continue-on-error: true
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - name: Download the production build
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: site
+          path: dist
+
+      # Broken links do not block a pull request. The daily links workflow
+      # tracks failures on the live site.
+      - name: Check external links
+        uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
+        with:
+          args: --no-progress --config lychee.toml --root-dir ${{ github.workspace }}/dist 'dist/**/*.html'
+          checkbox: false
 
   browser:
     needs: build
@@ -272,7 +291,15 @@ jobs:
       github.event_name != 'pull_request'
     needs: [checks, build, browser]
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # Keep every queued publication: a slower old build must not displace a new one.
+    concurrency:
+      group: pages-publication
+      cancel-in-progress: false
+      queue: max
     permissions:
+      contents: read
+      actions: read
       pages: write
       id-token: write
     environment:
@@ -280,21 +307,46 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
+      - name: Check out source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+
+      - name: Skip superseded builds
+        id: publication
+        run: node scripts/check-publication.mjs
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
       - name: Deploy to GitHub Pages
+        if: steps.publication.outputs.current == 'true'
         id: deployment
         uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
 
-  # Check what visitors receive after deployment. Unchanged scheduled runs
-  # still check the live site for certificate, DNS, and hosting failures.
+      - name: Verify the deployed site
+        if: steps.deployment.outcome == 'success'
+        run: node scripts/verify-live.mjs
+        env:
+          EXPECTED_COMMIT: ${{ github.sha }}
+
+  # Scheduled runs that deploy nothing still check the live site. Share the
+  # publication lock so a deployment cannot change pages during the check.
   verify-live:
     needs: deploy
     if: >-
       always() && !cancelled() &&
-      (needs.deploy.result == 'success' ||
-      (github.event_name == 'schedule' && needs.deploy.result == 'skipped'))
+      github.event_name == 'schedule' && needs.deploy.result == 'skipped'
     runs-on: ubuntu-latest
-    # Allow fifteen minutes for the CDN to serve the deployed commit.
     timeout-minutes: 25
+    concurrency:
+      group: pages-publication
+      cancel-in-progress: false
+      queue: max
 
     steps:
       - name: Check out source
@@ -309,5 +361,3 @@ jobs:
 
       - name: Check the live site
         run: node scripts/verify-live.mjs
-        env:
-          EXPECTED_COMMIT: ${{ needs.deploy.result == 'success' && github.sha || '' }}
