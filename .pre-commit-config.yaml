@@ -28,6 +28,13 @@ repos:
 
   - repo: local
     hooks:
+      - id: pnpm-lock-check
+        name: pnpm lock check
+        entry: pnpm install --lockfile-only --frozen-lockfile --ignore-scripts --offline
+        language: system
+        pass_filenames: false
+        files: ^(package\.json|pnpm-lock\.yaml|pnpm-workspace\.yaml|\.npmrc|\.pre-commit-config\.yaml)$
+
       - id: prettier
         name: prettier
         entry: pnpm exec prettier --write --ignore-unknown
