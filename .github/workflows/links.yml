@@ -1,8 +1,7 @@
 name: Check external links
 
-# Links to GitHub repositories, release downloads, and project sites can break without any
-# change here. A daily check keeps one open issue listing what is broken, updated while links
-# stay broken and closed once they all pass. A broken link never blocks a deployment.
+# External links can break without a change here. Keep one issue for the
+# current failures and close it when they pass; never block deployment.
 on:
   schedule:
     # Alongside the daily remote asset check in deploy.yml.
@@ -21,11 +20,13 @@ jobs:
   links:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Check out source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
-      # Check what visitors see: the live pages, not a build that may not be deployed.
+
       - name: List live pages
         id: pages
         run: |
@@ -36,14 +37,15 @@ jobs:
             exit 1
           fi
           echo "pages=$pages" >> "$GITHUB_OUTPUT"
+
       - name: Check links
         id: lychee
         uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
         with:
-          # Settings, including exclusions, are in lychee.toml.
           args: --no-progress --config lychee.toml ${{ steps.pages.outputs.pages }}
           fail: false
           checkbox: false
+
       - name: Track broken links in an issue
         env:
           GH_TOKEN: ${{ github.token }}
@@ -53,7 +55,7 @@ jobs:
         run: |
           label=broken-links
           issue=$(gh issue list --state open --label "$label" --json number --jq '.[0].number // empty')
-          # The broken URLs alone, so a changed count of working links is not a change.
+          # Compare only broken URLs so working-link counts do not update the issue.
           broken() { grep -oE '^\* \[[^]]+\] <[^>]+>' | sort; }
           case "$EXIT_CODE" in
             0)
@@ -72,7 +74,7 @@ jobs:
                 gh issue create --title 'Broken external links' --label "$label" --body-file issue.md
               elif [ "$(gh issue view "$issue" --json body --jq .body | broken)" != "$(broken < issue.md)" ]; then
                 gh issue edit "$issue" --body-file issue.md
-                # Editing the body notifies no one; a comment does, and only when the list changes.
+                # A comment notifies subscribers when the broken URLs change.
                 gh issue comment "$issue" --body "The set of broken links changed; see the updated list above ([run]($RUN_URL))."
               fi
               ;;
