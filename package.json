@@ -8,20 +8,20 @@
   },
   "scripts": {
     "assets:fetch": "node scripts/fetch-remote-assets.mjs",
-    "assets:check": "npm run assets:fetch && node scripts/check-remote-assets.mjs",
-    "predev": "npm run assets:fetch",
+    "assets:check": "pnpm run assets:fetch && node scripts/check-remote-assets.mjs",
+    "predev": "pnpm run assets:fetch",
     "dev": "astro dev",
-    "prebuild": "npm run assets:fetch",
+    "prebuild": "pnpm run assets:fetch",
     "build": "astro build",
     "postbuild": "node scripts/clean-unused-assets.mjs",
     "preview": "astro preview",
-    "precheck": "npm run assets:fetch",
+    "precheck": "pnpm run assets:fetch",
     "check": "astro check",
     "test": "node --test tests/site.test.mjs tests/remote-assets.test.mjs tests/verify-live.test.mjs",
     "test:browser": "playwright test",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "lint": "npm run lint:eslint && npm run lint:stylelint",
+    "lint": "pnpm run lint:eslint && pnpm run lint:stylelint",
     "lint:eslint": "eslint .",
     "lint:stylelint": "stylelint \"src/**/*.{css,astro}\"",
     "lint:fix": "eslint . --fix && stylelint \"src/**/*.{css,astro}\" --fix",
@@ -34,9 +34,6 @@
     "asciinema-player": "^3.17.0",
     "astro": "^7.3.2",
     "house-style": "github:JacksonFergusonDev/house-style#v3.1.0"
-  },
-  "overrides": {
-    "seroval": "^1.6.8"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
@@ -55,5 +52,6 @@
     "stylelint-config-standard": "^40.0.0",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.70.0"
-  }
+  },
+  "packageManager": "pnpm@12.16.1"
 }

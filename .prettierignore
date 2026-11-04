@@ -3,7 +3,7 @@ dist/
 .astro/
 public/
 src/assets/
-package-lock.json
+pnpm-lock.yaml
 plan.md
 _LAB_STATUS.md
 .rumdl_cache/

@@ -1,0 +1,10 @@
+# Preserve the asset-fetch pre-scripts and the postbuild cleanup.
+enablePrePostScripts: true
+
+overrides:
+  seroval: ^1.6.8
+
+# Native tooling used by Astro and the image preparation scripts.
+allowBuilds:
+  esbuild: true
+  sharp: true

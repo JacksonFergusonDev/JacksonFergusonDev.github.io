@@ -8,31 +8,31 @@ default:
     @just --list
 
 sync:
-    npm ci
+    pnpm install --frozen-lockfile
 
 dev:
-    npm run dev -- --force --open
+    pnpm run dev --force --open
 
 format:
-    npm run format
+    pnpm run format
 
 lint:
-    npm run format:check
-    npm run check
-    npm run lint
+    pnpm run format:check
+    pnpm run check
+    pnpm run lint
 
 lint-fix:
-    npm run format
-    npm run lint:fix
+    pnpm run format
+    pnpm run lint:fix
 
 test:
-    npm test
+    pnpm test
 
 build:
-    npm run build
+    pnpm run build
 
 browser-test:
-    npm run test:browser
+    pnpm run test:browser
 
 zizmor:
     uvx zizmor==1.31.1 --offline --no-progress --strict-collection .
