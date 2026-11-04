@@ -14,31 +14,101 @@ on:
 permissions:
   contents: read
 
+# A new push to a pull request cancels the run it replaces; a deployment from
+# main finishes before the next run starts.
 concurrency:
   group: pages-${{ github.ref }}
-  # Superseded pull request runs can stop early; a deploy from main must finish.
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
+# Source checks run alongside the build. Each browser tests the same build;
+# deployment waits for the checks and every browser to pass.
 jobs:
   check-remote-assets:
     if: github.event_name == 'schedule'
     runs-on: ubuntu-latest
-    # Retries back off for about four minutes; anything longer is stuck, not recovering.
     timeout-minutes: 15
     outputs:
       changed: ${{ steps.assets.outputs.changed }}
+
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
+
       - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24
-      # The fetcher uses only Node built-ins; unchanged days need no dependency install.
+
       - name: Compare remote assets with the deployed snapshot
         id: assets
         run: pnpm run assets:check
+
+  checks:
+    needs: check-remote-assets
+    if: >-
+      always() && !cancelled() &&
+      (github.event_name != 'schedule' ||
+      (needs.check-remote-assets.result == 'success' && needs.check-remote-assets.outputs.changed == 'true'))
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      # Scan before dependency installation adds files outside the checkout.
+      - name: Scan for secrets
+        uses: docker://zricethezav/gitleaks:v8.30.1@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f
+        with:
+          args: dir --redact .
+
+      - name: Lint GitHub Actions
+        uses: docker://rhysd/actionlint:1.7.12@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667
+
+      - name: Audit GitHub Actions with zizmor
+        uses: zizmorcore/zizmor-action@53290badfa369cb0bf7ad16342cb62c2fa47ac7b # v0.8.0
+        with:
+          version: 1.31.1
+          advanced-security: false
+          annotations: true
+          online-audits: true
+          token: ${{ github.token }}
+
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Install Markdown linter
+        run: pipx install rumdl==0.2.77
+
+      - name: Check formatting with Prettier
+        run: pnpm run format:check
+
+      - name: Lint JavaScript and Astro with ESLint
+        run: pnpm run lint:eslint
+
+      - name: Lint styles with Stylelint
+        run: pnpm run lint:stylelint
+
+      - name: Check Astro types
+        run: pnpm run check
+
+      - name: Lint Markdown
+        run: rumdl check .
+
+      - name: Check for dead code
+        run: pnpm run knip
+
+      # Dev tooling never reaches visitors, so only shipped dependencies gate deployment.
+      - name: Audit production dependencies
+        run: pnpm audit --prod --audit-level=high
 
   build:
     needs: check-remote-assets
@@ -49,26 +119,23 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       playwright-image: ${{ steps.playwright-image.outputs.image }}
+
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
-          # Full history, so the sitemap's <lastmod> dates come from real commits.
+          # The sitemap takes its lastmod dates from each page's commit history.
           fetch-depth: 0
-      - name: Audit GitHub Actions with zizmor
-        uses: zizmorcore/zizmor-action@53290badfa369cb0bf7ad16342cb62c2fa47ac7b # v0.8.0
-        with:
-          version: 1.31.1
-          advanced-security: false
-          annotations: true
-          online-audits: true
-          token: ${{ github.token }}
+
       - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24
           cache: pnpm
+
       - run: pnpm install --frozen-lockfile
+
       - name: Resolve the locked Playwright image
         id: playwright-image
         run: |
@@ -83,9 +150,9 @@ jobs:
             exit 1
           fi
           echo "image=mcr.microsoft.com/playwright:${tag}@${digest}" >> "$GITHUB_OUTPUT"
-      # Optimizing the photos is nearly all of the build. Astro keys each cached image by its
-      # source and transform, so a stale cache is safe and a partial match still saves most of it.
-      # Restored after pnpm install --frozen-lockfile, so installation cannot remove the restored cache.
+
+      # Photo transforms dominate the build. Restore them after installation,
+      # which can remove the cache; Astro invalidates changed sources itself.
       - name: Restore optimized images
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
@@ -94,15 +161,13 @@ jobs:
           restore-keys: |
             astro-images-${{ hashFiles('pnpm-lock.yaml') }}-
             astro-images-
-      # Dev tooling never reaches visitors, so only shipped dependencies gate the build.
-      - run: pnpm audit --prod --audit-level=high
-      - run: pnpm run format:check
-      - run: pnpm run lint
-      - run: pnpm run check
+
       - run: pnpm run build
+
       - run: pnpm test
-      # Flags a dead external link a pull request adds, without blocking it; the daily links
-      # workflow tracks breakage on the live site.
+
+      # Broken links do not block a pull request. The daily links workflow
+      # tracks failures on the live site.
       - name: Check external links
         if: github.event_name == 'pull_request'
         uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
@@ -110,8 +175,8 @@ jobs:
         with:
           args: --no-progress --config lychee.toml --root-dir ${{ github.workspace }}/dist 'dist/**/*.html'
           checkbox: false
-      # The browser jobs test this exact build. Photos are already compressed, so zipping them
-      # again would only slow the upload.
+
+      # Photos are already compressed; compressing the artifact saves little.
       - name: Upload the build for browser tests
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
@@ -119,51 +184,58 @@ jobs:
           path: dist/
           compression-level: 0
           retention-days: 1
+
       - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
         if: github.event_name != 'pull_request'
         with:
           path: dist
 
-  # One job per engine, in parallel, with browsers and system packages preinstalled.
   browser:
     needs: build
-    # The build job can follow a skipped asset check, which would skip this job by default.
+    # A skipped asset check must not skip browsers after a successful build.
     if: always() && !cancelled() && needs.build.result == 'success'
     runs-on: ubuntu-latest
     container:
       image: ${{ needs.build.outputs.playwright-image }}
       options: --init --ipc=host
     strategy:
-      # A failure in one engine still lets the others report theirs.
+      # Each engine reports its failures even when another fails first.
       fail-fast: false
       matrix:
         engine: [chromium, firefox, webkit]
     name: browser (${{ matrix.engine }})
+
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
+
       - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24
           cache: pnpm
+
       - run: pnpm install --frozen-lockfile
+
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: site
           path: dist
+
       - name: Prepare Firefox home directory
         if: matrix.engine == 'firefox'
         # GitHub mounts this directory with a different owner than the container user.
         run: chown "$(id -u):$(id -g)" "$HOME"
-      # Playwright serves dist/ with astro preview and waits for it before testing. Firefox on
-      # Linux creates a WebGL context only with an X display, so a virtual one lets the hero canvas
-      # tests run in every engine (rendered in software by Mesa's llvmpipe).
+
+      # Firefox on Linux needs an X display for WebGL. A virtual display lets
+      # every engine test the hero canvas with Mesa's software renderer.
       - name: Run browser and accessibility tests
         run: >-
           xvfb-run --auto-servernum pnpm run test:browser
           --project=${{ matrix.engine }} --project=${{ matrix.engine }}-mobile
+
       - name: Upload browser test results
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
@@ -175,8 +247,9 @@ jobs:
   deploy:
     if: >-
       always() && !cancelled() && needs.build.result == 'success' &&
-      needs.browser.result == 'success' && github.event_name != 'pull_request'
-    needs: [build, browser]
+      needs.checks.result == 'success' && needs.browser.result == 'success' &&
+      github.event_name != 'pull_request'
+    needs: [checks, build, browser]
     runs-on: ubuntu-latest
     permissions:
       pages: write
@@ -184,13 +257,14 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
 
-  # Confirms visitors get the new build, then checks the live site end to end. On scheduled runs
-  # that deploy nothing, it still checks the site daily for certificate, DNS, or hosting problems.
+  # Check what visitors receive after deployment. Unchanged scheduled runs
+  # still check the live site for certificate, DNS, and hosting failures.
   verify-live:
     needs: deploy
     if: >-
@@ -198,16 +272,18 @@ jobs:
       (needs.deploy.result == 'success' ||
       (github.event_name == 'schedule' && needs.deploy.result == 'skipped'))
     runs-on: ubuntu-latest
-    # The CDN caches pages for ten minutes; the wait gives up after fifteen.
+    # Allow fifteen minutes for the CDN to serve the deployed commit.
     timeout-minutes: 25
+
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
+
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24
-      # The checker uses only Node built-ins, so no dependency install.
+
       - name: Check the live site
         run: node scripts/verify-live.mjs
         env:
