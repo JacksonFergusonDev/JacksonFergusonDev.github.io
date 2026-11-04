@@ -53,7 +53,7 @@ test('every generated page has metadata and valid local navigation/assets', asyn
 test('photos ship without camera metadata and within size budgets', async () => {
   const images = (dir) =>
     walk(dir).then((all) => all.filter((file) => /\.(jpe?g|png|webp|avif)$/i.test(file)));
-  // `npm run images:prepare` caps originals and strips GPS; this catches a photo committed without it.
+  // `pnpm run images:prepare` caps originals and strips GPS; this catches a photo committed without it.
   for (const file of await images(path.join(projectRoot, 'src', 'assets'))) {
     const meta = await sharp(file).metadata();
     assert.ok(!meta.exif && !meta.xmp && !meta.iptc, `${file} has metadata; run images:prepare`);
@@ -407,7 +407,7 @@ test('trip and creative pages share a branded card rendered by og:render', async
 test('share cards were re-rendered after their inputs changed', async () => {
   const lock = JSON.parse(await readFile(lockPath, 'utf8'));
   const expected = Object.fromEntries(ogCards.map(({ file, html }) => [file, digest(html)]));
-  assert.deepEqual(lock, expected, 'Share cards are stale; run npm run og:render and commit them');
+  assert.deepEqual(lock, expected, 'Share cards are stale; run pnpm run og:render and commit them');
 });
 test('buttons and interactive controls use SVG icons instead of raw unicode symbols', async () => {
   const PSEUDO_ICONS = /[→←↑↓↗↖↘↙▶◀▲▼►◄✕✖×✓✔☰⏸⏯⏹]|&(?:rarr|larr|uarr|darr|times|check);/i;

@@ -254,7 +254,7 @@ test('fetcher rejects a metric whose value is a placeholder', async () => {
 
 // CI always builds first; a local run without a build skips rather than failing.
 const builtSnapshot = 'dist/remote-assets-state.json';
-const skipBuilt = !process.env.CI && !existsSync(builtSnapshot) && 'run npm run build first';
+const skipBuilt = !process.env.CI && !existsSync(builtSnapshot) && 'run pnpm run build first';
 
 test(
   'deployed snapshot hashes describe every actual built remote asset',

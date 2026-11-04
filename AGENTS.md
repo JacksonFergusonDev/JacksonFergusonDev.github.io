@@ -30,29 +30,29 @@ Guidelines for AI agents working on this Astro portfolio, journal, and photograp
 
 ## Development Commands
 
-Use npm and the local lockfile.
+Use the pnpm version pinned in `package.json` and the local `pnpm-lock.yaml`.
 
 ```sh
-npm ci
-npm run assets:fetch
-npm run dev
-npm run lint
-npm run check
-npm run build
-npm test
-npm run test:browser
-npm run format:check
-npm run images:prepare
-npm run og:render
+pnpm install --frozen-lockfile
+pnpm run assets:fetch
+pnpm run dev
+pnpm run lint
+pnpm run check
+pnpm run build
+pnpm test
+pnpm run test:browser
+pnpm run format:check
+pnpm run images:prepare
+pnpm run og:render
 ```
 
-`npm run test:browser` runs the Playwright specs in `tests/browser/` against `dist/`: build first, and it starts `astro preview` on port 4302 itself (failing if that port is occupied). Set `SITE_URL` to test another running site instead. It runs in Chromium, Firefox, and WebKit, each at desktop and phone sizes; install them with `npx playwright install chromium firefox webkit`, and pass `--project=chromium` for a quick single-browser run.
+`pnpm run test:browser` runs the Playwright specs in `tests/browser/` against `dist/`: build first, and it starts `astro preview` on port 4302 itself (failing if that port is occupied). Set `SITE_URL` to test another running site instead. It runs in Chromium, Firefox, and WebKit, each at desktop and phone sizes; install them with `pnpm exec playwright install chromium firefox webkit`, and pass `--project=chromium` for a quick single-browser run.
 
 ## Verification Expectations
 
-- For content-only edits, run at least `npm run lint`, `npm run check`, `npm run build`, and `npm test`.
-- For layout, navigation, gallery, animation, or interactive media changes, also run `npm run test:browser` and inspect the relevant page in a browser.
-- For broad formatting or many Markdown/CSS/Astro edits, run `npm run format:check`; use `npm run format` only when formatting drift is intentional.
+- For content-only edits, run at least `pnpm run lint`, `pnpm run check`, `pnpm run build`, and `pnpm test`.
+- For layout, navigation, gallery, animation, or interactive media changes, also run `pnpm run test:browser` and inspect the relevant page in a browser.
+- For broad formatting or many Markdown/CSS/Astro edits, run `pnpm run format:check`; use `pnpm run format` only when formatting drift is intentional.
 
 ## Design and UX Rules
 
@@ -96,8 +96,8 @@ The type scale and card anatomy are documented in the README "Visual system" sec
 
 ## Content Rules
 
-- Run `npm run og:render` after changing a trip or creative page's title, description, location, or date, and commit the PNGs in `public/images/og/` with `config/og-cards.lock.json`; each page's social card is rendered from them, and `npm test` fails while a card is stale.
-- Run `npm run images:prepare` on new photos in `src/assets/` before committing them. It caps their size and strips metadata such as GPS locations.
+- Run `pnpm run og:render` after changing a trip or creative page's title, description, location, or date, and commit the PNGs in `public/images/og/` with `config/og-cards.lock.json`; each page's social card is rendered from them, and `pnpm test` fails while a card is stale.
+- Run `pnpm run images:prepare` on new photos in `src/assets/` before committing them. It caps their size and strips metadata such as GPS locations.
 - Project importance follows the GitHub profile order and description depth: Protostar first, then Systems Audio Lab, Data Science Portfolio, CI/CD tooling, Star Ground, and the smaller/archive projects.
 - Protostar links should emphasize its documentation and source. Its embedded Asciinema demo uses `public/protostar-demo.cast`.
 - Most project headings and primary project actions should lead to their GitHub repositories unless the user requests a write-up-first flow.
@@ -108,7 +108,7 @@ The type scale and card anatomy are documented in the README "Visual system" sec
 ## Remote Asset Rules
 
 - `config/remote-assets.json` is the source list for build-time fetched upstream assets.
-- Fetch remote project assets with `npm run assets:fetch`; normal development and production builds run this automatically.
+- Fetch remote project assets with `pnpm run assets:fetch`; normal development and production builds run this automatically.
 - Reference the generated local `public/` paths from site pages and Markdown. Do not hot-link raw GitHub assets from visitor-facing markup unless the user explicitly asks for runtime remote loading.
 - When adding a new fetched asset, document the source and validation behavior in `README.md`.
 

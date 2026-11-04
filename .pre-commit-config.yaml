@@ -21,6 +21,8 @@ repos:
       - id: end-of-file-fixer
         exclude: \.gitkeep$
       - id: check-yaml
+        # pnpm 12 stores tool and project locks as separate YAML documents.
+        args: [--allow-multiple-documents]
       - id: check-json
       - id: check-toml
 
@@ -28,48 +30,48 @@ repos:
     hooks:
       - id: prettier
         name: prettier
-        entry: npx prettier --write --ignore-unknown
+        entry: pnpm exec prettier --write --ignore-unknown
         language: system
         require_serial: true
 
       - id: eslint
         name: eslint
-        entry: npx eslint
+        entry: pnpm exec eslint
         language: system
         require_serial: true
         files: \.(astro|[jt]sx?|mjs)$
 
       - id: stylelint
         name: stylelint
-        entry: npx stylelint
+        entry: pnpm exec stylelint
         language: system
         require_serial: true
         files: \.(astro|css)$
 
       - id: astro-check
         name: astro check
-        entry: npm run check
+        entry: pnpm run check
         language: system
         pass_filenames: false
         files: ^(src/.*\.(astro|[jt]sx?)|tsconfig\.json|astro\.config\.mjs)$
 
       - id: site-tests
         name: site tests
-        entry: npm test
+        entry: pnpm test
         language: system
         pass_filenames: false
         stages: [pre-push]
 
       - id: astro-build
         name: astro build
-        entry: npm run build
+        entry: pnpm run build
         language: system
         pass_filenames: false
         stages: [pre-push]
 
       - id: knip
         name: knip (dead code)
-        entry: npm run knip
+        entry: pnpm run knip
         language: system
         pass_filenames: false
         stages: [pre-push]

@@ -1,5 +1,5 @@
 // Renders the social share cards: the homepage (public/images/og-card.png) and one per trip and
-// creative page (public/images/og/). Run manually with `npm run og:render` after changing the name,
+// creative page (public/images/og/). Run manually with `pnpm run og:render` after changing the name,
 // tagline, or a page's title, description, location, or date; the PNGs are committed, along with
 // config/og-cards.lock.json, which records what each one was rendered from.
 import { mkdir, writeFile } from 'node:fs/promises';

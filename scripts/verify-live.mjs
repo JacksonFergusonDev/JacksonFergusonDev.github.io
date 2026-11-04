@@ -2,7 +2,7 @@
 // about to expire, the HTTP redirect, every page in the sitemap, every asset those pages load,
 // and the custom 404 page. With EXPECTED_COMMIT set, it first waits for the CDN to serve that
 // build on every page. GitHub Pages caches pages for up to ten minutes, so a deployment that
-// finished is not yet what visitors see. Uses only Node built-ins, so CI needs no npm install.
+// finished is not yet what visitors see. Uses only Node built-ins, so CI needs no dependency install.
 import { readFile } from 'node:fs/promises';
 import process from 'node:process';
 import tls from 'node:tls';

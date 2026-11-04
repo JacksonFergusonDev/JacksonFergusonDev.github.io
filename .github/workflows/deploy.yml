@@ -31,13 +31,14 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24
-      # The fetcher uses only Node built-ins; unchanged days need no npm install.
+      # The fetcher uses only Node built-ins; unchanged days need no dependency install.
       - name: Compare remote assets with the deployed snapshot
         id: assets
-        run: npm run assets:check
+        run: pnpm run assets:check
 
   build:
     needs: check-remote-assets
@@ -62,14 +63,16 @@ jobs:
           annotations: true
           online-audits: true
           token: ${{ github.token }}
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24
-          cache: npm
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
       - name: Resolve the locked Playwright image
         id: playwright-image
         run: |
-          version=$(node -p "require('./package-lock.json').packages['node_modules/@playwright/test'].version")
+          version=$(node -p "require('@playwright/test/package.json').version")
           tag="v${version}-noble"
           digest=$(curl --fail --silent --show-error --retry 3 --max-time 30 --head \
             --header 'Accept: application/vnd.docker.distribution.manifest.list.v2+json' \
@@ -80,25 +83,24 @@ jobs:
             exit 1
           fi
           echo "image=mcr.microsoft.com/playwright:${tag}@${digest}" >> "$GITHUB_OUTPUT"
-      - run: npm ci
       # Optimizing the photos is nearly all of the build. Astro keys each cached image by its
       # source and transform, so a stale cache is safe and a partial match still saves most of it.
-      # Restored after npm ci, which deletes node_modules.
+      # Restored after pnpm install --frozen-lockfile, so installation cannot remove the restored cache.
       - name: Restore optimized images
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: node_modules/.astro/assets
-          key: astro-images-${{ hashFiles('package-lock.json') }}-${{ hashFiles('src/assets/**') }}
+          key: astro-images-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('src/assets/**') }}
           restore-keys: |
-            astro-images-${{ hashFiles('package-lock.json') }}-
+            astro-images-${{ hashFiles('pnpm-lock.yaml') }}-
             astro-images-
       # Dev tooling never reaches visitors, so only shipped dependencies gate the build.
-      - run: npm audit --omit=dev --audit-level=high
-      - run: npm run format:check
-      - run: npm run lint
-      - run: npm run check
-      - run: npm run build
-      - run: npm test
+      - run: pnpm audit --prod --audit-level=high
+      - run: pnpm run format:check
+      - run: pnpm run lint
+      - run: pnpm run check
+      - run: pnpm run build
+      - run: pnpm test
       # Flags a dead external link a pull request adds, without blocking it; the daily links
       # workflow tracks breakage on the live site.
       - name: Check external links
@@ -141,11 +143,12 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24
-          cache: npm
-      - run: npm ci
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: site
@@ -159,7 +162,7 @@ jobs:
       # tests run in every engine (rendered in software by Mesa's llvmpipe).
       - name: Run browser and accessibility tests
         run: >-
-          xvfb-run --auto-servernum npm run test:browser --
+          xvfb-run --auto-servernum pnpm run test:browser
           --project=${{ matrix.engine }} --project=${{ matrix.engine }}-mobile
       - name: Upload browser test results
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -204,7 +207,7 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24
-      # The checker uses only Node built-ins, so no npm install.
+      # The checker uses only Node built-ins, so no dependency install.
       - name: Check the live site
         run: node scripts/verify-live.mjs
         env:

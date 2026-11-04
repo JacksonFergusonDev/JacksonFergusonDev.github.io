@@ -1,4 +1,4 @@
-// The social share cards as HTML documents, one per committed PNG. `npm run og:render` screenshots
+// The social share cards as HTML documents, one per committed PNG. `pnpm run og:render` screenshots
 // them, and the site tests compare their hashes with config/og-cards.lock.json to catch a card
 // that was not re-rendered after its title, description, or styling changed.
 import { createHash } from 'node:crypto';
