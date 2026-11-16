@@ -5,8 +5,9 @@ import { readdirSync } from 'node:fs';
 export { expect };
 
 // Every built page, so a new trip or collection is tested without editing this list.
+// dist/embeds/ holds other sites' snapshots shown in frames, not this site's pages.
 export const routes = readdirSync('dist', { recursive: true })
-  .filter((file) => file.endsWith('.html'))
+  .filter((file) => file.endsWith('.html') && !file.startsWith('embeds'))
   .map((file) => `/${file.replaceAll('\\', '/').replace(/index\.html$/, '')}`)
   .sort();
 
@@ -36,8 +37,11 @@ export const test = base.extend({
     page.on('console', (message) => {
       // Firefox logs a font download cancelled by the test ending (NS_BINDING_ABORTED) as an
       // error; a font that is actually missing still fails through its HTTP status.
-      if (message.type() === 'error' && !message.text().includes('status=2152398850'))
-        errors.push(`console: ${message.text()}`);
+      if (message.type() !== 'error' || message.text().includes('status=2152398850')) return;
+      // Playwright tries to script every frame, and Chromium logs the sandbox refusing it in
+      // the snapshots under /embeds/, which carry no scripts of their own (the fetcher checks).
+      if (/^Blocked script execution in '[^']*\/embeds\//.test(message.text())) return;
+      errors.push(`console: ${message.text()}`);
     });
     page.on('response', (response) => {
       if (response.status() >= 400) errors.push(`HTTP ${response.status()}: ${response.url()}`);

@@ -98,7 +98,8 @@ The type scale and card anatomy are documented in the README "Visual system" sec
 
 - Run `pnpm run og:render` after changing a trip or creative page's title, description, location, or date, and commit the PNGs in `public/images/og/` with `config/og-cards.lock.json`; each page's social card is rendered from them, and `pnpm test` fails while a card is stale.
 - Run `pnpm run images:prepare` on new photos in `src/assets/` before committing them. It caps their size and strips metadata such as GPS locations.
-- Project importance follows the GitHub profile order and description depth: Protostar first, then Systems Audio Lab, Data Science Portfolio, CI/CD tooling, Star Ground, and the smaller/archive projects.
+- Project importance follows the GitHub profile order and description depth: Protostar first, then Star Ground, Systems Audio Lab, Data Science Portfolio, CI/CD tooling, and the smaller/archive projects.
+- Star Ground's card shows its app as live HTML: `star-ground.jacksonferguson.me/embed/projects/`, its projects page with the sidebar,, fetched through `config/remote-assets.json` and shown in a sandboxed, inert frame. Change what it draws in the star-ground repository, not here.
 - Protostar links should emphasize its documentation and source. Its embedded Asciinema demo uses `public/protostar-demo.cast`.
 - Most project headings and primary project actions should lead to their GitHub repositories unless the user requests a write-up-first flow.
 - Technical articles are source-grounded summaries, not invented first-person postmortems.

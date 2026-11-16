@@ -520,20 +520,22 @@ html.landing-js:not(.landing-reduced-motion) .hs-terminal-screen .ap-overlay-sta
   justify-content: space-between;
   gap: 16px 24px;
 }
+.star-ground-card,
 .audio-card,
 .data-science-card {
   display: grid;
   grid-template-columns: 1.2fr 1fr;
   margin-bottom: 25px;
 }
+.star-ground-copy,
 .audio-copy,
 .data-science-copy {
   padding: 36px 38px;
 }
 .flagship-title,
+.star-ground-copy h3,
 .audio-copy h3,
 .data-science-copy h3,
-.secondary h3,
 .beyond-card h3 {
   font-size: var(--fs-h3);
   line-height: 1.2;
@@ -566,6 +568,7 @@ html.landing-js:not(.landing-reduced-motion) .hs-terminal-screen .ap-overlay-sta
 .metrics .text-link {
   color: var(--accent);
 }
+.star-ground-copy .tags,
 .audio-copy .tags,
 .data-science-copy .tags {
   margin: 20px 0;
@@ -607,19 +610,39 @@ html.landing-js:not(.landing-reduced-motion) .hs-terminal-screen .ap-overlay-sta
   line-height: 1.6;
   margin-top: 16px;
 }
-.project-pair {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 25px;
+/*
+ * Star Ground's app, drawn by the app's own HTML (config/remote-assets.json):
+ * the page is laid out at the frame's 1280px and scaled to the column, so its
+ * text stays sharp at any size. The frame is a picture: it runs nothing
+ * (sandbox), takes no focus or clicks (inert), and the link around it opens
+ * the live app.
+ */
+.app-snapshot {
+  --snapshot-width: 1280px;
+  --snapshot-height: 840px;
+
+  position: relative;
+  container-type: inline-size;
+  aspect-ratio: 1280 / 840;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--bg);
+  transition: border-color 0.2s;
 }
-.secondary {
-  padding: 34px 38px;
-  display: flex;
-  flex-direction: column;
+.app-snapshot:hover {
+  border-color: var(--muted);
 }
-.secondary .tags {
-  margin-top: auto;
-  padding-top: 25px;
+.app-snapshot iframe {
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: var(--snapshot-width);
+  height: var(--snapshot-height);
+  border: 0;
+  pointer-events: none;
+  transform-origin: 0 0;
+  /* The column's width over the page's, as a number: tan(atan2()) divides two lengths. */
+  transform: scale(tan(atan2(100cqi, var(--snapshot-width))));
 }
 .other-projects {
   margin-top: 35px;
@@ -643,9 +666,6 @@ html.landing-js:not(.landing-reduced-motion) .hs-terminal-screen .ap-overlay-sta
   display: flex;
   gap: 15px;
   align-items: center;
-}
-.project-row h3 svg {
-  color: #7d929e;
 }
 .project-row p {
   max-width: 650px;
@@ -1049,15 +1069,13 @@ html.landing-js:not(.landing-reduced-motion) .hs-terminal-screen .ap-overlay-sta
     margin-inline: -28px;
     padding-inline: 28px;
   }
+  .star-ground-copy,
   .audio-copy,
   .data-science-copy {
     padding: 28px;
   }
   .signal-art {
     padding: 25px;
-  }
-  .secondary {
-    padding: 28px;
   }
   .about-grid {
     gap: 52px;
@@ -1117,6 +1135,7 @@ html.landing-js:not(.landing-reduced-motion) .hs-terminal-screen .ap-overlay-sta
   .feature-principles {
     gap: 20px;
   }
+  .star-ground-card,
   .audio-card,
   .data-science-card {
     grid-template-columns: 1fr;
@@ -1131,12 +1150,6 @@ html.landing-js:not(.landing-reduced-motion) .hs-terminal-screen .ap-overlay-sta
   }
   .signal-note {
     text-align: center;
-  }
-  .project-pair {
-    gap: 18px;
-  }
-  .secondary {
-    padding: 25px;
   }
   .beyond-split {
     grid-template-columns: 1fr;
@@ -1293,6 +1306,7 @@ html.landing-js:not(.landing-reduced-motion) .hs-terminal-screen .ap-overlay-sta
     margin-inline: -20px;
     padding: 19px 20px;
   }
+  .star-ground-copy,
   .audio-copy,
   .data-science-copy {
     padding: 25px 20px;
@@ -1302,13 +1316,6 @@ html.landing-js:not(.landing-reduced-motion) .hs-terminal-screen .ap-overlay-sta
     flex-wrap: wrap;
   }
   .signal-art {
-    padding: 25px 20px;
-  }
-  .project-pair {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-  .secondary {
     padding: 25px 20px;
   }
   .project-row {
@@ -1591,6 +1598,7 @@ html.landing-js:not(.landing-reduced-motion) .hs-terminal-screen .ap-overlay-sta
 
 /* Let content reflow within narrow cards instead of clipping their contents. */
 .flagship-grid > *,
+.star-ground-card > *,
 .audio-card > *,
 .data-science-card > *,
 .beyond-split > * {

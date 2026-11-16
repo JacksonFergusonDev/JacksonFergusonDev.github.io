@@ -8,7 +8,6 @@ import DataField from '../components/DataField.astro';
 import AsciinemaDemo from '../components/AsciinemaDemo.astro';
 import SectionMarker from 'house-style/astro/SectionMarker.astro';
 import ThumbnailCard from '../components/ThumbnailCard.astro';
-import SecondaryProjectCard from '../components/SecondaryProjectCard.astro';
 import ProjectRow from '../components/ProjectRow.astro';
 import GalleryViewer from '../components/GalleryViewer.astro';
 import { site, routes } from '../lib/site';
@@ -19,6 +18,7 @@ import {
   dataSciencePortfolio,
   cicdRelease,
   starGround,
+  starGroundApp,
   tools,
 } from '../lib/projects';
 import { getCreativeCollections, getTrips } from '../lib/content';
@@ -274,6 +274,68 @@ const skiPhotoEnlarged = await getImage({
             </div>
           </div>
         </article>
+        <article class="project-card star-ground-card landing-reveal">
+          <div class="star-ground-copy">
+            <p class="eyebrow">{starGround.eyebrow}</p>
+            <h3>
+              <a href={starGround.repo} target="_blank" rel="noopener noreferrer">
+                {starGround.name}
+              </a>
+            </h3>
+            <p class="project-subtitle">{starGround.subtitle}</p>
+            <p>{starGround.description}</p>
+            <div class="metrics">
+              {starGround.metrics.map((metric) => (
+                <div>
+                  <strong>
+                    {metric.value} <small set:html={metric.unit} />
+                  </strong>
+                  <span set:html={metric.label} />
+                </div>
+              ))}
+            </div>
+            <div class="tags">
+              {starGround.tags.map((tag) => (
+                <span>{tag}</span>
+              ))}
+            </div>
+            <div class="project-actions">
+              <a
+                class="hs-button hs-button--primary"
+                href={starGroundApp.href}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Try the live app <Icon name="arrow-up-right" size={16} />
+              </a>
+              <a class="text-link" href={starGround.repo} target="_blank" rel="noopener noreferrer">
+                View on GitHub <Icon name="arrow-up-right" size={16} />
+              </a>
+            </div>
+          </div>
+          <div class="signal-art">
+            <span class="signal-label">LIVE APP / PROJECTS</span>
+            <a
+              class="app-snapshot"
+              href={starGroundApp.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Star Ground's projects page with two pedals: open the live app"
+            >
+              <iframe
+                src={starGroundApp.snapshot}
+                title="Star Ground's projects page with two pedals"
+                width="1280"
+                height="840"
+                loading="lazy"
+                sandbox=""
+                inert
+                tabindex="-1"
+              ></iframe>
+            </a>
+            <span class="signal-note">The app's own page, with two pedals from its catalog</span>
+          </div>
+        </article>
         <article class="project-card audio-card landing-reveal">
           <div class="audio-copy">
             <p class="eyebrow">{systemsAudioLab.eyebrow}</p>
@@ -406,25 +468,13 @@ const skiPhotoEnlarged = await getImage({
             </span>
           </div>
         </article>
-        <div class="project-pair landing-reveal">
-          <SecondaryProjectCard
-            eyebrow={cicdRelease.eyebrow}
-            titleLines={cicdRelease.titleLines}
-            subtitle={cicdRelease.subtitle}
+        <div class="other-projects landing-reveal">
+          <ProjectRow
+            name={cicdRelease.name}
             repoUrl={cicdRelease.repo}
             description={cicdRelease.description}
-            tags={cicdRelease.tags}
+            kind={cicdRelease.eyebrow}
           />
-          <SecondaryProjectCard
-            eyebrow={starGround.eyebrow}
-            title={starGround.name}
-            subtitle={starGround.subtitle}
-            repoUrl={starGround.repo}
-            description={starGround.description}
-            tags={starGround.tags}
-          />
-        </div>
-        <div class="other-projects landing-reveal">
           {tools.map((tool) => (
             <ProjectRow
               name={tool.name}

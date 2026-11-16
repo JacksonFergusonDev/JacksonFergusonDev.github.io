@@ -48,6 +48,14 @@
       "minBytes": 50
     },
     {
+      "id": "star-ground-projects",
+      "description": "Star Ground's projects page, sidebar and all, as one self-contained HTML document shown beside its project card.",
+      "source": "https://star-ground.jacksonferguson.me/embed/projects/",
+      "target": "public/embeds/star-ground-projects.html",
+      "type": "html",
+      "minBytes": 50000
+    },
+    {
       "id": "systems-audio-analysis",
       "description": "Systems Audio Lab measured analysis topology figure.",
       "source": "https://raw.githubusercontent.com/JacksonFergusonDev/systems-audio-lab/refs/heads/main/docs/figures/fig_analysis_topology.svg",

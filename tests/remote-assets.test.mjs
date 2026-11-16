@@ -252,6 +252,64 @@ test('fetcher rejects a metric whose value is a placeholder', async () => {
   }
 });
 
+test('fetcher accepts only an HTML snapshot that runs and loads nothing', async () => {
+  const directory = await mkdtemp(path.join(tmpdir(), 'remote-assets-html-'));
+  const scriptUrl = pathToFileURL(path.resolve('scripts/fetch-remote-assets.mjs')).href;
+  const snapshot = {
+    id: 'snapshot',
+    description: 'A snapshot',
+    source: 'https://example.test/embed/',
+    target: 'public/embeds/snapshot.html',
+    type: 'html',
+    minBytes: 10,
+  };
+  const page = (body, style = '') =>
+    `<!DOCTYPE html><html><head><style>${style}</style></head><body>${body}</body></html>`;
+  const fetchWith = (html) =>
+    promisify(execFile)(
+      process.execPath,
+      [
+        '--input-type=module',
+        '-e',
+        `globalThis.fetch = async () => new Response(${JSON.stringify(html)});
+        await import(${JSON.stringify(scriptUrl)});`,
+      ],
+      // Short local retries; no earlier copy exists to fall back on.
+      { cwd: directory, env: { ...process.env, CI: '' } },
+    );
+  try {
+    await mkdir(path.join(directory, 'config'));
+    await writeFile(
+      path.join(directory, 'config/remote-assets.json'),
+      JSON.stringify({ assets: [snapshot] }),
+    );
+    for (const [html, problem] of [
+      ['<div>no document</div>', /whole HTML document/],
+      [page('<script>alert(1)</script>'), /an element/],
+      [page('<iframe></iframe>'), /an element/],
+      [page('<img src="https://example.test/a.png">'), /data: URI/],
+      [page('<img src=/a.png>'), /data: URI/],
+      [page('<svg><use href="/sprite.svg#a"/></svg>'), /SVG reference/],
+      [page('<div onclick="alert(1)">x</div>'), /an event handler/],
+      [page('<form action="https://example.test/"></form>'), /a loading attribute/],
+      [page('', '@font-face{src:url(/fonts/a.woff2)}'), /CSS url\(\)/],
+      [page('', '@import "https://example.test/a.css";'), /@import/],
+    ]) {
+      await assert.rejects(fetchWith(html), problem);
+    }
+    // Inline images, a form with nowhere to send, and an SVG's own gradients are all fine.
+    const good = page(
+      '<img src="data:image/svg+xml;base64,AA" alt=""><form><input type="file"></form>' +
+        '<svg><rect fill="url(#g)"/><use href="#knob"/></svg><table><tr><td>10k</td></tr></table>',
+      "src:url('data:font/woff2;base64,AA')",
+    );
+    await fetchWith(good);
+    assert.equal(await readFile(path.join(directory, snapshot.target), 'utf8'), good);
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
 // CI always builds first; a local run without a build skips rather than failing.
 const builtSnapshot = 'dist/remote-assets-state.json';
 const skipBuilt = !process.env.CI && !existsSync(builtSnapshot) && 'run pnpm run build first';
