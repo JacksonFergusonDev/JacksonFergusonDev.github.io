@@ -21,8 +21,6 @@ export interface Project {
   subtitle: string;
   description: string;
   tags: string[];
-  /** Card title split over two lines on desktop. */
-  titleLines?: [string, string];
   /** Extra context for llms.txt. */
   extra?: string;
   metrics?: Metric[];
@@ -110,7 +108,6 @@ export const cicdRelease = {
   url: `${site.github}/ci-cd-release-infrastructure`,
   repo: `${site.github}/ci-cd-release-infrastructure`,
   eyebrow: 'INFRASTRUCTURE',
-  titleLines: ['CI/CD & Release', 'Infrastructure'],
   subtitle: 'Release policy belongs in one place.',
   description:
     'Reusable GitHub Actions workflows that release my Python projects: checks before each release, publishing to Git and PyPI, and keeping the Homebrew formula in step.',
@@ -119,22 +116,33 @@ export const cicdRelease = {
 
 export const starGround = {
   name: 'Star Ground',
-  url: `${site.github}/star-ground`,
+  url: 'https://star-ground.jacksonferguson.me/',
   repo: `${site.github}/star-ground`,
   eyebrow: 'HARDWARE LOGISTICS',
   subtitle: 'Dependency management, made physical.',
   description:
-    'Turns messy bills of materials for electronics builds into a repeatable parts order: units normalized exactly, parts already on hand accounted for, and assembly guides ordered by component height.',
-  tags: ['Python', 'Parsing', 'Property-based testing'],
+    'Give Star Ground the build documents for the guitar pedals you plan to build, and it returns one shopping list, less the parts you already own, with printable build checklists and bin labels. It reads each document’s layout rather than guessing with a language model, and where it can’t be sure it read a part right, it tells you exactly what to check.',
+  extra: 'Live app: https://star-ground.jacksonferguson.me/app/.',
+  tags: ['Python / FastAPI', 'PDF layout parsing', 'Astro / Svelte'],
+  metrics: [
+    { value: '~60,000', unit: 'parts', label: 'Hand-labeled across ~1,240 build documents' },
+    { value: '0', unit: 'silent errors', label: 'On every labeled document' },
+  ],
 } satisfies Project;
+
+/** Star Ground's live app, and the snapshot of it fetched through config/remote-assets.json. */
+export const starGroundApp = {
+  href: 'https://star-ground.jacksonferguson.me/app/',
+  snapshot: '/embeds/star-ground-projects.html',
+};
 
 // In importance order, following the GitHub profile.
 export const projects: Project[] = [
   protostar,
+  starGround,
   systemsAudioLab,
   dataSciencePortfolio,
   cicdRelease,
-  starGround,
 ];
 
 export const tools: ToolProject[] = [

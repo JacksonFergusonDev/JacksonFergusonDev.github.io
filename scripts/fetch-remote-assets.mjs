@@ -43,7 +43,7 @@ function validateManifestAsset(asset) {
   seenTargets.add(asset.target);
 
   assertManifest(
-    ['svg', 'asciinema-cast', 'pdf', 'json'].includes(asset.type),
+    ['svg', 'asciinema-cast', 'pdf', 'json', 'html'].includes(asset.type),
     `${asset.id} has unsupported type`,
   );
   if (asset.type === 'json') {
@@ -123,6 +123,35 @@ function validateJson(asset, text) {
   }
 }
 
+// An HTML snapshot is shown in a frame from this site's own origin, so it must be a whole
+// document that runs nothing and loads nothing: its styles, fonts and images come inline, as
+// data: URIs. Forms and links may stay, since the frame's sandbox lets neither go anywhere.
+const htmlLoads = [
+  [
+    /<(script|iframe|frame|object|embed|link|base|video|audio|source|track|portal)\b/i,
+    'an element',
+  ],
+  [/\son[a-z]+\s*=/i, 'an event handler'],
+  [/\s(srcset|poster|action|formaction|ping|background)\s*=/i, 'a loading attribute'],
+  [/\ssrc\s*=\s*(?!["']?data:)/i, 'a src that is not a data: URI'],
+  [/<(image|use|feImage)\b[^>]*\shref\s*=\s*(?!["']?(#|data:))/i, 'an SVG reference to a file'],
+  [/http-equiv/i, 'a meta http-equiv'],
+  [/url\(\s*(?!["']?(data:|#))/i, 'a CSS url() that is not a data: URI'],
+  [/@import/i, 'a CSS @import'],
+];
+
+function validateHtml(asset, text) {
+  if (!/^<!doctype html>/i.test(text.trimStart()) || !/<\/html>\s*$/i.test(text)) {
+    throw new Error(`${asset.id}: expected a whole HTML document from ${asset.source}`);
+  }
+  for (const [pattern, what] of htmlLoads) {
+    const found = text.match(pattern);
+    if (found) {
+      throw new Error(`${asset.id}: the snapshot has ${what} (${JSON.stringify(found[0])})`);
+    }
+  }
+}
+
 function validatePdf(asset, bytes) {
   if (Buffer.from(bytes.subarray(0, 5)).toString('latin1') !== '%PDF-') {
     throw new Error(`${asset.id}: expected a PDF document from ${asset.source}`);
@@ -139,6 +168,7 @@ function validateAsset(asset, bytes) {
   if (asset.type === 'svg') validateSvg(asset, text);
   if (asset.type === 'asciinema-cast') validateCast(asset, text);
   if (asset.type === 'json') validateJson(asset, text);
+  if (asset.type === 'html') validateHtml(asset, text);
 }
 
 async function fetchWithTimeout(url) {

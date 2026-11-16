@@ -59,7 +59,6 @@ for (const viewport of [
         '.flagship',
         '.audio-card',
         '.data-science-card',
-        '.project-pair',
         '.other-projects',
         '.beyond-section .hs-section-marker',
         '.contact-head',

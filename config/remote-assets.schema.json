@@ -30,7 +30,7 @@
             "pattern": "^public/"
           },
           "type": {
-            "enum": ["svg", "asciinema-cast", "pdf", "json"]
+            "enum": ["svg", "asciinema-cast", "pdf", "json", "html"]
           },
           "shape": {
             "type": "object",

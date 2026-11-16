@@ -105,3 +105,30 @@ test.describe('without WebGL', () => {
     await expect(page.locator('.motion-toggle')).toBeHidden();
   });
 });
+
+test("Star Ground's snapshot loads, fits its column, and opens the live app", async ({ page }) => {
+  // The frame is sandboxed, so nothing can script it, tests included; star-ground's own tests
+  // check what the snapshot draws. Here: it arrives, and it sits in the card as a picture.
+  const snapshot = '/embeds/star-ground-projects.html';
+  const link = page.getByRole('link', { name: /Star Ground's projects page/ });
+  await link.scrollIntoViewIfNeeded();
+  // The frame is lazy, and may have started before this test could listen for its request.
+  await expect.poll(() => page.frames().some((frame) => frame.url().endsWith(snapshot))).toBe(true);
+  const response = await page.request.get(snapshot);
+  expect(response.status()).toBe(200);
+  expect((await response.body()).byteLength).toBeGreaterThan(50_000);
+  const iframe = page.locator('.app-snapshot iframe');
+  // Laid out at 1280px and scaled down, so the whole page width shows in the column.
+  const [column, drawn] = await iframe.evaluate((frame) => [
+    frame.parentElement.clientWidth,
+    frame.getBoundingClientRect().width,
+  ]);
+  expect(Math.abs(column - drawn)).toBeLessThanOrEqual(1);
+  await expect(iframe).toHaveAttribute('sandbox', '');
+  await expect(iframe).toHaveAttribute('inert', '');
+  await expect(link).toHaveAttribute('href', 'https://star-ground.jacksonferguson.me/app/');
+  await page.waitForTimeout(500);
+  await page.locator('.star-ground-card').screenshot({
+    path: test.info().outputPath('star-ground-card.png'),
+  });
+});

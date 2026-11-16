@@ -20,7 +20,10 @@ async function walk(dir) {
   ).flat();
 }
 const files = await walk(root);
-const pages = files.filter((f) => f.endsWith('.html'));
+// dist/embeds/ holds other sites' snapshots, fetched through config/remote-assets.json and shown
+// in frames; they aren't this site's pages.
+const embeds = path.join(root, 'embeds') + path.sep;
+const pages = files.filter((f) => f.endsWith('.html') && !f.startsWith(embeds));
 const read = (file) => readFile(file, 'utf8');
 test('every generated page has metadata and valid local navigation/assets', async () => {
   for (const page of pages) {
@@ -90,10 +93,10 @@ test('project hierarchy and real downloads are preserved', async () => {
     .replace(/\s+/g, ' ');
   const order = [
     'Protostar',
+    'Star Ground',
     'Systems Audio Lab',
     'Data Science Portfolio',
     'CI/CD & Release',
-    'Star Ground',
     'Git Pulsar',
     'Dark Matter',
     'Focal',
@@ -110,10 +113,16 @@ test('project hierarchy and real downloads are preserved', async () => {
     'https://github.com/JacksonFergusonDev/data-science-portfolio',
     'https://github.com/JacksonFergusonDev/ci-cd-release-infrastructure',
     'https://github.com/JacksonFergusonDev/star-ground',
+    'https://star-ground.jacksonferguson.me/app/',
   ]) {
     assert.ok(raw.includes(`href="${href}"`), `Missing project destination ${href}`);
   }
   assert.ok(raw.includes('data-asciinema="/protostar-demo.cast"'));
+  // Star Ground's snapshot is a picture: it runs nothing and takes no focus.
+  assert.match(
+    raw,
+    /<iframe src="\/embeds\/star-ground-projects\.html"[^>]*\bsandbox=""[^>]*\binert\b/,
+  );
   for (const [asset, label] of [['protostar-mutation-score', 'Engine mutation score']]) {
     const { message: score } = JSON.parse(
       await readFile(path.join(projectRoot, 'public', 'data', `${asset}.json`), 'utf8'),
@@ -296,13 +305,12 @@ test('external links except Blender downloads show the diagonal arrow', async ()
       if (/class="[^"]*\bdownload-btn\b/.test(attrs)) continue;
       // Header bar links carry their brand icon instead (house-style GUIDELINES).
       if (/class="[^"]*\bhs-bar-link\b/.test(attrs)) continue;
-      // Pure media preview / diagram links wrapping an image
-      if (/<img\b/.test(content)) continue;
+      // Pure media preview / diagram links wrapping an image or a snapshot frame
+      if (/<(img|iframe)\b/.test(content)) continue;
       // Card heading titles for featured projects (which have explicit CTA action buttons below)
       if (
         content.trim() === 'Systems Audio Lab' ||
         content.trim() === 'Data Science Portfolio' ||
-        content.includes('CI/CD') ||
         content.trim() === 'Star Ground'
       ) {
         continue;
