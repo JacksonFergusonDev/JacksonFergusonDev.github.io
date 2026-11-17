@@ -53,6 +53,23 @@ test('every generated page has metadata and valid local navigation/assets', asyn
     }
   }
 });
+test('every page is linked from another page', async () => {
+  // A page only the sitemap lists builds and passes every other check, but no visitor finds it.
+  // The homepage is the way in, and the 404 page is served for missing URLs, not linked.
+  const linked = new Set();
+  for (const page of pages) {
+    const base = new URL(pagePath(page), site);
+    for (const [, value] of (await read(page)).matchAll(/href="([^"]+)"/g)) {
+      const url = new URL(value.replace(/&amp;/g, '&'), base);
+      if (url.origin === site.origin && url.pathname !== base.pathname) linked.add(url.pathname);
+    }
+  }
+  for (const page of pages) {
+    const served = pagePath(page);
+    if (served === '/' || served === '/404.html') continue;
+    assert.ok(linked.has(served), `No page links to ${served}`);
+  }
+});
 test('photos ship without camera metadata and within size budgets', async () => {
   const images = (dir) =>
     walk(dir).then((all) => all.filter((file) => /\.(jpe?g|png|webp|avif)$/i.test(file)));
